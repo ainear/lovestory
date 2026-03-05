@@ -143,6 +143,46 @@ export default async function DashboardLayout({
                         </div>
                     </div>
                 </div>
+
+                {/* Logout + Admin */}
+                <div style={{ padding: "12px 16px", borderTop: "1px solid #e8e8ec" }}>
+                    {user.email === process.env.ADMIN_EMAIL && (
+                        <Link
+                            href="/admin"
+                            style={{
+                                display: "block",
+                                padding: "8px 12px",
+                                borderRadius: 8,
+                                fontSize: 12,
+                                color: "#f43f5e",
+                                textDecoration: "none",
+                                marginBottom: 6,
+                                fontWeight: 600,
+                            }}
+                        >
+                            🛡️ Admin Panel
+                        </Link>
+                    )}
+                    <form action="/auth/signout" method="GET">
+                        <button
+                            type="submit"
+                            style={{
+                                width: "100%",
+                                padding: "8px 12px",
+                                borderRadius: 8,
+                                border: "1px solid #fee2e2",
+                                background: "#fff5f5",
+                                color: "#ef4444",
+                                fontSize: 13,
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                textAlign: "left",
+                            }}
+                        >
+                            🚪 Đăng xuất
+                        </button>
+                    </form>
+                </div>
             </aside>
 
             {/* Main Content */}
