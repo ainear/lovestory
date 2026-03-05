@@ -284,6 +284,8 @@ function EditorContent() {
                                         outline: "none",
                                         boxSizing: "border-box",
                                         fontFamily: "inherit",
+                                        color: "#1f2937",
+                                        background: "#fff",
                                     }}
                                 />
                             </div>
@@ -306,6 +308,8 @@ function EditorContent() {
                                         outline: "none",
                                         boxSizing: "border-box",
                                         fontFamily: "inherit",
+                                        color: "#1f2937",
+                                        background: "#fff",
                                     }}
                                 />
                             </div>

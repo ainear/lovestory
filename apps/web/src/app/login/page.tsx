@@ -29,7 +29,14 @@ export default function LoginPage() {
             if (error) {
                 setError(error.message);
             } else {
-                setError("Kiểm tra email để xác nhận tài khoản!");
+                // Auto-confirmed — sign in immediately
+                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+                if (signInError) {
+                    setError("Đã tạo tài khoản. Vui lòng đăng nhập.");
+                } else {
+                    router.push("/dashboard");
+                    router.refresh();
+                }
             }
         } else {
             const { error } = await supabase.auth.signInWithPassword({
