@@ -1,22 +1,5 @@
-"use client";
-
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-
-// Demo projects data (sẽ load từ DB)
-const DEMO_PROJECTS = [
-    {
-        id: "1",
-        title: "Minh & Mai Wedding",
-        slug: "minh-mai-wedding",
-        status: "published" as const,
-        templateName: "Rose Garden",
-        createdAt: "2026-03-01",
-        viewCount: 245,
-        rsvpCount: 32,
-        wishCount: 18,
-    },
-];
 
 const STATUS_MAP = {
     draft: { label: "Bản nháp", color: "#9ca3af", bg: "#f3f4f6" },
@@ -24,12 +7,35 @@ const STATUS_MAP = {
     archived: { label: "Lưu trữ", color: "#d97706", bg: "#fffbeb" },
 };
 
-export default function ProjectsPage() {
-    const [projects] = useState(DEMO_PROJECTS);
+export default async function ProjectsPage() {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    let projects: any[] = [];
+    if (user) {
+        const { data } = await supabase
+            .from("projects")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+        projects = data || [];
+    }
+
+    // Load RSVP/wish counts per project
+    const projectsWithCounts = await Promise.all(
+        projects.map(async (p) => {
+            const [{ count: rsvpCount }, { count: wishCount }] = await Promise.all([
+                supabase.from("rsvps").select("*", { count: "exact", head: true }).eq("project_id", p.id),
+                supabase.from("wishes").select("*", { count: "exact", head: true }).eq("project_id", p.id),
+            ]);
+            return { ...p, rsvpCount: rsvpCount || 0, wishCount: wishCount || 0 };
+        })
+    );
 
     return (
         <div>
-            {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
                 <div>
                     <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: 0 }}>💌 Thiệp của tôi</h2>
@@ -51,12 +57,11 @@ export default function ProjectsPage() {
                 </Link>
             </div>
 
-            {/* Projects List */}
-            {projects.length === 0 ? (
+            {projectsWithCounts.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 24px" }}>
                     <p style={{ fontSize: 48, marginBottom: 16 }}>💌</p>
                     <h3 style={{ fontSize: 18, fontWeight: 600, color: "#374151", margin: "0 0 8px" }}>Chưa có thiệp nào</h3>
-                    <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Bắt đầu tạo thiệp cưới đầu tiên của bạn</p>
+                    <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Bắt đầu tạo thiệp cưới đầu tiên</p>
                     <Link
                         href="/templates"
                         style={{
@@ -75,8 +80,8 @@ export default function ProjectsPage() {
                 </div>
             ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {projects.map((project) => {
-                        const statusInfo = STATUS_MAP[project.status];
+                    {projectsWithCounts.map((project) => {
+                        const statusInfo = STATUS_MAP[project.status as keyof typeof STATUS_MAP] || STATUS_MAP.draft;
                         return (
                             <div
                                 key={project.id}
@@ -90,7 +95,6 @@ export default function ProjectsPage() {
                                     gap: 20,
                                 }}
                             >
-                                {/* Thumbnail */}
                                 <div
                                     style={{
                                         width: 72,
@@ -106,8 +110,6 @@ export default function ProjectsPage() {
                                 >
                                     🌹
                                 </div>
-
-                                {/* Info */}
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                                         <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1f2937", margin: 0 }}>{project.title}</h3>
@@ -125,45 +127,35 @@ export default function ProjectsPage() {
                                         </span>
                                     </div>
                                     <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 8px" }}>
-                                        Mẫu: {project.templateName} · Tạo {new Date(project.createdAt).toLocaleDateString("vi-VN")}
+                                        {project.groom_name && project.bride_name
+                                            ? `${project.groom_name} & ${project.bride_name}`
+                                            : "Chưa nhập tên"}{" "}
+                                        · {new Date(project.created_at).toLocaleDateString("vi-VN")}
                                     </p>
                                     <div style={{ display: "flex", gap: 16 }}>
-                                        <span style={{ fontSize: 13, color: "#6b7280" }}>👁️ {project.viewCount} lượt xem</span>
+                                        <span style={{ fontSize: 13, color: "#6b7280" }}>👁️ {project.view_count} lượt xem</span>
                                         <span style={{ fontSize: 13, color: "#6b7280" }}>✅ {project.rsvpCount} RSVP</span>
                                         <span style={{ fontSize: 13, color: "#6b7280" }}>💬 {project.wishCount} lời chúc</span>
                                     </div>
                                 </div>
-
-                                {/* Actions */}
                                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                                    <Link
-                                        href={`/i/${project.slug}`}
-                                        target="_blank"
-                                        style={{
-                                            padding: "8px 14px",
-                                            borderRadius: 8,
-                                            border: "1px solid #e5e7eb",
-                                            background: "#fff",
-                                            color: "#6b7280",
-                                            fontSize: 12,
-                                            textDecoration: "none",
-                                        }}
-                                    >
-                                        👁️ Xem
-                                    </Link>
-                                    <button
-                                        style={{
-                                            padding: "8px 14px",
-                                            borderRadius: 8,
-                                            border: "1px solid #e5e7eb",
-                                            background: "#fff",
-                                            color: "#6b7280",
-                                            fontSize: 12,
-                                            cursor: "pointer",
-                                        }}
-                                    >
-                                        📋 Copy link
-                                    </button>
+                                    {project.status === "published" && (
+                                        <Link
+                                            href={`/i/${project.slug}`}
+                                            target="_blank"
+                                            style={{
+                                                padding: "8px 14px",
+                                                borderRadius: 8,
+                                                border: "1px solid #e5e7eb",
+                                                background: "#fff",
+                                                color: "#6b7280",
+                                                fontSize: 12,
+                                                textDecoration: "none",
+                                            }}
+                                        >
+                                            👁️ Xem
+                                        </Link>
+                                    )}
                                     <Link
                                         href={`/editor/${project.id}`}
                                         style={{

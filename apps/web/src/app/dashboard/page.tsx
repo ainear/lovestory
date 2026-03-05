@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -6,185 +7,118 @@ export default async function DashboardPage() {
         data: { user },
     } = await supabase.auth.getUser();
 
+    // Load real stats
+    let projectCount = 0;
+    let totalViews = 0;
+    let totalRsvps = 0;
+    let totalWishes = 0;
+
+    if (user) {
+        const { data: projects } = await supabase
+            .from("projects")
+            .select("id, view_count")
+            .eq("user_id", user.id);
+
+        if (projects && projects.length > 0) {
+            projectCount = projects.length;
+            totalViews = projects.reduce((sum, p) => sum + (p.view_count || 0), 0);
+            const projectIds = projects.map((p) => p.id);
+
+            const [{ count: rsvpCount }, { count: wishCount }] = await Promise.all([
+                supabase.from("rsvps").select("*", { count: "exact", head: true }).in("project_id", projectIds),
+                supabase.from("wishes").select("*", { count: "exact", head: true }).in("project_id", projectIds),
+            ]);
+            totalRsvps = rsvpCount || 0;
+            totalWishes = wishCount || 0;
+        }
+    }
+
+    const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "bạn";
+
     return (
         <div>
-            {/* Welcome Card */}
+            {/* Welcome */}
             <div
                 style={{
                     background: "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
                     borderRadius: 20,
-                    padding: "28px 32px",
-                    marginBottom: 28,
-                    border: "1px solid rgba(192,132,252,0.15)",
+                    padding: 32,
+                    marginBottom: 24,
+                    border: "1px solid rgba(192,132,252,0.12)",
                 }}
             >
-                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                    <div
-                        style={{
-                            width: 56,
-                            height: 56,
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 24,
-                            color: "#fff",
-                            fontWeight: 700,
-                            flexShrink: 0,
-                        }}
-                    >
-                        {user?.email?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                        <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: "#1f2937" }}>
-                            Chào {user?.user_metadata?.full_name || user?.email?.split("@")[0]}! 👋
-                        </h2>
-                        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
-                            Bắt đầu tạo thiệp cưới đẹp với LoveStory
-                        </p>
-                    </div>
-                    <div style={{ marginLeft: "auto" }}>
-                        <span
-                            style={{
-                                padding: "6px 16px",
-                                borderRadius: 20,
-                                background: "linear-gradient(135deg, #e0f2fe, #dbeafe)",
-                                color: "#0369a1",
-                                fontSize: 13,
-                                fontWeight: 600,
-                            }}
-                        >
-                            ⭐ Free Plan
-                        </span>
-                    </div>
-                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: "0 0 4px" }}>
+                    Xin chào, {displayName}! 👋
+                </h2>
+                <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+                    Quản lý thiệp cưới và theo dõi hoạt động của bạn
+                </p>
             </div>
 
             {/* Stats Grid */}
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", marginBottom: 16 }}>
-                📈 Thống kê sử dụng
-            </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
-                <StatCard icon="🌐" label="Thiệp đã tạo" value={0} max={1} color="#3b82f6" />
-                <StatCard icon="📸" label="Hình ảnh" value={0} max={10} color="#8b5cf6" />
-                <StatCard icon="👁️" label="Lượt xem" value={0} max={300} color="#ec4899" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+                {[
+                    { icon: "💌", label: "Thiệp", value: projectCount, max: 5, color: "#ec4899" },
+                    { icon: "👁️", label: "Lượt xem", value: totalViews, max: null, color: "#3b82f6" },
+                    { icon: "✅", label: "RSVP", value: totalRsvps, max: null, color: "#10b981" },
+                    { icon: "💬", label: "Lời chúc", value: totalWishes, max: null, color: "#8b5cf6" },
+                ].map((stat, i) => (
+                    <div
+                        key={i}
+                        style={{
+                            background: "#fff",
+                            borderRadius: 16,
+                            padding: 20,
+                            border: "1px solid #e8e8ec",
+                            textAlign: "center",
+                        }}
+                    >
+                        <p style={{ fontSize: 32, fontWeight: 700, color: stat.color, margin: "0 0 4px" }}>
+                            {stat.value}
+                        </p>
+                        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+                            {stat.icon} {stat.label}
+                            {stat.max && <span style={{ fontSize: 11, color: "#9ca3af" }}> / {stat.max}</span>}
+                        </p>
+                    </div>
+                ))}
             </div>
 
             {/* Quick Actions */}
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", marginBottom: 16 }}>
-                🚀 Bắt đầu nhanh
-            </h3>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", margin: "0 0 16px" }}>⚡ Hành động nhanh</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-                <ActionCard
-                    icon="✏️"
-                    title="Tạo thiệp mới"
-                    description="Chọn mẫu và bắt đầu thiết kế thiệp cưới"
+                <Link
                     href="/templates"
-                    gradient="linear-gradient(135deg, #ff6b9d, #c084fc)"
-                />
-                <ActionCard
-                    icon="🎬"
-                    title="Tạo video AI"
-                    description="Upload ảnh và tạo video cinematic bằng AI"
-                    href="/dashboard/video"
-                    gradient="linear-gradient(135deg, #6366f1, #8b5cf6)"
-                />
-            </div>
-        </div>
-    );
-}
-
-function StatCard({
-    icon,
-    label,
-    value,
-    max,
-    color,
-}: {
-    icon: string;
-    label: string;
-    value: number;
-    max: number;
-    color: string;
-}) {
-    const percentage = max > 0 ? (value / max) * 100 : 0;
-    return (
-        <div
-            style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: 24,
-                border: "1px solid #e8e8ec",
-            }}
-        >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 20 }}>{icon}</span>
-                <span style={{ fontSize: 13, color: "#6b7280" }}>{label}</span>
-            </div>
-            <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: "0 0 8px" }}>
-                {value} <span style={{ fontSize: 14, fontWeight: 400, color: "#9ca3af" }}>/ {max}</span>
-            </p>
-            {/* Progress bar */}
-            <div style={{ height: 6, borderRadius: 3, background: "#f3f4f6" }}>
-                <div
                     style={{
-                        height: "100%",
-                        borderRadius: 3,
-                        background: color,
-                        width: `${Math.min(percentage, 100)}%`,
-                        transition: "width 0.5s ease",
+                        display: "block",
+                        padding: 24,
+                        borderRadius: 16,
+                        background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                        color: "#fff",
+                        textDecoration: "none",
                     }}
-                />
+                >
+                    <p style={{ fontSize: 28, margin: "0 0 8px" }}>🎨</p>
+                    <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>Tạo thiệp mới</p>
+                    <p style={{ fontSize: 12, opacity: 0.8, margin: 0 }}>Chọn mẫu và bắt đầu</p>
+                </Link>
+                <Link
+                    href="/dashboard/projects"
+                    style={{
+                        display: "block",
+                        padding: 24,
+                        borderRadius: 16,
+                        background: "#fff",
+                        border: "1px solid #e8e8ec",
+                        color: "#374151",
+                        textDecoration: "none",
+                    }}
+                >
+                    <p style={{ fontSize: 28, margin: "0 0 8px" }}>📋</p>
+                    <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>Quản lý thiệp</p>
+                    <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Xem và chỉnh sửa</p>
+                </Link>
             </div>
         </div>
-    );
-}
-
-function ActionCard({
-    icon,
-    title,
-    description,
-    href,
-    gradient,
-}: {
-    icon: string;
-    title: string;
-    description: string;
-    href: string;
-    gradient: string;
-}) {
-    return (
-        <a
-            href={href}
-            style={{
-                display: "block",
-                background: "#fff",
-                borderRadius: 16,
-                padding: 24,
-                border: "1px solid #e8e8ec",
-                textDecoration: "none",
-                transition: "all 0.2s",
-                cursor: "pointer",
-            }}
-        >
-            <div
-                style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    background: gradient,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
-                    marginBottom: 12,
-                }}
-            >
-                {icon}
-            </div>
-            <h4 style={{ fontSize: 16, fontWeight: 600, color: "#1f2937", margin: "0 0 4px" }}>{title}</h4>
-            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>{description}</p>
-        </a>
     );
 }
