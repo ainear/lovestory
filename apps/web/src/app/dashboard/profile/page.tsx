@@ -1,166 +1,193 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+
+const PLAN_CONFIG = {
+    free: { name: "🆓 Miễn phí", color: "#6b7280", bg: "#f3f4f6", maxProjects: 1, maxPhotos: 10 },
+    basic: { name: "⭐ Basic", color: "#7c3aed", bg: "#f5f3ff", maxProjects: 5, maxPhotos: 50 },
+    premium: { name: "👑 Premium", color: "#d97706", bg: "#fffbeb", maxProjects: 999, maxPhotos: 100 },
+};
 
 export default async function ProfilePage() {
     const supabase = await createClient();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Get subscription
+    let currentPlan = "free";
+    let subscription: any = null;
+    if (user) {
+        const { data } = await supabase
+            .from("subscriptions")
+            .select("*, orders(*)")
+            .eq("user_id", user.id)
+            .single();
+        if (data) {
+            subscription = data;
+            currentPlan = data.plan;
+        }
+    }
+
+    // Get order history
+    let orders: any[] = [];
+    if (user) {
+        const { data } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(10);
+        orders = data || [];
+    }
+
+    const planInfo = PLAN_CONFIG[currentPlan as keyof typeof PLAN_CONFIG] || PLAN_CONFIG.free;
+    const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
+    const avatar = user?.user_metadata?.avatar_url;
 
     return (
         <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: "0 0 24px" }}>👤 Thông tin cá nhân</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: "0 0 24px" }}>👤 Hồ sơ</h2>
 
-            <div style={{ maxWidth: 600 }}>
-                {/* Avatar + Name */}
+            {/* Profile Card */}
+            <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #e8e8ec", padding: 32, display: "flex", gap: 24, marginBottom: 24 }}>
                 <div
                     style={{
-                        background: "#fff",
-                        borderRadius: 16,
-                        border: "1px solid #e8e8ec",
-                        padding: 24,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 16,
-                        marginBottom: 24,
+                        width: 80, height: 80, borderRadius: "50%",
+                        background: avatar ? `url(${avatar}) center/cover` : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#fff",
+                        flexShrink: 0,
                     }}
                 >
-                    <div
-                        style={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#fff",
-                            fontSize: 28,
-                            fontWeight: 700,
-                            flexShrink: 0,
-                        }}
-                    >
-                        {user?.email?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                        <h3 style={{ fontSize: 18, fontWeight: 600, color: "#1f2937", margin: "0 0 4px" }}>
-                            {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
-                        </h3>
-                        <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 4px" }}>{user?.email}</p>
-                        <span
-                            style={{
-                                display: "inline-block",
-                                padding: "3px 12px",
-                                borderRadius: 6,
-                                background: "#ecfdf5",
-                                color: "#059669",
-                                fontSize: 12,
-                                fontWeight: 600,
-                            }}
-                        >
-                            ⭐ Free Plan
-                        </span>
-                    </div>
+                    {!avatar && (displayName?.[0]?.toUpperCase() || "?")}
                 </div>
-
-                {/* Profile Form */}
-                <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", padding: 24 }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: "0 0 16px" }}>Chỉnh sửa thông tin</h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                        <FieldRow label="Họ tên" value={user?.user_metadata?.full_name || ""} placeholder="Nhập họ tên" />
-                        <FieldRow label="Email" value={user?.email || ""} disabled />
-                        <FieldRow label="Số điện thoại" value="" placeholder="0912345678" />
-                        <div>
-                            <label style={{ fontSize: 13, fontWeight: 500, color: "#374151", display: "block", marginBottom: 6 }}>
-                                Giới thiệu
-                            </label>
-                            <textarea
-                                placeholder="Viết vài dòng về bạn..."
-                                rows={3}
-                                style={{
-                                    width: "100%",
-                                    padding: "10px 14px",
-                                    borderRadius: 10,
-                                    border: "1px solid #e5e7eb",
-                                    fontSize: 14,
-                                    resize: "vertical",
-                                    outline: "none",
-                                    boxSizing: "border-box",
-                                    fontFamily: "inherit",
-                                }}
-                            />
-                        </div>
-                        <button
-                            style={{
-                                padding: "12px 24px",
-                                borderRadius: 12,
-                                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                                color: "#fff",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                border: "none",
-                                cursor: "pointer",
-                                alignSelf: "flex-start",
-                            }}
-                        >
-                            💾 Lưu thay đổi
-                        </button>
-                    </div>
-                </div>
-
-                {/* Sign Out */}
-                <div style={{ marginTop: 24, paddingTop: 24, borderTop: "1px solid #e8e8ec" }}>
-                    <a
-                        href="/auth/signout"
+                <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: 20, fontWeight: 600, color: "#1f2937", margin: "0 0 4px" }}>{displayName}</h3>
+                    <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>{user?.email}</p>
+                    <span
                         style={{
                             display: "inline-block",
-                            padding: "10px 20px",
-                            borderRadius: 10,
-                            border: "1px solid #fecaca",
-                            background: "#fff",
-                            color: "#dc2626",
-                            fontSize: 14,
-                            fontWeight: 500,
-                            textDecoration: "none",
+                            padding: "4px 14px",
+                            borderRadius: 8,
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: planInfo.color,
+                            background: planInfo.bg,
                         }}
                     >
-                        🚪 Đăng xuất
-                    </a>
+                        {planInfo.name}
+                    </span>
+                </div>
+                {currentPlan === "free" && (
+                    <Link
+                        href="/checkout"
+                        style={{
+                            alignSelf: "center",
+                            padding: "10px 20px",
+                            borderRadius: 10,
+                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                            color: "#fff",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        ⬆️ Nâng cấp
+                    </Link>
+                )}
+            </div>
+
+            {/* Plan Details */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 24 }}>
+                <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e8e8ec", padding: 20 }}>
+                    <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 4px" }}>📋 Giới hạn thiệp</p>
+                    <p style={{ fontSize: 24, fontWeight: 700, color: "#1f2937", margin: 0 }}>
+                        {planInfo.maxProjects === 999 ? "∞" : planInfo.maxProjects}
+                    </p>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e8e8ec", padding: 20 }}>
+                    <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 4px" }}>📷 Giới hạn ảnh</p>
+                    <p style={{ fontSize: 24, fontWeight: 700, color: "#1f2937", margin: 0 }}>{planInfo.maxPhotos}</p>
                 </div>
             </div>
-        </div>
-    );
-}
 
-function FieldRow({
-    label,
-    value,
-    placeholder,
-    disabled,
-}: {
-    label: string;
-    value: string;
-    placeholder?: string;
-    disabled?: boolean;
-}) {
-    return (
-        <div>
-            <label style={{ fontSize: 13, fontWeight: 500, color: "#374151", display: "block", marginBottom: 6 }}>{label}</label>
-            <input
-                defaultValue={value}
-                placeholder={placeholder}
-                disabled={disabled}
+            {/* Subscription Info */}
+            {subscription && (
+                <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", padding: 24, marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: "0 0 12px" }}>📋 Thông tin gói</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 13, color: "#6b7280" }}>Gói hiện tại</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#1f2937" }}>{planInfo.name}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 13, color: "#6b7280" }}>Kích hoạt</span>
+                            <span style={{ fontSize: 13, color: "#1f2937" }}>
+                                {new Date(subscription.started_at).toLocaleDateString("vi-VN")}
+                            </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 13, color: "#6b7280" }}>Hạn sử dụng</span>
+                            <span style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>Vĩnh viễn</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Order History */}
+            {orders.length > 0 && (
+                <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", padding: 24, marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: "0 0 12px" }}>🧾 Lịch sử thanh toán</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {orders.map((order) => (
+                            <div key={order.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}>
+                                <div>
+                                    <p style={{ fontSize: 13, fontWeight: 500, color: "#1f2937", margin: "0 0 2px" }}>
+                                        {order.plan === "basic" ? "⭐ Basic" : "👑 Premium"} — {order.order_code}
+                                    </p>
+                                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
+                                        {new Date(order.created_at).toLocaleDateString("vi-VN", { day: "numeric", month: "short", year: "numeric" })}
+                                    </p>
+                                </div>
+                                <div style={{ textAlign: "right" }}>
+                                    <p style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: "0 0 2px" }}>
+                                        {(order.amount || 0).toLocaleString("vi-VN")}₫
+                                    </p>
+                                    <span
+                                        style={{
+                                            padding: "2px 8px",
+                                            borderRadius: 6,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: order.status === "paid" ? "#059669" : order.status === "pending" ? "#d97706" : "#dc2626",
+                                            background: order.status === "paid" ? "#ecfdf5" : order.status === "pending" ? "#fffbeb" : "#fef2f2",
+                                        }}
+                                    >
+                                        {order.status === "paid" ? "✅ Đã TT" : order.status === "pending" ? "⏳ Chờ" : "❌ Hủy"}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Sign Out */}
+            <Link
+                href="/auth/signout"
                 style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #e5e7eb",
+                    display: "block",
+                    padding: "12px 20px",
+                    borderRadius: 12,
+                    border: "1px solid #fecaca",
+                    background: "#fff",
+                    color: "#dc2626",
                     fontSize: 14,
-                    outline: "none",
-                    boxSizing: "border-box",
-                    background: disabled ? "#f9fafb" : "#fff",
-                    color: disabled ? "#9ca3af" : "#1f2937",
+                    fontWeight: 500,
+                    textAlign: "center",
+                    textDecoration: "none",
                 }}
-            />
+            >
+                🚪 Đăng xuất
+            </Link>
         </div>
     );
 }

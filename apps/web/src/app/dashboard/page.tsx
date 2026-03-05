@@ -12,8 +12,19 @@ export default async function DashboardPage() {
     let totalViews = 0;
     let totalRsvps = 0;
     let totalWishes = 0;
+    let maxProjects = 1; // free plan default
 
     if (user) {
+        // Get subscription
+        const { data: sub } = await supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", user.id)
+            .single();
+
+        if (sub?.plan === "basic") maxProjects = 5;
+        else if (sub?.plan === "premium") maxProjects = 999;
+
         const { data: projects } = await supabase
             .from("projects")
             .select("id, view_count")
@@ -58,7 +69,7 @@ export default async function DashboardPage() {
             {/* Stats Grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
                 {[
-                    { icon: "💌", label: "Thiệp", value: projectCount, max: 5, color: "#ec4899" },
+                    { icon: "💌", label: "Thiệp", value: projectCount, max: maxProjects === 999 ? null : maxProjects, color: "#ec4899" },
                     { icon: "👁️", label: "Lượt xem", value: totalViews, max: null, color: "#3b82f6" },
                     { icon: "✅", label: "RSVP", value: totalRsvps, max: null, color: "#10b981" },
                     { icon: "💬", label: "Lời chúc", value: totalWishes, max: null, color: "#8b5cf6" },
