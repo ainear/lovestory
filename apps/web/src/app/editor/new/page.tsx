@@ -2,12 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 function EditorContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const templateSlug = searchParams.get("template") || "rose-garden";
+    const [saving, setSaving] = useState(false);
+    const [saveMsg, setSaveMsg] = useState("");
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
 
     const [formData, setFormData] = useState({
         groomName: "",
@@ -38,6 +47,47 @@ function EditorContent() {
 
     function handleChange(field: string, value: string) {
         setFormData((prev) => ({ ...prev, [field]: value }));
+    }
+
+    async function handleSave(publish = false) {
+        setSaving(true);
+        setSaveMsg("");
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { setSaveMsg("Vui lòng đăng nhập"); setSaving(false); return; }
+
+            const slug = `${(formData.groomName || "groom").toLowerCase().replace(/\s+/g, "-")}-${(formData.brideName || "bride").toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
+            const projectData = {
+                user_id: user.id,
+                title: `${formData.groomName || "Chú rể"} & ${formData.brideName || "Cô dâu"}`,
+                slug,
+                template: templateSlug,
+                groom_name: formData.groomName,
+                bride_name: formData.brideName,
+                wedding_date: formData.weddingDate || null,
+                wedding_time: formData.weddingTime || null,
+                venue_name: formData.venueName,
+                venue_address: formData.venueAddress,
+                google_maps_url: formData.googleMapsUrl,
+                story: formData.story,
+                message: formData.message,
+                bank_name: formData.bankName,
+                bank_account: formData.bankAccount,
+                bank_owner: formData.bankOwner,
+                groom_parent_names: formData.groomParentNames,
+                bride_parent_names: formData.brideParentNames,
+                status: publish ? "published" : "draft",
+            };
+
+            const { error } = await supabase.from("projects").insert(projectData);
+            if (error) { setSaveMsg(`Lỗi: ${error.message}`); setSaving(false); return; }
+
+            setSaveMsg(publish ? "✅ Đã xuất bản!" : "✅ Đã lưu!");
+            setTimeout(() => router.push("/dashboard/projects"), 1500);
+        } catch {
+            setSaveMsg("Lỗi kết nối");
+        }
+        setSaving(false);
     }
 
     return (
@@ -92,19 +142,22 @@ function EditorContent() {
                             Mẫu: {templateSlug.replace(/-/g, " ")}
                         </p>
                     </div>
+                    {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✅") ? "#059669" : "#dc2626" }}>{saveMsg}</span>}
                     <button
+                        onClick={() => handleSave(false)}
+                        disabled={saving}
                         style={{
                             padding: "8px 20px",
                             borderRadius: 10,
-                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                            background: saving ? "#9ca3af" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
                             color: "#fff",
                             fontSize: 13,
                             fontWeight: 600,
                             border: "none",
-                            cursor: "pointer",
+                            cursor: saving ? "not-allowed" : "pointer",
                         }}
                     >
-                        💾 Lưu
+                        {saving ? "⏳..." : "💾 Lưu"}
                     </button>
                 </div>
 
@@ -305,6 +358,8 @@ function EditorContent() {
                     }}
                 >
                     <button
+                        onClick={() => handleSave(false)}
+                        disabled={saving}
                         style={{
                             flex: 1,
                             padding: "12px 16px",
@@ -317,22 +372,24 @@ function EditorContent() {
                             cursor: "pointer",
                         }}
                     >
-                        👁️ Xem trước
+                        💾 Lưu nháp
                     </button>
                     <button
+                        onClick={() => handleSave(true)}
+                        disabled={saving}
                         style={{
                             flex: 1,
                             padding: "12px 16px",
                             borderRadius: 12,
                             border: "none",
-                            background: "linear-gradient(135deg, #10b981, #059669)",
+                            background: saving ? "#9ca3af" : "linear-gradient(135deg, #10b981, #059669)",
                             color: "#fff",
                             fontSize: 14,
                             fontWeight: 600,
-                            cursor: "pointer",
+                            cursor: saving ? "not-allowed" : "pointer",
                         }}
                     >
-                        🚀 Xuất bản
+                        {saving ? "⏳ Đang lưu..." : "🚀 Xuất bản"}
                     </button>
                 </div>
             </div>
@@ -542,6 +599,8 @@ function FormField({
                     borderRadius: 10,
                     border: "1px solid #e5e7eb",
                     fontSize: 14,
+                    color: "#1f2937",
+                    background: "#fff",
                     outline: "none",
                     boxSizing: "border-box",
                     transition: "border-color 0.2s",
