@@ -33,7 +33,7 @@ export default function LandingPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             <Link href="/templates" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Mẫu thiệp</Link>
             <Link href="#pricing" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
-            <Link href="#demo" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Demo</Link>
+            <Link href="/ai-video" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>🎬 AI Video</Link>
             <Link
               href="/login"
               style={{

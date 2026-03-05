@@ -16,6 +16,14 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
+    // Load real subscription
+    const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", user.id)
+        .single();
+    const planLabel = sub?.plan === "premium" ? "👑 Premium" : sub?.plan === "basic" ? "⭐ Basic" : "🆓 Free";
+
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f4f5f7" }}>
             {/* Sidebar */}
@@ -63,6 +71,7 @@ export default async function DashboardLayout({
 
                     <NavGroup label="THIỆP CỦA TÔI">
                         <NavItem href="/dashboard/projects" icon="💌" label="Thiệp online" />
+                        <NavItem href="/ai-video" icon="🎬" label="AI Video" />
                     </NavGroup>
 
                     <NavGroup label="KHÁCH MỜI">
@@ -129,7 +138,7 @@ export default async function DashboardLayout({
                                     whiteSpace: "nowrap",
                                 }}
                             >
-                                Free Plan
+                                {planLabel}
                             </p>
                         </div>
                     </div>
