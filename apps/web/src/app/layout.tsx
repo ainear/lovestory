@@ -9,9 +9,36 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LoveStory — Thiệp cưới online & AI Video",
+  title: {
+    default: "LoveStory — Thiệp cưới online & AI Video",
+    template: "%s | LoveStory",
+  },
   description:
-    "Tạo thiệp cưới online đẹp và video cinematic bằng AI. Chia sẻ câu chuyện tình yêu của bạn.",
+    "Tạo thiệp cưới online đẹp trong 5 phút. 50+ mẫu thiệp, RSVP thông minh, tường lời chúc, QR mừng cưới. Miễn phí!",
+  keywords: [
+    "thiệp cưới online",
+    "thiệp cưới điện tử",
+    "wedding invitation",
+    "thiệp mời đám cưới",
+    "RSVP online",
+    "LoveStory",
+  ],
+  authors: [{ name: "LoveStory" }],
+  creator: "LoveStory",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://web-pi-green-39.vercel.app"),
+  openGraph: {
+    type: "website",
+    locale: "vi_VN",
+    siteName: "LoveStory",
+    title: "LoveStory — Thiệp cưới online & AI Video",
+    description:
+      "Tạo thiệp cưới online đẹp trong 5 phút. 50+ mẫu thiệp, RSVP, lời chúc, QR mừng cưới. Miễn phí!",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LoveStory — Thiệp cưới online & AI Video",
+    description: "Tạo thiệp cưới online đẹp trong 5 phút. Miễn phí!",
+  },
 };
 
 export default function RootLayout({
