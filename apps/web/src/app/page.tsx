@@ -333,7 +333,7 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link
-                href="/login"
+                href="/checkout"
                 style={{
                   display: "block",
                   padding: "12px 24px",
@@ -364,7 +364,7 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link
-                href="/login"
+                href="/checkout"
                 style={{
                   display: "block",
                   padding: "12px 24px",
