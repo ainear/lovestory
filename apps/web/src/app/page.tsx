@@ -1,65 +1,460 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", color: "#1f2937" }}>
+      {/* Navigation */}
+      <nav
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          padding: "16px 24px",
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(0,0,0,0.04)",
+        }}
+      >
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h1
+            style={{
+              fontSize: 22,
+              fontWeight: 800,
+              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              margin: 0,
+            }}
+          >
+            ❤️ LoveStory
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <Link href="/templates" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Mẫu thiệp</Link>
+            <Link href="#pricing" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
+            <Link href="#demo" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Demo</Link>
+            <Link
+              href="/login"
+              style={{
+                padding: "8px 20px",
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Đăng nhập
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+          padding: "120px 24px 80px",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Floating decorations */}
+        <div style={{ position: "absolute", top: "15%", left: "8%", fontSize: 40, opacity: 0.15, animation: "float 6s ease-in-out infinite" }}>💐</div>
+        <div style={{ position: "absolute", top: "25%", right: "10%", fontSize: 36, opacity: 0.12, animation: "float 8s ease-in-out infinite 1s" }}>💕</div>
+        <div style={{ position: "absolute", bottom: "20%", left: "15%", fontSize: 32, opacity: 0.1, animation: "float 7s ease-in-out infinite 2s" }}>🌹</div>
+        <div style={{ position: "absolute", bottom: "30%", right: "12%", fontSize: 28, opacity: 0.08, animation: "float 5s ease-in-out infinite 0.5s" }}>✨</div>
+
+        <div style={{ maxWidth: 700, textAlign: "center", zIndex: 1 }}>
+          <div
+            style={{
+              display: "inline-block",
+              padding: "6px 16px",
+              borderRadius: 20,
+              background: "rgba(255,107,157,0.1)",
+              color: "#ec4899",
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 24,
+            }}
+          >
+            ✨ #1 Nền tảng thiệp cưới online Việt Nam
+          </div>
+          <h1
+            style={{
+              fontSize: 56,
+              fontWeight: 800,
+              lineHeight: 1.15,
+              margin: "0 0 20px",
+              letterSpacing: -1,
+            }}
+          >
+            Tạo thiệp cưới{" "}
+            <span
+              style={{
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc, #6366f1)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
             >
-              Learning
-            </a>{" "}
-            center.
+              đẹp xuất sắc
+            </span>
+            <br />
+            trong 5 phút
+          </h1>
+          <p style={{ fontSize: 18, color: "#6b7280", lineHeight: 1.6, margin: "0 0 40px", maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
+            Thiết kế thiệp cưới online, chia sẻ qua link, nhận RSVP & lời chúc — tất cả trong một nền tảng.
           </p>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link
+              href="/templates"
+              style={{
+                padding: "16px 36px",
+                borderRadius: 14,
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: 700,
+                textDecoration: "none",
+                boxShadow: "0 8px 24px rgba(255,107,157,0.35)",
+                transition: "all 0.2s",
+              }}
+            >
+              🎨 Tạo thiệp miễn phí
+            </Link>
+            <Link
+              href="/i/demo-wedding"
+              style={{
+                padding: "16px 32px",
+                borderRadius: 14,
+                background: "#fff",
+                color: "#374151",
+                fontSize: 16,
+                fontWeight: 600,
+                textDecoration: "none",
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              }}
+            >
+              👁️ Xem demo
+            </Link>
+          </div>
+
+          {/* Social proof */}
+          <div style={{ marginTop: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 32 }}>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>10K+</p>
+              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Thiệp đã tạo</p>
+            </div>
+            <div style={{ width: 1, height: 40, background: "#e5e7eb" }} />
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>50+</p>
+              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Mẫu thiệp đẹp</p>
+            </div>
+            <div style={{ width: 1, height: 40, background: "#e5e7eb" }} />
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>4.9⭐</p>
+              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Đánh giá</p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Features Grid */}
+      <section style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>TÍNH NĂNG</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Tại sao chọn LoveStory?</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Mọi thứ bạn cần cho ngày trọng đại</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {[
+              { icon: "🎨", title: "50+ mẫu thiệp", desc: "Mẫu thiệp được thiết kế bởi designer chuyên nghiệp, đa dạng phong cách" },
+              { icon: "📱", title: "Mobile-first", desc: "Tối ưu cho điện thoại — khách mời xem thiệp mượt mà trên mọi thiết bị" },
+              { icon: "✅", title: "RSVP thông minh", desc: "Nhận xác nhận tham dự, quản lý danh sách khách mời tự động" },
+              { icon: "💬", title: "Tường lời chúc", desc: "Khách mời gửi lời chúc kèm emoji — lưu giữ kỷ niệm đẹp" },
+              { icon: "🎁", title: "QR mừng cưới", desc: "Tích hợp QR chuyển khoản — nhận quà dễ dàng, chuyên nghiệp" },
+              { icon: "🎬", title: "Video AI (Sắp ra)", desc: "Tạo video cinematic từ ảnh cưới bằng AI — sắp ra mắt!" },
+            ].map((f, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: 28,
+                  borderRadius: 20,
+                  border: "1px solid #f3f4f6",
+                  background: "#fefefe",
+                  transition: "all 0.2s",
+                }}
+              >
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 14,
+                    background: "linear-gradient(135deg, rgba(255,107,157,0.1), rgba(192,132,252,0.1))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 24,
+                    marginBottom: 16,
+                  }}
+                >
+                  {f.icon}
+                </div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, margin: "0 0 8px" }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* How it Works */}
+      <section style={{ padding: "80px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>QUY TRÌNH</p>
+          <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 48px" }}>3 bước tạo thiệp cưới</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 40 }}>
+            {[
+              { step: "01", icon: "✏️", title: "Chọn mẫu", desc: "Duyệt 50+ mẫu thiệp và chọn phong cách yêu thích" },
+              { step: "02", icon: "📝", title: "Điền thông tin", desc: "Nhập tên, ngày cưới, địa điểm — tự động điền vào thiệp" },
+              { step: "03", icon: "🔗", title: "Chia sẻ link", desc: "Xuất bản và gửi link cho khách mời qua Zalo, Facebook" },
+            ].map((s, i) => (
+              <div key={i}>
+                <div
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 28,
+                    margin: "0 auto 16px",
+                    boxShadow: "0 8px 24px rgba(255,107,157,0.3)",
+                  }}
+                >
+                  {s.icon}
+                </div>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>BƯỚC {s.step}</p>
+                <h3 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>{s.title}</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>BẢNG GIÁ</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Gói dịch vụ</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Bắt đầu miễn phí, nâng cấp khi cần</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {/* Free */}
+            <div style={{ padding: 32, borderRadius: 24, border: "1px solid #e5e7eb", background: "#fff" }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", margin: "0 0 4px" }}>🆓 Miễn phí</p>
+              <p style={{ fontSize: 40, fontWeight: 800, margin: "0 0 4px" }}>0₫</p>
+              <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 24px" }}>Mãi mãi</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {["1 thiệp online", "10 hình ảnh", "300 lượt xem", "Watermark LoveStory"].map((f, i) => (
+                  <li key={i} style={{ fontSize: 14, color: "#4b5563", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#10b981" }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/login"
+                style={{
+                  display: "block",
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  textDecoration: "none",
+                }}
+              >
+                Bắt đầu ngay
+              </Link>
+            </div>
+
+            {/* Basic — Popular */}
+            <div
+              style={{
+                padding: 32,
+                borderRadius: 24,
+                background: "linear-gradient(180deg, #fff, #fef3ff)",
+                border: "2px solid #c084fc",
+                position: "relative",
+                boxShadow: "0 8px 32px rgba(192,132,252,0.15)",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: -12,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  padding: "4px 16px",
+                  borderRadius: 20,
+                  background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                🔥 PHỔ BIẾN NHẤT
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#7c3aed", margin: "0 0 4px" }}>⭐ Basic</p>
+              <p style={{ fontSize: 40, fontWeight: 800, margin: "0 0 4px" }}>199K</p>
+              <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 24px" }}>/ thiệp</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {["5 thiệp online", "50 hình ảnh", "Không giới hạn lượt xem", "Bỏ watermark", "Nhạc nền tùy chọn", "RSVP + Lời chúc"].map((f, i) => (
+                  <li key={i} style={{ fontSize: 14, color: "#4b5563", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#10b981" }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/login"
+                style={{
+                  display: "block",
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                  color: "#fff",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  textAlign: "center",
+                  textDecoration: "none",
+                  boxShadow: "0 4px 16px rgba(255,107,157,0.3)",
+                }}
+              >
+                Chọn gói Basic
+              </Link>
+            </div>
+
+            {/* Premium */}
+            <div style={{ padding: 32, borderRadius: 24, border: "1px solid #e5e7eb", background: "#fff" }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#d97706", margin: "0 0 4px" }}>👑 Premium</p>
+              <p style={{ fontSize: 40, fontWeight: 800, margin: "0 0 4px" }}>299K</p>
+              <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 24px" }}>/ thiệp</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {["Không giới hạn thiệp", "100 hình ảnh", "Mẫu Premium độc quyền", "Video AI cinematic", "Tên miền riêng", "Hỗ trợ VIP 24/7"].map((f, i) => (
+                  <li key={i} style={{ fontSize: 14, color: "#4b5563", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#10b981" }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/login"
+                style={{
+                  display: "block",
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  textDecoration: "none",
+                }}
+              >
+                Chọn gói Premium
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section
+        style={{
+          padding: "80px 24px",
+          background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <p style={{ fontSize: 48, marginBottom: 16 }}>💌</p>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", margin: "0 0 12px" }}>
+            Sẵn sàng tạo thiệp cưới?
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.6)", margin: "0 0 32px" }}>
+            Tham gia cùng 10,000+ cặp đôi đã tin tưởng LoveStory
+          </p>
+          <Link
+            href="/templates"
+            style={{
+              display: "inline-block",
+              padding: "16px 40px",
+              borderRadius: 14,
+              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              color: "#fff",
+              fontSize: 16,
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow: "0 8px 32px rgba(255,107,157,0.4)",
+            }}
+          >
+            🎨 Bắt đầu miễn phí
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ padding: "40px 24px", background: "#111827", color: "#9ca3af" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h3
+              style={{
+                fontSize: 18,
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                margin: "0 0 4px",
+              }}
+            >
+              ❤️ LoveStory
+            </h3>
+            <p style={{ fontSize: 13, margin: 0 }}>Nền tảng thiệp cưới online #1 Việt Nam</p>
+          </div>
+          <div style={{ display: "flex", gap: 24 }}>
+            <Link href="/templates" style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}>Mẫu thiệp</Link>
+            <Link href="#pricing" style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}>Bảng giá</Link>
+            <Link href="/login" style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}>Đăng nhập</Link>
+          </div>
+        </div>
+        <div style={{ maxWidth: 1100, margin: "16px auto 0", borderTop: "1px solid #1f2937", paddingTop: 16 }}>
+          <p style={{ fontSize: 12, textAlign: "center", margin: 0 }}>© 2026 LoveStory. Made with ❤️ in Vietnam</p>
+        </div>
+      </footer>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </div>
   );
 }
