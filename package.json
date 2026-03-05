@@ -1,0 +1,17 @@
+{
+    "name": "lovestory",
+    "private": true,
+    "scripts": {
+        "dev": "turbo dev",
+        "build": "turbo build",
+        "lint": "turbo lint",
+        "type-check": "turbo type-check",
+        "db:push": "turbo db:push --filter=@lovestory/db",
+        "db:seed": "turbo db:seed --filter=@lovestory/db",
+        "clean": "turbo clean && rm -rf node_modules"
+    },
+    "devDependencies": {
+        "turbo": "^2.4.0"
+    },
+    "packageManager": "pnpm@9.15.0"
+}
