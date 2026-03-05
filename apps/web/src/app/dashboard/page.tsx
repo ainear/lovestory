@@ -1,216 +1,190 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import Link from "next/link";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        redirect("/login");
-    }
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                background: "#f0f2f5",
-                fontFamily: "'Inter', -apple-system, sans-serif",
-            }}
-        >
-            {/* Sidebar */}
-            <aside
+        <div>
+            {/* Welcome Card */}
+            <div
                 style={{
-                    position: "fixed",
-                    left: 0,
-                    top: 0,
-                    width: 240,
-                    height: "100vh",
-                    background: "#fff",
-                    borderRight: "1px solid #e5e7eb",
-                    padding: "24px 16px",
-                    display: "flex",
-                    flexDirection: "column",
+                    background: "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
+                    borderRadius: 20,
+                    padding: "28px 32px",
+                    marginBottom: 28,
+                    border: "1px solid rgba(192,132,252,0.15)",
                 }}
             >
-                <h1
-                    style={{
-                        fontSize: 24,
-                        fontWeight: 700,
-                        background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        marginBottom: 32,
-                    }}
-                >
-                    ❤️ LoveStory
-                </h1>
-
-                <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <SidebarGroup label="HOME">
-                        <SidebarLink href="/dashboard" icon="📊" label="Tổng quan" active />
-                        <SidebarLink href="/dashboard/my-plan" icon="⭐" label="Gói dịch vụ" />
-                        <SidebarLink href="/templates" icon="✏️" label="Tạo thiết kế" />
-                    </SidebarGroup>
-
-                    <SidebarGroup label="THIẾT KẾ CỦA TÔI">
-                        <SidebarLink href="/pages" icon="💌" label="Thiệp online" />
-                    </SidebarGroup>
-
-                    <SidebarGroup label="QUÀ TẶNG & LỜI CHÚC">
-                        <SidebarLink href="/dashboard/wishes" icon="💬" label="Lời chúc" />
-                        <SidebarLink href="/dashboard/gifts" icon="🎁" label="Quà tặng" />
-                    </SidebarGroup>
-
-                    <SidebarGroup label="TÀI KHOẢN">
-                        <SidebarLink href="/dashboard/profile" icon="👤" label="Thông tin cá nhân" />
-                    </SidebarGroup>
-                </nav>
-
-                <div style={{ marginTop: "auto" }}>
-                    <form action="/auth/signout" method="POST">
-                        <button
-                            type="submit"
-                            style={{
-                                width: "100%",
-                                padding: "10px 16px",
-                                borderRadius: 10,
-                                border: "1px solid #e5e7eb",
-                                background: "transparent",
-                                color: "#6b7280",
-                                fontSize: 13,
-                                cursor: "pointer",
-                            }}
-                        >
-                            🚪 Đăng xuất
-                        </button>
-                    </form>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main style={{ marginLeft: 240, padding: 32 }}>
-                {/* User Card */}
-                <div
-                    style={{
-                        background: "linear-gradient(135deg, rgba(255,107,157,0.1), rgba(192,132,252,0.1))",
-                        borderRadius: 20,
-                        padding: 32,
-                        marginBottom: 32,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 20,
-                    }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
                     <div
                         style={{
-                            width: 64,
-                            height: 64,
+                            width: 56,
+                            height: 56,
                             borderRadius: "50%",
                             background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: 28,
+                            fontSize: 24,
                             color: "#fff",
                             fontWeight: 700,
+                            flexShrink: 0,
                         }}
                     >
-                        {user.email?.charAt(0).toUpperCase()}
+                        {user?.email?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#1f2937" }}>
-                            {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                        <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: "#1f2937" }}>
+                            Chào {user?.user_metadata?.full_name || user?.email?.split("@")[0]}! 👋
                         </h2>
-                        <p style={{ color: "#6b7280", margin: "4px 0 0", fontSize: 14 }}>{user.email}</p>
+                        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
+                            Bắt đầu tạo thiệp cưới đẹp với LoveStory
+                        </p>
+                    </div>
+                    <div style={{ marginLeft: "auto" }}>
                         <span
                             style={{
-                                display: "inline-block",
-                                padding: "2px 10px",
+                                padding: "6px 16px",
                                 borderRadius: 20,
-                                background: "#e0f2fe",
-                                color: "#0284c7",
-                                fontSize: 12,
+                                background: "linear-gradient(135deg, #e0f2fe, #dbeafe)",
+                                color: "#0369a1",
+                                fontSize: 13,
                                 fontWeight: 600,
-                                marginTop: 8,
                             }}
                         >
-                            Free
+                            ⭐ Free Plan
                         </span>
                     </div>
                 </div>
+            </div>
 
-                {/* Stats Grid */}
-                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1f2937", marginBottom: 16 }}>
-                    📈 Thống kê sử dụng
-                </h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-                    <StatCard icon="🌐" label="Website" value="0 / 1" />
-                    <StatCard icon="📸" label="Hình ảnh" value="0 / 10" />
-                    <StatCard icon="👁️" label="Lượt xem" value="0 / 300" />
-                </div>
-            </main>
+            {/* Stats Grid */}
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", marginBottom: 16 }}>
+                📈 Thống kê sử dụng
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
+                <StatCard icon="🌐" label="Thiệp đã tạo" value={0} max={1} color="#3b82f6" />
+                <StatCard icon="📸" label="Hình ảnh" value={0} max={10} color="#8b5cf6" />
+                <StatCard icon="👁️" label="Lượt xem" value={0} max={300} color="#ec4899" />
+            </div>
+
+            {/* Quick Actions */}
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", marginBottom: 16 }}>
+                🚀 Bắt đầu nhanh
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+                <ActionCard
+                    icon="✏️"
+                    title="Tạo thiệp mới"
+                    description="Chọn mẫu và bắt đầu thiết kế thiệp cưới"
+                    href="/templates"
+                    gradient="linear-gradient(135deg, #ff6b9d, #c084fc)"
+                />
+                <ActionCard
+                    icon="🎬"
+                    title="Tạo video AI"
+                    description="Upload ảnh và tạo video cinematic bằng AI"
+                    href="/dashboard/video"
+                    gradient="linear-gradient(135deg, #6366f1, #8b5cf6)"
+                />
+            </div>
         </div>
     );
 }
 
-function SidebarGroup({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: 1, margin: "0 0 8px 8px" }}>
-                {label}
-            </p>
-            {children}
-        </div>
-    );
-}
-
-function SidebarLink({
-    href,
+function StatCard({
     icon,
     label,
-    active = false,
+    value,
+    max,
+    color,
 }: {
-    href: string;
     icon: string;
     label: string;
-    active?: boolean;
+    value: number;
+    max: number;
+    color: string;
 }) {
-    return (
-        <Link
-            href={href}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
-                borderRadius: 10,
-                fontSize: 14,
-                color: active ? "#fff" : "#4b5563",
-                background: active ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
-                fontWeight: active ? 600 : 400,
-                textDecoration: "none",
-            }}
-        >
-            <span>{icon}</span>
-            {label}
-        </Link>
-    );
-}
-
-function StatCard({ icon, label, value }: { icon: string; label: string; value: string }) {
+    const percentage = max > 0 ? (value / max) * 100 : 0;
     return (
         <div
             style={{
                 background: "#fff",
                 borderRadius: 16,
                 padding: 24,
-                border: "1px solid #e5e7eb",
+                border: "1px solid #e8e8ec",
             }}
         >
-            <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
-            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>{label}</p>
-            <p style={{ fontSize: 24, fontWeight: 700, color: "#1f2937", margin: "4px 0 0" }}>{value}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 20 }}>{icon}</span>
+                <span style={{ fontSize: 13, color: "#6b7280" }}>{label}</span>
+            </div>
+            <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: "0 0 8px" }}>
+                {value} <span style={{ fontSize: 14, fontWeight: 400, color: "#9ca3af" }}>/ {max}</span>
+            </p>
+            {/* Progress bar */}
+            <div style={{ height: 6, borderRadius: 3, background: "#f3f4f6" }}>
+                <div
+                    style={{
+                        height: "100%",
+                        borderRadius: 3,
+                        background: color,
+                        width: `${Math.min(percentage, 100)}%`,
+                        transition: "width 0.5s ease",
+                    }}
+                />
+            </div>
         </div>
+    );
+}
+
+function ActionCard({
+    icon,
+    title,
+    description,
+    href,
+    gradient,
+}: {
+    icon: string;
+    title: string;
+    description: string;
+    href: string;
+    gradient: string;
+}) {
+    return (
+        <a
+            href={href}
+            style={{
+                display: "block",
+                background: "#fff",
+                borderRadius: 16,
+                padding: 24,
+                border: "1px solid #e8e8ec",
+                textDecoration: "none",
+                transition: "all 0.2s",
+                cursor: "pointer",
+            }}
+        >
+            <div
+                style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: gradient,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 20,
+                    marginBottom: 12,
+                }}
+            >
+                {icon}
+            </div>
+            <h4 style={{ fontSize: 16, fontWeight: 600, color: "#1f2937", margin: "0 0 4px" }}>{title}</h4>
+            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>{description}</p>
+        </a>
     );
 }
