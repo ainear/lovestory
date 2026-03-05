@@ -155,11 +155,9 @@ export async function addWish(projectId: string, guestName: string, message: str
 
 export async function incrementViewCount(projectId: string) {
     const supabase = await createClient();
-    await supabase.rpc("increment_view_count", { p_id: projectId }).catch(() => {
-        // Fallback: direct update
-        supabase
-            .from("projects")
-            .update({ view_count: 1 })
-            .eq("id", projectId);
-    });
+    try {
+        await supabase.rpc("increment_view_count", { p_id: projectId });
+    } catch {
+        // RPC not yet created — silently skip
+    }
 }
