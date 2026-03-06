@@ -23,7 +23,7 @@ interface LoveStoryOutput {
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_API_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 function buildPrompt(info: CoupleInfo, style: string): string {
     return `Bạn là một nhà thơ lãng mạn chuyên viết nội dung thiệp cưới. Hãy viết nội dung cho video cưới:
