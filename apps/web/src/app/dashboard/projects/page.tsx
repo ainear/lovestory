@@ -175,6 +175,20 @@ export default async function ProjectsPage() {
                                         </>
                                     )}
                                     <Link
+                                        href={`/dashboard/projects/${project.id}/analytics`}
+                                        style={{
+                                            padding: "8px 14px",
+                                            borderRadius: 8,
+                                            background: "#eff6ff",
+                                            color: "#3b82f6",
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            textDecoration: "none",
+                                        }}
+                                    >
+                                        📊
+                                    </Link>
+                                    <Link
                                         href={`/editor/${project.id}`}
                                         style={{
                                             padding: "8px 14px",
