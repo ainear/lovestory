@@ -17,7 +17,67 @@ interface InvitationData {
     bankName: string;
     bankAccount: string;
     bankOwner: string;
+    photos: string[];
 }
+
+// ── Template Themes ──
+interface Theme {
+    bg: string;
+    accent: string;
+    accentLight: string;
+    heading: string;
+    text: string;
+    card: string;
+    label: string;
+    envelopeBg: string;
+    buttonGrad: string;
+}
+
+const THEMES: Record<string, Theme> = {
+    "rose-garden": {
+        bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 20%, #fff5f7 50%, #fefce8 100%)",
+        accent: "#be185d", accentLight: "#fce7f3",
+        heading: "#831843", text: "#374151", card: "rgba(255,255,255,0.5)",
+        label: "#d97706", envelopeBg: "linear-gradient(180deg, #fce7f3, #fdf2f8)",
+        buttonGrad: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+    },
+    "midnight-romance": {
+        bg: "linear-gradient(180deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #1e1b4b 100%)",
+        accent: "#a78bfa", accentLight: "rgba(167,139,250,0.15)",
+        heading: "#e0e7ff", text: "#c7d2fe", card: "rgba(255,255,255,0.06)",
+        label: "#a78bfa", envelopeBg: "linear-gradient(180deg, #1e1b4b, #312e81)",
+        buttonGrad: "linear-gradient(135deg, #6366f1, #a78bfa)",
+    },
+    "golden-hour": {
+        bg: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 20%, #fde68a 50%, #fffbeb 100%)",
+        accent: "#b45309", accentLight: "#fef3c7",
+        heading: "#78350f", text: "#44403c", card: "rgba(255,255,255,0.6)",
+        label: "#b45309", envelopeBg: "linear-gradient(180deg, #fef3c7, #fffbeb)",
+        buttonGrad: "linear-gradient(135deg, #f59e0b, #d97706)",
+    },
+    "cherry-blossom": {
+        bg: "linear-gradient(180deg, #fff1f2 0%, #ffe4e6 20%, #fecdd3 50%, #fff1f2 100%)",
+        accent: "#e11d48", accentLight: "#ffe4e6",
+        heading: "#9f1239", text: "#374151", card: "rgba(255,255,255,0.5)",
+        label: "#e11d48", envelopeBg: "linear-gradient(180deg, #ffe4e6, #fff1f2)",
+        buttonGrad: "linear-gradient(135deg, #fb7185, #ec4899)",
+    },
+    "beach-sunset": {
+        bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 20%, #a5f3fc 40%, #fef3c7 100%)",
+        accent: "#0e7490", accentLight: "#cffafe",
+        heading: "#155e75", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#0e7490", envelopeBg: "linear-gradient(180deg, #cffafe, #ecfeff)",
+        buttonGrad: "linear-gradient(135deg, #06b6d4, #0ea5e9)",
+    },
+    "classic-elegance": {
+        bg: "linear-gradient(180deg, #fafaf9 0%, #f5f5f4 30%, #e7e5e4 60%, #fafaf9 100%)",
+        accent: "#78716c", accentLight: "#f5f5f4",
+        heading: "#292524", text: "#44403c", card: "rgba(255,255,255,0.7)",
+        label: "#78716c", envelopeBg: "linear-gradient(180deg, #f5f5f4, #fafaf9)",
+        buttonGrad: "linear-gradient(135deg, #78716c, #a8a29e)",
+    },
+};
+const DEFAULT_THEME = THEMES["rose-garden"];
 
 // ── Confetti Canvas ──
 function ConfettiCanvas() {
@@ -562,11 +622,13 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const [loading, setLoading] = useState(true);
     const audioRef = useRef<HTMLAudioElement>(null);
     const [projectId, setProjectId] = useState("");
+    const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
         venueName: "", venueAddress: "", googleMapsUrl: "",
         groomParentNames: "", brideParentNames: "", story: "",
         message: "", bankName: "", bankAccount: "", bankOwner: "",
+        photos: [],
     });
 
     useEffect(() => {
@@ -587,6 +649,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             if (project) {
                 setProjectId(project.id);
+                setTemplateSlug(project.template || "rose-garden");
                 setData({
                     groomName: project.groom_name || "Chú rể",
                     brideName: project.bride_name || "Cô dâu",
@@ -602,6 +665,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     bankName: project.bank_name || "",
                     bankAccount: project.bank_account || "",
                     bankOwner: project.bank_owner || "",
+                    photos: (() => { try { return JSON.parse(project.photos || "[]"); } catch { return []; } })(),
                 });
 
                 // Increment view count
@@ -613,6 +677,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             } else if (slug === "demo-wedding") {
                 // Demo fallback for landing page "Xem demo" button
                 setProjectId("demo");
+                setTemplateSlug("rose-garden");
                 setData({
                     groomName: "Minh", brideName: "Mai",
                     weddingDate: "2026-06-15", weddingTime: "10:00",
@@ -624,6 +689,12 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     story: "Chúng tôi gặp nhau vào một ngày mùa thu Sài Gòn. Ánh nắng chiều xuyên qua tán lá cổ thụ trên con đường Nguyễn Du, và tình yêu bắt đầu từ đó.",
                     message: "Sự hiện diện của bạn là niềm vinh hạnh lớn lao cho chúng tôi.",
                     bankName: "Vietcombank", bankAccount: "1234567890", bankOwner: "NGUYEN VAN MINH",
+                    photos: [
+                        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600",
+                        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600",
+                        "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600",
+                        "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600",
+                    ],
                 });
             }
             setLoading(false);
@@ -684,16 +755,19 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} onOpen={handleOpen} />;
     }
 
+    const theme = THEMES[templateSlug] || DEFAULT_THEME;
+
     return (
         <div
             style={{
                 minHeight: "100vh",
-                background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 20%, #fff5f7 50%, #fefce8 100%)",
+                background: theme.bg,
                 fontFamily: "'Inter', -apple-system, sans-serif",
                 maxWidth: 480,
                 margin: "0 auto",
                 position: "relative",
                 animation: "fadeIn 0.8s ease-in",
+                color: theme.text,
             }}
         >
             {/* Background Music Audio */}
@@ -717,7 +791,6 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     width: 48,
                     height: 48,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
                     border: "none",
                     color: "#fff",
                     fontSize: 20,
@@ -725,6 +798,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     boxShadow: "0 4px 16px rgba(255,107,157,0.4)",
                     zIndex: 50,
                     animation: isPlaying ? "spin 3s linear infinite" : "none",
+                    background: theme.buttonGrad,
                 }}
             >
                 {isPlaying ? "🎵" : "🔇"}
@@ -732,14 +806,14 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             {/* Hero Section */}
             <section style={{ textAlign: "center", padding: "60px 24px 40px" }}>
-                <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 4, margin: "0 0 24px" }}>
+                <p style={{ fontSize: 12, color: theme.label, letterSpacing: 4, margin: "0 0 24px" }}>
                     WE ARE GETTING MARRIED
                 </p>
-                <h1 style={{ fontSize: 36, fontWeight: 300, color: "#831843", fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
+                <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
                     {data.groomName}
                 </h1>
-                <p style={{ fontSize: 24, color: "#be185d", margin: "0 0 4px" }}>&amp;</p>
-                <h1 style={{ fontSize: 36, fontWeight: 300, color: "#831843", fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
+                <p style={{ fontSize: 24, color: theme.accent, margin: "0 0 4px" }}>&amp;</p>
+                <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
                     {data.brideName}
                 </h1>
 
@@ -772,6 +846,31 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
                         <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
                         <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
+                    </div>
+                </section>
+            )}
+
+            {/* Photo Gallery */}
+            {data.photos.length > 0 && (
+                <section style={{ padding: "0 24px 24px" }}>
+                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
+                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>📸 KHOẢNH KHẮC</p>
+                        <div style={{ display: "grid", gridTemplateColumns: data.photos.length === 1 ? "1fr" : "repeat(2, 1fr)", gap: 8 }}>
+                            {data.photos.map((url, i) => (
+                                <div key={i} style={{
+                                    borderRadius: 12, overflow: "hidden", aspectRatio: i === 0 && data.photos.length % 2 !== 0 ? "16/9" : "1/1",
+                                    gridColumn: i === 0 && data.photos.length % 2 !== 0 ? "1 / -1" : undefined,
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                }}>
+                                    <img
+                                        src={url}
+                                        alt={`Ảnh cưới ${i + 1}`}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                        loading="lazy"
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </section>
             )}

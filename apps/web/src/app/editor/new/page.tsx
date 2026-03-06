@@ -33,6 +33,7 @@ function EditorContent() {
         bankName: "",
         bankAccount: "",
         bankOwner: "",
+        photos: ["", "", "", "", "", ""] as string[],
     });
 
     const [activeSection, setActiveSection] = useState("couple");
@@ -42,6 +43,7 @@ function EditorContent() {
         { key: "event", icon: "📅", label: "Sự kiện" },
         { key: "venue", icon: "📍", label: "Địa điểm" },
         { key: "story", icon: "💕", label: "Câu chuyện" },
+        { key: "photos", icon: "📸", label: "Ảnh cưới" },
         { key: "gift", icon: "🎁", label: "Quà tặng" },
     ];
 
@@ -94,6 +96,7 @@ function EditorContent() {
                 bank_owner: formData.bankOwner,
                 groom_parent_names: formData.groomParentNames,
                 bride_parent_names: formData.brideParentNames,
+                photos: JSON.stringify(formData.photos.filter(p => p.trim())),
                 status: publish ? "published" : "draft",
             };
 
@@ -331,6 +334,45 @@ function EditorContent() {
                                     }}
                                 />
                             </div>
+                        </div>
+                    )}
+
+                    {activeSection === "photos" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            <div style={{ background: "#fef3c7", borderRadius: 12, padding: 16, border: "1px solid #fde68a" }}>
+                                <p style={{ fontSize: 12, color: "#92400e", margin: 0 }}>
+                                    📷 Dán link ảnh từ Google Photos, iCloud, Imgur hoặc bất kỳ đường dẫn ảnh nào. Tối đa 6 ảnh.
+                                </p>
+                            </div>
+                            {formData.photos.map((url, i) => (
+                                <div key={i}>
+                                    <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
+                                        Ảnh {i + 1}
+                                    </label>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        <input
+                                            type="url"
+                                            placeholder="https://example.com/photo.jpg"
+                                            value={url}
+                                            onChange={(e) => {
+                                                const newPhotos = [...formData.photos];
+                                                newPhotos[i] = e.target.value;
+                                                setFormData(prev => ({ ...prev, photos: newPhotos }));
+                                            }}
+                                            style={{
+                                                flex: 1, padding: "10px 12px", borderRadius: 10,
+                                                border: "1px solid #e5e7eb", fontSize: 13, outline: "none",
+                                                background: "#fff",
+                                            }}
+                                        />
+                                        {url && (
+                                            <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", flexShrink: 0, border: "1px solid #e5e7eb" }}>
+                                                <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
 

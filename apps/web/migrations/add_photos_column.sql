@@ -1,0 +1,3 @@
+-- Add photos column to projects table
+-- Run this in Supabase SQL Editor
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS photos TEXT DEFAULT '[]';
