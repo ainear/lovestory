@@ -385,6 +385,104 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Template Showcase */}
+      <section style={{ padding: "80px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>MẪU THIỆP NỔI BẬT</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Thiệp cưới được yêu thích nhất</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Chọn phong cách phù hợp với câu chuyện tình yêu của bạn</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {[
+              { name: "Rose Garden", emoji: "🌹", color: "#fce7f3", accent: "#be185d", desc: "Nhẹ nhàng, lãng mạn như vườn hồng", badge: "🔥 HOT" },
+              { name: "Midnight Romance", emoji: "🌙", color: "#1a1a2e", accent: "#c084fc", desc: "Huyền bí, sang trọng, đầy cuốn hút", badge: "✨ NEW", dark: true },
+              { name: "Golden Hour", emoji: "🌅", color: "#fdf6e3", accent: "#d97706", desc: "Ấm áp tựa hoàng hôn mùa thu", badge: "⭐ TOP" },
+            ].map((t, i) => (
+              <div key={i} style={{ borderRadius: 24, overflow: "hidden", border: "1px solid #e5e7eb", background: "#fff", transition: "all 0.3s" }}>
+                <div style={{
+                  height: 180, background: t.color, display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 64, position: "relative",
+                }}>
+                  {t.emoji}
+                  <span style={{
+                    position: "absolute", top: 12, right: 12, padding: "4px 10px", borderRadius: 8,
+                    background: t.dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)", fontSize: 11, fontWeight: 700,
+                    color: t.dark ? "#fff" : "#1f2937",
+                  }}>{t.badge}</span>
+                </div>
+                <div style={{ padding: "20px 24px" }}>
+                  <h3 style={{ fontSize: 17, fontWeight: 600, margin: "0 0 6px", color: "#1f2937" }}>{t.name}</h3>
+                  <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 16px", lineHeight: 1.5 }}>{t.desc}</p>
+                  <Link href="/templates" style={{
+                    display: "inline-block", padding: "8px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    background: `linear-gradient(135deg, ${t.accent}, ${t.accent}cc)`, color: "#fff", textDecoration: "none",
+                  }}>Dùng mẫu này →</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>CẢM NHẬN</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Khách hàng nói gì?</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Hơn 10,000 cặp đôi đã tin tưởng LoveStory</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {[
+              { name: "Thanh & Hương", loc: "TP.HCM", stars: 5, text: "Thiệp quá đẹp! Khách mời ai cũng khen. Tạo chỉ mất 10 phút mà cảm giác như thuê designer." },
+              { name: "Minh & Trang", loc: "Hà Nội", stars: 5, text: "RSVP online tiện vô cùng. Mình biết chính xác bao nhiêu khách đến mà không cần gọi từng người." },
+              { name: "Đức & Linh", loc: "Đà Nẵng", stars: 5, text: "Giá rẻ hơn nhiều so với in thiệp giấy, mà lại đẹp hơn. Bạn bè share Zalo rất tiện." },
+            ].map((r, i) => (
+              <div key={i} style={{ padding: 28, borderRadius: 20, border: "1px solid #f3f4f6", background: "#fefefe" }}>
+                <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>
+                  {Array(r.stars).fill(0).map((_, j) => <span key={j} style={{ fontSize: 16, color: "#fbbf24" }}>⭐</span>)}
+                </div>
+                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.7, margin: "0 0 16px", fontStyle: "italic" }}>&ldquo;{r.text}&rdquo;</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: `linear-gradient(135deg, hsl(${i * 40 + 330}, 70%, 65%), hsl(${i * 40 + 360}, 60%, 55%))`,
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#fff", fontWeight: 700,
+                  }}>{r.name[0]}</div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#1f2937", margin: 0 }}>{r.name}</p>
+                    <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>📍 {r.loc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ padding: "80px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>CÂU HỎI THƯỜNG GẶP</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: 0 }}>FAQ</h2>
+          </div>
+          {[
+            { q: "Thiệp online khác gì thiệp giấy?", a: "Thiệp online gửi qua link, khách xem trên điện thoại. Có nhạc nền, animation, RSVP tự động — trải nghiệm hiện đại hơn nhiều." },
+            { q: "Tạo thiệp mất bao lâu?", a: "Chỉ 5 phút! Chọn mẫu → điền thông tin → xuất bản. Không cần biết thiết kế." },
+            { q: "Gói miễn phí có giới hạn gì?", a: "Gói Free: 1 thiệp, 300 lượt xem, có watermark. Nâng lên Basic (199K) để mở khóa toàn bộ tính năng." },
+            { q: "Khách mời xem thiệp bằng cách nào?", a: "Bạn gửi link qua Zalo, Facebook, WhatsApp hoặc email. Khách nhấn link → xem thiệp → RSVP trực tiếp." },
+            { q: "Có hỗ trợ thanh toán online không?", a: "Có! Thanh toán qua chuyển khoản ngân hàng (SePay), xác nhận tự động trong vài phút." },
+          ].map((faq, i) => (
+            <div key={i} style={{ padding: "20px 0", borderBottom: i < 4 ? "1px solid #e5e7eb" : "none" }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: "#1f2937", margin: "0 0 8px" }}>❓ {faq.q}</h3>
+              <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.7, margin: 0 }}>{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA */}
       <section
         style={{
@@ -453,6 +551,14 @@ export default function LandingPage() {
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-20px); }
+        }
+        @media (max-width: 768px) {
+          nav > div { flex-wrap: wrap; gap: 8px; }
+          nav > div > div:first-of-type + div > a:not(:last-child) { display: none; }
+          section h1 { font-size: 32px !important; }
+          section h2 { font-size: 28px !important; }
+          div[style*="gridTemplateColumns: repeat(3"] { grid-template-columns: 1fr !important; }
+          div[style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
