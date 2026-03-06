@@ -589,22 +589,23 @@ function GiftQrWidget({ bankName, bankAccount, bankOwner }: { bankName: string; 
     return (
         <div style={{ textAlign: "center", padding: 24, background: "rgba(255,255,255,0.5)", borderRadius: 20 }}>
             <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 16px" }}>🎁 MỪNG CƯỚI</p>
-            <div
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={`https://img.vietqr.io/image/${encodeURIComponent(bankName)}-${encodeURIComponent(bankAccount)}-compact.png?amount=0&addInfo=${encodeURIComponent(`Mung cuoi ${bankOwner}`)}`}
+                alt="QR chuyển khoản"
+                width={160}
+                height={160}
                 style={{
-                    width: 160,
-                    height: 160,
-                    background: "#f3f4f6",
                     borderRadius: 16,
                     margin: "0 auto 16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 14,
-                    color: "#9ca3af",
+                    display: "block",
+                    background: "#fff",
                 }}
-            >
-                QR Code
-            </div>
+                onError={(e) => {
+                    // Fallback to generic QR code
+                    (e.target as HTMLImageElement).src = `https://quickchart.io/qr?text=${encodeURIComponent(`${bankName} - ${bankAccount} - ${bankOwner}`)}&size=160`;
+                }}
+            />
             <p style={{ fontSize: 15, fontWeight: 600, color: "#1f2937", margin: "0 0 4px" }}>{bankName}</p>
             <p style={{ fontSize: 20, fontWeight: 700, color: "#374151", margin: "0 0 4px", letterSpacing: 2 }}>
                 {bankAccount}
