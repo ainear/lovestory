@@ -26,8 +26,14 @@ export default async function DashboardLayout({
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f4f5f7" }}>
+            {/* Mobile Toggle */}
+            <input type="checkbox" id="sidebar-toggle" />
+            <label htmlFor="sidebar-toggle" className="mobile-hamburger">☰</label>
+            <label htmlFor="sidebar-toggle" className="sidebar-overlay" />
+
             {/* Sidebar */}
             <aside
+                className="dashboard-sidebar"
                 style={{
                     width: 260,
                     background: "#fff",
@@ -115,29 +121,10 @@ export default async function DashboardLayout({
                             {user.email?.charAt(0).toUpperCase()}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <p
-                                style={{
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    color: "#1f2937",
-                                    margin: 0,
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                }}
-                            >
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#1f2937", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {user.user_metadata?.full_name || user.email?.split("@")[0]}
                             </p>
-                            <p
-                                style={{
-                                    fontSize: 11,
-                                    color: "#9ca3af",
-                                    margin: 0,
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                }}
-                            >
+                            <p style={{ fontSize: 11, color: "#9ca3af", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {planLabel}
                             </p>
                         </div>
@@ -147,38 +134,12 @@ export default async function DashboardLayout({
                 {/* Logout + Admin */}
                 <div style={{ padding: "12px 16px", borderTop: "1px solid #e8e8ec" }}>
                     {user.email === process.env.ADMIN_EMAIL && (
-                        <Link
-                            href="/admin"
-                            style={{
-                                display: "block",
-                                padding: "8px 12px",
-                                borderRadius: 8,
-                                fontSize: 12,
-                                color: "#f43f5e",
-                                textDecoration: "none",
-                                marginBottom: 6,
-                                fontWeight: 600,
-                            }}
-                        >
+                        <Link href="/admin" style={{ display: "block", padding: "8px 12px", borderRadius: 8, fontSize: 12, color: "#f43f5e", textDecoration: "none", marginBottom: 6, fontWeight: 600 }}>
                             🛡️ Admin Panel
                         </Link>
                     )}
                     <form action="/auth/signout" method="GET">
-                        <button
-                            type="submit"
-                            style={{
-                                width: "100%",
-                                padding: "8px 12px",
-                                borderRadius: 8,
-                                border: "1px solid #fee2e2",
-                                background: "#fff5f5",
-                                color: "#ef4444",
-                                fontSize: 13,
-                                fontWeight: 500,
-                                cursor: "pointer",
-                                textAlign: "left",
-                            }}
-                        >
+                        <button type="submit" style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #fee2e2", background: "#fff5f5", color: "#ef4444", fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
                             🚪 Đăng xuất
                         </button>
                     </form>
@@ -187,6 +148,7 @@ export default async function DashboardLayout({
 
             {/* Main Content */}
             <main
+                className="dashboard-main"
                 style={{
                     flex: 1,
                     marginLeft: 260,
@@ -203,16 +165,7 @@ export default async function DashboardLayout({
 function NavGroup({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div style={{ marginBottom: 16 }}>
-            <p
-                style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: "#b0b0bb",
-                    letterSpacing: 1.2,
-                    margin: "0 0 6px 12px",
-                    textTransform: "uppercase",
-                }}
-            >
+            <p style={{ fontSize: 10, fontWeight: 700, color: "#b0b0bb", letterSpacing: 1.2, margin: "0 0 6px 12px", textTransform: "uppercase" }}>
                 {label}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>{children}</div>
@@ -222,20 +175,7 @@ function NavGroup({ label, children }: { label: string; children: React.ReactNod
 
 function NavItem({ href, icon, label }: { href: string; icon: string; label: string }) {
     return (
-        <Link
-            href={href}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "9px 12px",
-                borderRadius: 10,
-                fontSize: 14,
-                color: "#4b5563",
-                textDecoration: "none",
-                transition: "all 0.15s",
-            }}
-        >
+        <Link href={href} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, fontSize: 14, color: "#4b5563", textDecoration: "none", transition: "all 0.15s" }}>
             <span style={{ fontSize: 16 }}>{icon}</span>
             <span>{label}</span>
         </Link>

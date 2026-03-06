@@ -24,3 +24,109 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ═══ Mobile Responsive ═══ */
+
+/* Sidebar toggle checkbox (hidden) */
+#sidebar-toggle { display: none; }
+
+/* Hamburger button - only visible on mobile */
+.mobile-hamburger {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 51;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e8e8ec;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+/* Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 39;
+}
+
+@media (max-width: 768px) {
+  /* Show hamburger on mobile */
+  .mobile-hamburger { display: flex; }
+
+  /* Hide sidebar by default on mobile */
+  .dashboard-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  /* Show sidebar when checkbox checked */
+  #sidebar-toggle:checked ~ .dashboard-sidebar {
+    transform: translateX(0);
+  }
+
+  /* Show overlay when sidebar open */
+  #sidebar-toggle:checked ~ .sidebar-overlay {
+    display: block;
+  }
+
+  /* Main content full width on mobile */
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding: 60px 16px 24px !important;
+  }
+
+  /* Editor: stack vertically */
+  .editor-layout {
+    flex-direction: column !important;
+  }
+  .editor-panel {
+    width: 100% !important;
+    position: relative !important;
+    height: auto !important;
+    max-height: 60vh;
+  }
+  .editor-preview {
+    margin-left: 0 !important;
+    padding: 20px !important;
+  }
+  .editor-preview-card {
+    width: 100% !important;
+  }
+
+  /* Admin sidebar */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  #sidebar-toggle:checked ~ .admin-sidebar {
+    transform: translateX(0);
+  }
+  .admin-main {
+    margin-left: 0 !important;
+    padding: 60px 16px 24px !important;
+  }
+
+  /* Landing nav */
+  .landing-nav-links {
+    display: none !important;
+  }
+
+  /* Stats grid */
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Tables scroll */
+  .admin-table-container {
+    overflow-x: auto;
+  }
+}
