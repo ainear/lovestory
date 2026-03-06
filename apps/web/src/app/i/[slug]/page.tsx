@@ -326,7 +326,17 @@ function RsvpWidget({ projectId }: { projectId: string }) {
                     />
                 </div>
                 <button
-                    onClick={() => name && setSubmitted(true)}
+                    onClick={async () => {
+                        if (!name) return;
+                        try {
+                            await fetch("/api/rsvp", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ projectId, guestName: name, status, guestCount }),
+                            });
+                        } catch { }
+                        setSubmitted(true);
+                    }}
                     style={{
                         padding: "12px 20px",
                         borderRadius: 12,
@@ -353,8 +363,22 @@ function WishWallWidget({ projectId }: { projectId: string }) {
     const emojis = ["❤️", "🎉", "🥂", "💐", "💕", "🌹"];
     const [selectedEmoji, setSelectedEmoji] = useState("❤️");
 
-    function handleSubmit() {
+    useEffect(() => {
+        fetch(`/api/wishes?projectId=${projectId}`)
+            .then(r => r.json())
+            .then(d => setWishes((d.data || []).map((w: any) => ({ name: w.guest_name, message: w.message, emoji: w.emoji || "❤️" }))))
+            .catch(() => { });
+    }, [projectId]);
+
+    async function handleSubmit() {
         if (!name || !message) return;
+        try {
+            await fetch("/api/wishes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ projectId, guestName: name, message, emoji: selectedEmoji }),
+            });
+        } catch { }
         setWishes((prev) => [{ name, message, emoji: selectedEmoji }, ...prev]);
         setName("");
         setMessage("");
