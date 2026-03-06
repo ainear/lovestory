@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
@@ -76,6 +76,10 @@ export default function EditorEditPage() {
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const [projectStatus, setProjectStatus] = useState("draft");
     const [slug, setSlug] = useState("");
+    const [widgetToggles, setWidgetToggles] = useState<Record<string, boolean>>({
+        calendar: true, countdown: true, map: true, rsvp: true,
+        wishes: true, qr: true, photos: true, phone: false,
+    });
 
     const theme = TEMPLATE_THEMES[templateSlug] || TEMPLATE_THEMES["rose-garden"];
 
@@ -122,8 +126,34 @@ export default function EditorEditPage() {
     const handleChange = useCallback((field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         setAutoSaved(false);
-        setTimeout(() => setAutoSaved(true), 1500);
+        // Debounced auto-save: save to DB after 3s of no typing
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+        autoSaveTimer.current = setTimeout(() => {
+            autoSaveToDb();
+        }, 3000);
     }, []);
+
+    const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const autoSaveToDb = useCallback(async () => {
+        try {
+            const { error } = await supabase.from("projects").update({
+                groom_name: formData.groomName, bride_name: formData.brideName,
+                wedding_date: formData.weddingDate || null, wedding_time: formData.weddingTime || null,
+                venue_name: formData.venueName, venue_address: formData.venueAddress,
+                google_maps_url: formData.googleMapsUrl,
+                story: formData.story, message: formData.message,
+                bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
+                groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
+                photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                template: templateSlug,
+                title: `${formData.groomName || "Chú rể"} & ${formData.brideName || "Cô dâu"}`,
+                updated_at: new Date().toISOString(),
+            }).eq("id", projectId);
+            setAutoSaved(!error);
+        } catch {
+            setAutoSaved(false);
+        }
+    }, [formData, templateSlug, projectId, supabase]);
 
     // ─── Save/Update project ───
     async function handleSave(publish = false) {
@@ -344,29 +374,47 @@ export default function EditorEditPage() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Tiện ích tương tác</p>
                             {[
-                                { icon: "📅", name: "Lịch", desc: "Lịch tháng cưới" },
-                                { icon: "⏱", name: "Đếm ngược", desc: "Countdown" },
-                                { icon: "🗺", name: "Bản đồ", desc: "Google Maps" },
-                                { icon: "✅", name: "RSVP", desc: "Xác nhận tham dự" },
-                                { icon: "💬", name: "Lời chúc", desc: "Tường lời chúc" },
-                                { icon: "🎁", name: "QR Mừng cưới", desc: "QR chuyển khoản" },
-                                { icon: "📸", name: "Album ảnh", desc: "Slider ảnh" },
-                                { icon: "📞", name: "Gọi điện", desc: "Nút gọi" },
-                            ].map((w, i) => (
-                                <div key={i} style={{
-                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: "#fff",
-                                }}>
-                                    <span style={{ fontSize: 20 }}>{w.icon}</span>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{w.name}</p>
-                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                { key: "calendar", icon: "📅", name: "Lịch", desc: "Lịch tháng cưới" },
+                                { key: "countdown", icon: "⏱", name: "Đếm ngược", desc: "Countdown" },
+                                { key: "map", icon: "🗺", name: "Bản đồ", desc: "Google Maps" },
+                                { key: "rsvp", icon: "✅", name: "RSVP", desc: "Xác nhận tham dự" },
+                                { key: "wishes", icon: "💬", name: "Lời chúc", desc: "Tường lời chúc" },
+                                { key: "qr", icon: "🎁", name: "QR Mừng cưới", desc: "QR chuyển khoản" },
+                                { key: "photos", icon: "📸", name: "Album ảnh", desc: "Slider ảnh" },
+                                { key: "phone", icon: "📞", name: "Gọi điện", desc: "Nút gọi" },
+                            ].map((w) => {
+                                const isOn = widgetToggles[w.key] ?? false;
+                                return (
+                                    <div key={w.key}
+                                        onClick={() => setWidgetToggles(prev => ({ ...prev, [w.key]: !prev[w.key] }))}
+                                        style={{
+                                            padding: "10px 14px", borderRadius: 10,
+                                            border: `1px solid ${isOn ? "#86efac" : "#e5e7eb"}`,
+                                            display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+                                            background: isOn ? "#f0fdf4" : "#fff",
+                                            transition: "all 0.2s",
+                                        }}>
+                                        <span style={{ fontSize: 20, opacity: isOn ? 1 : 0.4 }}>{w.icon}</span>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: isOn ? "#166534" : "#6b7280", margin: 0 }}>{w.name}</p>
+                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                        </div>
+                                        <div style={{
+                                            width: 36, height: 20, borderRadius: 10,
+                                            background: isOn ? "#22c55e" : "#d1d5db",
+                                            position: "relative", transition: "background 0.2s",
+                                        }}>
+                                            <div style={{
+                                                width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                                                position: "absolute", top: 2,
+                                                left: isOn ? 18 : 2,
+                                                transition: "left 0.2s",
+                                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                            }} />
+                                        </div>
                                     </div>
-                                    <div style={{ width: 32, height: 18, borderRadius: 9, background: "#d1d5db", position: "relative" }}>
-                                        <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: 2 }} />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
 

@@ -59,6 +59,10 @@ function EditorContent() {
     const [autoSaved, setAutoSaved] = useState(false);
     const [activeTab, setActiveTab] = useState("text");
     const [zoom, setZoom] = useState(100);
+    const [widgetToggles, setWidgetToggles] = useState<Record<string, boolean>>({
+        calendar: true, countdown: true, map: true, rsvp: true,
+        wishes: true, qr: true, photos: true, phone: false,
+    });
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -325,30 +329,47 @@ function EditorContent() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Thêm tiện ích tương tác</p>
                             {[
-                                { icon: "📅", name: "Lịch", desc: "Hiển thị lịch tháng cưới" },
-                                { icon: "⏱", name: "Đếm ngược", desc: "Countdown đến ngày cưới" },
-                                { icon: "🗺", name: "Bản đồ", desc: "Google Maps nhúng" },
-                                { icon: "✅", name: "RSVP", desc: "Xác nhận tham dự" },
-                                { icon: "💬", name: "Lời chúc", desc: "Tường lời chúc từ khách" },
-                                { icon: "🎁", name: "QR Mừng cưới", desc: "QR chuyển khoản" },
-                                { icon: "📸", name: "Album ảnh", desc: "Slider ảnh cưới" },
-                                { icon: "📞", name: "Gọi điện", desc: "Nút gọi trực tiếp" },
-                            ].map((w, i) => (
-                                <div key={i} style={{
-                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
-                                    background: "#fff", transition: "all 0.15s",
-                                }}>
-                                    <span style={{ fontSize: 20 }}>{w.icon}</span>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{w.name}</p>
-                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                { key: "calendar", icon: "📅", name: "Lịch", desc: "Hiển thị lịch tháng cưới" },
+                                { key: "countdown", icon: "⏱", name: "Đếm ngược", desc: "Countdown đến ngày cưới" },
+                                { key: "map", icon: "🗺", name: "Bản đồ", desc: "Google Maps nhúng" },
+                                { key: "rsvp", icon: "✅", name: "RSVP", desc: "Xác nhận tham dự" },
+                                { key: "wishes", icon: "💬", name: "Lời chúc", desc: "Tường lời chúc từ khách" },
+                                { key: "qr", icon: "🎁", name: "QR Mừng cưới", desc: "QR chuyển khoản" },
+                                { key: "photos", icon: "📸", name: "Album ảnh", desc: "Slider ảnh cưới" },
+                                { key: "phone", icon: "📞", name: "Gọi điện", desc: "Nút gọi trực tiếp" },
+                            ].map((w) => {
+                                const isOn = widgetToggles[w.key] ?? false;
+                                return (
+                                    <div key={w.key}
+                                        onClick={() => setWidgetToggles(prev => ({ ...prev, [w.key]: !prev[w.key] }))}
+                                        style={{
+                                            padding: "10px 14px", borderRadius: 10,
+                                            border: `1px solid ${isOn ? "#86efac" : "#e5e7eb"}`,
+                                            display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+                                            background: isOn ? "#f0fdf4" : "#fff",
+                                            transition: "all 0.2s",
+                                        }}>
+                                        <span style={{ fontSize: 20, opacity: isOn ? 1 : 0.4 }}>{w.icon}</span>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: isOn ? "#166534" : "#6b7280", margin: 0 }}>{w.name}</p>
+                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                        </div>
+                                        <div style={{
+                                            width: 36, height: 20, borderRadius: 10,
+                                            background: isOn ? "#22c55e" : "#d1d5db",
+                                            position: "relative", transition: "background 0.2s",
+                                        }}>
+                                            <div style={{
+                                                width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                                                position: "absolute", top: 2,
+                                                left: isOn ? 18 : 2,
+                                                transition: "left 0.2s",
+                                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                            }} />
+                                        </div>
                                     </div>
-                                    <div style={{ width: 32, height: 18, borderRadius: 9, background: "#d1d5db", position: "relative" }}>
-                                        <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: 2, transition: "all 0.2s" }} />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
 
