@@ -1,21 +1,25 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import {
+    Type, Image, Puzzle, Palette, Music, LayoutGrid,
+    LayoutTemplate, Sparkles, Undo2, Redo2, Eye, Rocket, Save, Heart,
+} from "lucide-react";
 
-/* ─── SIDEBAR TABS (matches CineLove) ─── */
-const SIDEBAR_TABS = [
-    { key: "text", icon: "T", label: "Văn bản" },
-    { key: "images", icon: "🖼", label: "Hình ảnh" },
-    { key: "stock", icon: "✦", label: "Stock" },
-    { key: "bg", icon: "◧", label: "Nền" },
-    { key: "music", icon: "♫", label: "Âm nhạc" },
-    { key: "widgets", icon: "⧉", label: "Tiện ích" },
-    { key: "templates", icon: "⊞", label: "Mẫu" },
-    { key: "effects", icon: "✨", label: "Hiệu ứng" },
-] as const;
+/* ─── SIDEBAR TABS (matches CineLove — SVG icons) ─── */
+const SIDEBAR_TABS: { key: string; icon: ReactNode; label: string }[] = [
+    { key: "text", icon: <Type size={20} />, label: "Văn bản" },
+    { key: "images", icon: <Image size={20} />, label: "Hình ảnh" },
+    { key: "stock", icon: <Puzzle size={20} />, label: "Stock" },
+    { key: "bg", icon: <Palette size={20} />, label: "Nền" },
+    { key: "music", icon: <Music size={20} />, label: "Âm nhạc" },
+    { key: "widgets", icon: <LayoutGrid size={20} />, label: "Tiện ích" },
+    { key: "templates", icon: <LayoutTemplate size={20} />, label: "Mẫu" },
+    { key: "effects", icon: <Sparkles size={20} />, label: "Hiệu ứng" },
+];
 
 /* ─── TEMPLATE THEMES ─── */
 const TEMPLATE_THEMES: Record<string, {
