@@ -421,14 +421,14 @@ function EditorContent() {
                 }}>
                     {/* Logo */}
                     <Link href="/dashboard/projects" style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", marginRight: 8 }}>
-                        <span style={{ fontSize: 20 }}>❤️</span>
+                        <Heart size={20} fill="#ff6b9d" color="#ff6b9d" />
                         <span style={{ fontSize: 15, fontWeight: 700, background: "linear-gradient(135deg, #ff6b9d, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>LoveStory</span>
                     </Link>
 
                     {/* Undo / Redo */}
                     <div style={{ display: "flex", gap: 4 }}>
-                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14, color: "#9ca3af" }}>↶</button>
-                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14, color: "#9ca3af" }}>↷</button>
+                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af" }}><Undo2 size={16} /></button>
+                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af" }}><Redo2 size={16} /></button>
                     </div>
 
                     <div style={{ flex: 1 }} />
@@ -447,7 +447,7 @@ function EditorContent() {
                         background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500, cursor: "pointer",
                         display: "flex", alignItems: "center", gap: 4,
                     }}>
-                        👁 Xem trước
+                        <Eye size={14} /> Xem trước
                     </button>
 
                     {/* Publish */}
@@ -457,7 +457,7 @@ function EditorContent() {
                         color: "#fff", fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", gap: 4,
                     }}>
-                        🚀 Xuất bản
+                        <Rocket size={14} /> Xuất bản
                     </button>
                 </div>
 
@@ -571,7 +571,7 @@ function EditorContent() {
             }}>
                 {/* Customization Header */}
                 <div style={{ padding: "16px 20px", borderBottom: "1px solid #f3f4f6" }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0 }}>✏️ Tuỳ chỉnh</h3>
+                    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0, display: "flex", alignItems: "center", gap: 6 }}><Sparkles size={16} /> Tuỳ chỉnh</h3>
                 </div>
 
                 <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
