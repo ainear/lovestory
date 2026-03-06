@@ -844,7 +844,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {data.story && (
                 <section style={{ padding: "0 24px 24px" }}>
                     <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
+                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
                         <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
                     </div>
                 </section>
@@ -854,7 +854,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {data.photos.length > 0 && (
                 <section style={{ padding: "0 24px 24px" }}>
                     <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>📸 KHOẢNH KHẮC</p>
+                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>📸 KHOẢNH KHẮC</p>
                         <div style={{ display: "grid", gridTemplateColumns: data.photos.length === 1 ? "1fr" : "repeat(2, 1fr)", gap: 8 }}>
                             {data.photos.map((url, i) => (
                                 <div key={i} style={{
@@ -886,7 +886,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {data.message && (
                 <section style={{ padding: "0 24px 24px", textAlign: "center" }}>
                     <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
+                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
                         <p style={{ fontSize: 15, color: "#374151", fontStyle: "italic", lineHeight: 1.7, margin: 0 }}>
                             &ldquo;{data.message}&rdquo;
                         </p>
