@@ -12,6 +12,8 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [isRegister, setIsRegister] = useState(false);
+    const [isForgotPwd, setIsForgotPwd] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
 
     async function handleEmailAuth(e: React.FormEvent) {
         e.preventDefault();
@@ -60,6 +62,19 @@ export default function LoginPage() {
                 redirectTo: `${window.location.origin}/auth/callback`,
             },
         });
+    }
+
+    async function handleForgotPassword(e: React.FormEvent) {
+        e.preventDefault();
+        if (!email) { setError("Vui lòng nhập email"); return; }
+        setLoading(true);
+        setError("");
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/profile`,
+        });
+        if (error) { setError(error.message); }
+        else { setResetSent(true); }
+        setLoading(false);
     }
 
     return (
@@ -242,12 +257,45 @@ export default function LoginPage() {
                     </button>
                 </form>
 
+                {/* Forgot Password */}
+                {!isRegister && !isForgotPwd && (
+                    <p style={{ textAlign: "center", marginTop: 12 }}>
+                        <button
+                            onClick={() => { setIsForgotPwd(true); setError(""); setResetSent(false); }}
+                            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}
+                        >
+                            Quên mật khẩu?
+                        </button>
+                    </p>
+                )}
+                {isForgotPwd && (
+                    <div style={{ marginTop: 16, textAlign: "center" }}>
+                        {resetSent ? (
+                            <p style={{ color: "#34d399", fontSize: 13 }}>✅ Link đặt lại mật khẩu đã gửi tới email của bạn!</p>
+                        ) : (
+                            <button
+                                onClick={handleForgotPassword}
+                                disabled={loading}
+                                style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "#6366f1", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                            >
+                                {loading ? "Đang gửi..." : "📧 Gửi link đặt lại mật khẩu"}
+                            </button>
+                        )}
+                        <p style={{ marginTop: 8 }}>
+                            <button onClick={() => { setIsForgotPwd(false); setError(""); }} style={{ background: "none", border: "none", color: "#c084fc", fontSize: 12, cursor: "pointer" }}>
+                                ← Quay lại đăng nhập
+                            </button>
+                        </p>
+                    </div>
+                )}
+
                 {/* Toggle Register/Login */}
                 <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 24 }}>
                     {isRegister ? "Đã có tài khoản?" : "Chưa có tài khoản?"}{" "}
                     <button
                         onClick={() => {
                             setIsRegister(!isRegister);
+                            setIsForgotPwd(false);
                             setError("");
                         }}
                         style={{

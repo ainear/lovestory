@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import DeleteButton from "./DeleteButton";
 
 const STATUS_MAP = {
     draft: { label: "Bản nháp", color: "#9ca3af", bg: "#f3f4f6" },
@@ -187,6 +188,7 @@ export default async function ProjectsPage() {
                                     >
                                         ✏️ Sửa
                                     </Link>
+                                    <DeleteButton projectId={project.id} />
                                 </div>
                             </div>
                         );

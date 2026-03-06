@@ -56,6 +56,24 @@ function EditorContent() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { setSaveMsg("Vui lòng đăng nhập"); setSaving(false); return; }
 
+            // Check project limit
+            const { data: sub } = await supabase.from("subscriptions").select("plan").eq("user_id", user.id).single();
+            const plan = sub?.plan || "free";
+            const maxProjects = plan === "premium" ? 999 : plan === "basic" ? 5 : 1;
+            const { count } = await supabase.from("projects").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+            if ((count || 0) >= maxProjects) {
+                setSaveMsg(`⚠️ Giới hạn ${maxProjects} thiệp (${plan}). Nâng cấp để tạo thêm!`);
+                setSaving(false);
+                return;
+            }
+
+            // Validate required fields
+            if (!formData.groomName || !formData.brideName) {
+                setSaveMsg("⚠️ Vui lòng nhập tên Chú rể và Cô dâu");
+                setSaving(false);
+                return;
+            }
+
             const slug = `${(formData.groomName || "groom").toLowerCase().replace(/\s+/g, "-")}-${(formData.brideName || "bride").toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
             const projectData = {
                 user_id: user.id,

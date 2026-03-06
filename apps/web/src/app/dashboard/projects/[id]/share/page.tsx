@@ -19,10 +19,15 @@ export default function SharePage() {
 
     useEffect(() => {
         async function load() {
+            // Verify ownership
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { setLoading(false); return; }
+
             const { data } = await supabase
                 .from("projects")
                 .select("*")
                 .eq("id", projectId)
+                .eq("user_id", user.id)
                 .single();
             setProject(data);
             setLoading(false);

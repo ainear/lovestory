@@ -10,41 +10,22 @@ export default async function CheckoutSuccessPage({
     const orderCode = params.code;
 
     let planName = "Premium";
+    let orderStatus = "pending";
 
     if (orderCode) {
         const supabase = await createClient();
 
-        // Update order status to paid
+        // Only READ order info — NEVER mark as paid here!
+        // Payment confirmation ONLY happens via SePay webhook
         const { data: order } = await supabase
             .from("orders")
-            .select("*")
+            .select("plan, status")
             .eq("order_code", orderCode)
             .single();
 
         if (order) {
             planName = order.plan === "basic" ? "Basic" : "Premium";
-
-            // Mark as paid if not already
-            if (order.status === "pending") {
-                await supabase
-                    .from("orders")
-                    .update({ status: "paid", paid_at: new Date().toISOString() })
-                    .eq("id", order.id);
-
-                // Upsert subscription
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    await supabase.from("subscriptions").upsert(
-                        {
-                            user_id: user.id,
-                            plan: order.plan,
-                            order_id: order.id,
-                            started_at: new Date().toISOString(),
-                        },
-                        { onConflict: "user_id" }
-                    );
-                }
-            }
+            orderStatus = order.status;
         }
     }
 

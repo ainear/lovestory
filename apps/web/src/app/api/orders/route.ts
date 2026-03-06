@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 const SEPAY_MERCHANT_ID = process.env.SEPAY_MERCHANT_ID!;
 const SEPAY_SECRET_KEY = process.env.SEPAY_SECRET_KEY!;
-const SEPAY_SANDBOX = false; // Production mode
+const SEPAY_SANDBOX = true; // Using test keys — switch to false for production
 const SEPAY_CHECKOUT_URL = SEPAY_SANDBOX
     ? "https://pay-sandbox.sepay.vn/v1/checkout/init"
     : "https://pay.sepay.vn/v1/checkout/init";

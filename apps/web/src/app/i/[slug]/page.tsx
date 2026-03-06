@@ -558,6 +558,21 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ slug }),
                 }).catch(() => { });
+            } else if (slug === "demo-wedding") {
+                // Demo fallback for landing page "Xem demo" button
+                setProjectId("demo");
+                setData({
+                    groomName: "Minh", brideName: "Mai",
+                    weddingDate: "2026-06-15", weddingTime: "10:00",
+                    venueName: "Trung tâm Tiệc cưới Diamond Palace",
+                    venueAddress: "123 Nguyễn Huệ, Quận 1, TP.HCM",
+                    googleMapsUrl: "https://maps.google.com/?q=diamond+palace+hcm",
+                    groomParentNames: "Ông Nguyễn Văn A & Bà Lê Thị B",
+                    brideParentNames: "Ông Trần Văn C & Bà Phạm Thị D",
+                    story: "Chúng tôi gặp nhau vào một ngày mùa thu Sài Gòn. Ánh nắng chiều xuyên qua tán lá cổ thụ trên con đường Nguyễn Du, và tình yêu bắt đầu từ đó.",
+                    message: "Sự hiện diện của bạn là niềm vinh hạnh lớn lao cho chúng tôi.",
+                    bankName: "Vietcombank", bankAccount: "1234567890", bankOwner: "NGUYEN VAN MINH",
+                });
             }
             setLoading(false);
         }
