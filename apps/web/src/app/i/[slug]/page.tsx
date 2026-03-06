@@ -484,24 +484,91 @@ function GiftQrWidget({ bankName, bankAccount, bankOwner }: { bankName: string; 
 export default function PublicInvitationPage({ params }: { params: Promise<{ slug: string }> }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [projectId, setProjectId] = useState("");
+    const [data, setData] = useState<InvitationData>({
+        groomName: "", brideName: "", weddingDate: "", weddingTime: "",
+        venueName: "", venueAddress: "", googleMapsUrl: "",
+        groomParentNames: "", brideParentNames: "", story: "",
+        message: "", bankName: "", bankAccount: "", bankOwner: "",
+    });
 
-    // Demo data (sẽ load từ DB trong production)
-    const data: InvitationData = {
-        groomName: "Minh",
-        brideName: "Mai",
-        weddingDate: "2026-06-15",
-        weddingTime: "17:30",
-        venueName: "Trung tâm Tiệc cưới Luxury Palace",
-        venueAddress: "123 Đường Nguyễn Huệ, Quận 1, TP.HCM",
-        googleMapsUrl: "https://maps.google.com/?q=10.7769,106.7009",
-        groomParentNames: "Ông Nguyễn Văn A & Bà Lê Thị B",
-        brideParentNames: "Ông Trần Văn C & Bà Phạm Thị D",
-        story: "Chúng tôi gặp nhau vào một ngày mùa thu Sài Gòn. Ánh nắng chiều xuyên qua tán lá cổ thụ trên con đường Nguyễn Du, và tình yêu bắt đầu từ đó...",
-        message: "Trân trọng kính mời quý khách đến chia sẻ niềm vui trong ngày lễ trọng đại của chúng tôi.",
-        bankName: "Vietcombank",
-        bankAccount: "0123456789",
-        bankOwner: "NGUYEN VAN MINH",
-    };
+    useEffect(() => {
+        async function loadProject() {
+            const { slug } = await params;
+            const { createBrowserClient } = await import("@supabase/ssr");
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            );
+
+            const { data: project } = await supabase
+                .from("projects")
+                .select("*")
+                .eq("slug", slug)
+                .eq("status", "published")
+                .single();
+
+            if (project) {
+                setProjectId(project.id);
+                setData({
+                    groomName: project.groom_name || "Chú rể",
+                    brideName: project.bride_name || "Cô dâu",
+                    weddingDate: project.wedding_date || "",
+                    weddingTime: project.wedding_time || "",
+                    venueName: project.venue_name || "",
+                    venueAddress: project.venue_address || "",
+                    googleMapsUrl: project.google_maps_url || "",
+                    groomParentNames: project.groom_parent_names || "",
+                    brideParentNames: project.bride_parent_names || "",
+                    story: project.story || "",
+                    message: project.message || "",
+                    bankName: project.bank_name || "",
+                    bankAccount: project.bank_account || "",
+                    bankOwner: project.bank_owner || "",
+                });
+
+                // Increment view count
+                fetch("/api/views", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ slug }),
+                }).catch(() => { });
+            }
+            setLoading(false);
+        }
+        loadProject();
+    }, []);
+
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+                background: "linear-gradient(180deg, #fce7f3, #fdf2f8)", fontFamily: "'Inter', sans-serif",
+            }}>
+                <div style={{ textAlign: "center" }}>
+                    <p style={{ fontSize: 48, margin: "0 0 16px", animation: "spin 2s linear infinite" }}>💌</p>
+                    <p style={{ fontSize: 14, color: "#be185d" }}>Đang tải thiệp mời...</p>
+                </div>
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+
+    if (!projectId) {
+        return (
+            <div style={{
+                minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+                background: "linear-gradient(180deg, #fce7f3, #fdf2f8)", fontFamily: "'Inter', sans-serif",
+            }}>
+                <div style={{ textAlign: "center" }}>
+                    <p style={{ fontSize: 48, margin: "0 0 16px" }}>💔</p>
+                    <p style={{ fontSize: 16, color: "#831843", fontWeight: 600 }}>Thiệp không tồn tại hoặc chưa xuất bản</p>
+                    <a href="/" style={{ fontSize: 13, color: "#be185d" }}>← Về trang chủ</a>
+                </div>
+            </div>
+        );
+    }
 
     const handleOpen = () => {
         setIsOpen(true);
@@ -552,80 +619,74 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 4, margin: "0 0 24px" }}>
                     WE ARE GETTING MARRIED
                 </p>
-                <h1
-                    style={{
-                        fontSize: 36,
-                        fontWeight: 300,
-                        color: "#831843",
-                        fontStyle: "italic",
-                        margin: "0 0 4px",
-                        lineHeight: 1.3,
-                    }}
-                >
+                <h1 style={{ fontSize: 36, fontWeight: 300, color: "#831843", fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
                     {data.groomName}
                 </h1>
-                <p style={{ fontSize: 24, color: "#be185d", margin: "0 0 4px" }}>&</p>
-                <h1
-                    style={{
-                        fontSize: 36,
-                        fontWeight: 300,
-                        color: "#831843",
-                        fontStyle: "italic",
-                        margin: "0 0 24px",
-                        lineHeight: 1.3,
-                    }}
-                >
+                <p style={{ fontSize: 24, color: "#be185d", margin: "0 0 4px" }}>&amp;</p>
+                <h1 style={{ fontSize: 36, fontWeight: 300, color: "#831843", fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
                     {data.brideName}
                 </h1>
 
                 {/* Parents */}
-                <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
-                    <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>
-                    <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>
-                </div>
+                {(data.groomParentNames || data.brideParentNames) && (
+                    <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
+                        {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
+                        {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
+                    </div>
+                )}
             </section>
 
             {/* Calendar */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <CalendarWidget date={data.weddingDate} />
-            </section>
+            {data.weddingDate && (
+                <section style={{ padding: "0 24px 24px" }}>
+                    <CalendarWidget date={data.weddingDate} />
+                </section>
+            )}
 
             {/* Countdown */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <CountdownWidget targetDate={`${data.weddingDate}T${data.weddingTime}`} />
-            </section>
+            {data.weddingDate && (
+                <section style={{ padding: "0 24px 24px" }}>
+                    <CountdownWidget targetDate={`${data.weddingDate}T${data.weddingTime || "12:00"}`} />
+                </section>
+            )}
 
             {/* Story */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                    <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
-                    <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
-                </div>
-            </section>
+            {data.story && (
+                <section style={{ padding: "0 24px 24px" }}>
+                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
+                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
+                        <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
+                    </div>
+                </section>
+            )}
 
             {/* Venue + Map */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <MapWidget venueName={data.venueName} venueAddress={data.venueAddress} mapsUrl={data.googleMapsUrl} />
-            </section>
+            {data.venueName && (
+                <section style={{ padding: "0 24px 24px" }}>
+                    <MapWidget venueName={data.venueName} venueAddress={data.venueAddress} mapsUrl={data.googleMapsUrl} />
+                </section>
+            )}
 
             {/* Message */}
-            <section style={{ padding: "0 24px 24px", textAlign: "center" }}>
-                <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                    <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
-                    <p style={{ fontSize: 15, color: "#374151", fontStyle: "italic", lineHeight: 1.7, margin: 0 }}>
-                        &ldquo;{data.message}&rdquo;
-                    </p>
-                </div>
-            </section>
+            {data.message && (
+                <section style={{ padding: "0 24px 24px", textAlign: "center" }}>
+                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
+                        <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
+                        <p style={{ fontSize: 15, color: "#374151", fontStyle: "italic", lineHeight: 1.7, margin: 0 }}>
+                            &ldquo;{data.message}&rdquo;
+                        </p>
+                    </div>
+                </section>
+            )}
 
             {/* RSVP */}
             <section style={{ padding: "0 24px 24px" }}>
-                <RsvpWidget projectId="demo" />
+                <RsvpWidget projectId={projectId} />
             </section>
 
             {/* Wish Wall */}
             <section style={{ padding: "0 24px 24px" }}>
-                <WishWallWidget projectId="demo" />
+                <WishWallWidget projectId={projectId} />
             </section>
 
             {/* Gift QR */}
@@ -653,3 +714,4 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         </div>
     );
 }
+
