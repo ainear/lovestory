@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
         }
 
+        // Verify required env vars
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error("Upload error: Missing SUPABASE env vars");
+            return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+        }
+
         // Upload to Supabase Storage
         const serviceClient = createServiceClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,6 +46,21 @@ export async function POST(request: NextRequest) {
         const fileName = `${user.id}/${projectId || "general"}/${Date.now()}.${ext}`;
 
         const buffer = Buffer.from(await file.arrayBuffer());
+
+        // Ensure bucket exists (auto-create if not)
+        const { data: buckets } = await serviceClient.storage.listBuckets();
+        const bucketExists = buckets?.some(b => b.name === "photos");
+        if (!bucketExists) {
+            const { error: createBucketError } = await serviceClient.storage.createBucket("photos", {
+                public: true,
+                fileSizeLimit: MAX_FILE_SIZE,
+                allowedMimeTypes: ALLOWED_TYPES,
+            });
+            if (createBucketError) {
+                console.error("Bucket creation error:", createBucketError);
+                return NextResponse.json({ error: `Storage setup failed: ${createBucketError.message}` }, { status: 500 });
+            }
+        }
 
         const { error: uploadError } = await serviceClient.storage
             .from("photos")

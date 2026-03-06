@@ -94,7 +94,8 @@ function EditorContent() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { setSaveMsg("Vui lòng đăng nhập"); setSaving(false); return; }
 
-            const { data: sub } = await supabase.from("subscriptions").select("plan").eq("user_id", user.id).single();
+            // Use maybeSingle() — new users have no subscription row (avoids 406)
+            const { data: sub } = await supabase.from("subscriptions").select("plan").eq("user_id", user.id).maybeSingle();
             const plan = sub?.plan || "free";
             const maxProjects = plan === "premium" ? 999 : plan === "basic" ? 5 : 1;
             const { count } = await supabase.from("projects").select("*", { count: "exact", head: true }).eq("user_id", user.id);
@@ -111,26 +112,45 @@ function EditorContent() {
             }
 
             const slug = `${formData.groomName.toLowerCase().replace(/\s+/g, "-")}-${formData.brideName.toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
+
+            // Safe insert — only use columns that exist in DB table
+            // Extra wedding data stored in config JSONB
             const { error } = await supabase.from("projects").insert({
                 user_id: user.id,
                 title: `${formData.groomName} & ${formData.brideName}`,
-                slug, template: templateSlug,
-                groom_name: formData.groomName, bride_name: formData.brideName,
+                slug,
+                template: templateSlug,
+                groom_name: formData.groomName,
+                bride_name: formData.brideName,
                 wedding_date: formData.weddingDate || null,
-                wedding_time: formData.weddingTime || null,
-                venue_name: formData.venueName, venue_address: formData.venueAddress,
-                google_maps_url: formData.googleMapsUrl,
-                story: formData.story, message: formData.message,
-                bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
-                groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
-                photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                venue_name: formData.venueName || null,
+                venue_address: formData.venueAddress || null,
                 status: publish ? "published" : "draft",
+                view_count: 0,
+                config: {
+                    wedding_time: formData.weddingTime || null,
+                    google_maps_url: formData.googleMapsUrl || null,
+                    story: formData.story || null,
+                    message: formData.message || null,
+                    bank_name: formData.bankName || null,
+                    bank_account: formData.bankAccount || null,
+                    bank_owner: formData.bankOwner || null,
+                    groom_parent_names: formData.groomParentNames || null,
+                    bride_parent_names: formData.brideParentNames || null,
+                    photos: formData.photos.filter(p => p.trim()),
+                },
             });
 
-            if (error) { setSaveMsg(`Lỗi: ${error.message}`); setSaving(false); return; }
+            if (error) {
+                console.error("Project insert error:", error);
+                setSaveMsg(`Lỗi: ${error.message}`);
+                setSaving(false);
+                return;
+            }
             setSaveMsg(publish ? "Đã xuất bản!" : "Đã lưu!");
             setTimeout(() => router.push("/dashboard/projects"), 1500);
-        } catch {
+        } catch (err) {
+            console.error("Save error:", err);
             setSaveMsg("Lỗi kết nối");
         }
         setSaving(false);
