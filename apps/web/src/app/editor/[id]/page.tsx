@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import {
     Type, Image, Puzzle, Palette, Music, LayoutGrid,
-    LayoutTemplate, Sparkles, Undo2, Redo2, Eye, Rocket, Save, Heart,
+    LayoutTemplate, Sparkles, Undo2, Redo2, Eye, Rocket, Save, Heart, Headphones,
 } from "lucide-react";
 
 /* ─── SIDEBAR TABS (matches CineLove — SVG icons) ─── */
@@ -220,6 +220,19 @@ export default function EditorEditPage() {
                         <span style={{ fontSize: 9, fontWeight: 500 }}>{tab.label}</span>
                     </button>
                 ))}
+                <div style={{ flex: 1 }} />
+                <button
+                    onClick={() => window.open("https://7app.online", "_blank")}
+                    style={{
+                        width: 52, padding: "10px 0", border: "none", borderRadius: 10,
+                        background: "transparent", color: "#6b7280", cursor: "pointer",
+                        display: "flex", flexDirection: "column", alignItems: "center",
+                        gap: 2, fontSize: 18, marginBottom: 12,
+                    }}
+                >
+                    <Headphones size={18} />
+                    <span style={{ fontSize: 9, fontWeight: 500 }}>Hỗ trợ</span>
+                </button>
             </div>
 
             {/* ═══ LEFT: CONTENT PANEL (340px) ═══ */}

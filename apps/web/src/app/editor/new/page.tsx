@@ -8,7 +8,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import {
     Type, Image, Puzzle, Palette, Music, LayoutGrid,
     LayoutTemplate, Sparkles, HelpCircle, Undo2, Redo2,
-    Eye, Rocket, Heart, Save,
+    Eye, Rocket, Heart, Save, Menu, Headphones,
 } from "lucide-react";
 
 /* ─── SIDEBAR TABS (matches CineLove — SVG icons) ─── */
@@ -171,7 +171,7 @@ function EditorContent() {
                         gap: 2, fontSize: 18, marginBottom: 12,
                     }}
                 >
-                    <span>?</span>
+                    <Headphones size={18} />
                     <span style={{ fontSize: 9, fontWeight: 500 }}>Hỗ trợ</span>
                 </button>
             </div>
