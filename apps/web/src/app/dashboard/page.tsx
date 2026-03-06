@@ -95,9 +95,49 @@ export default async function DashboardPage() {
                 ))}
             </div>
 
+            {/* Upgrade CTA for free/basic users */}
+            {maxProjects < 999 && (
+                <div
+                    style={{
+                        background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)",
+                        borderRadius: 20,
+                        padding: "24px 28px",
+                        marginBottom: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 16,
+                    }}
+                >
+                    <div>
+                        <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: "0 0 4px" }}>
+                            ⭐ Gói hiện tại: <span style={{ color: "#fbbf24" }}>{maxProjects === 1 ? "Free" : "Basic"}</span>
+                        </p>
+                        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0 }}>
+                            Nâng cấp để mở khóa {maxProjects === 1 ? "bỏ watermark, nhạc nền, RSVP" : "thiệp không giới hạn, Video AI"}
+                        </p>
+                    </div>
+                    <Link
+                        href="/checkout"
+                        style={{
+                            padding: "10px 24px",
+                            borderRadius: 12,
+                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                            color: "#fff",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            textDecoration: "none",
+                        }}
+                    >
+                        🚀 Nâng cấp ngay
+                    </Link>
+                </div>
+            )}
+
             {/* Quick Actions */}
             <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", margin: "0 0 16px" }}>⚡ Hành động nhanh</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 32 }}>
                 <Link
                     href="/templates"
                     style={{
@@ -130,6 +170,35 @@ export default async function DashboardPage() {
                     <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Xem và chỉnh sửa</p>
                 </Link>
             </div>
+
+            {/* Tips for new users */}
+            {projectCount === 0 && (
+                <div style={{
+                    background: "#eff6ff",
+                    borderRadius: 16,
+                    padding: "24px 28px",
+                    border: "1px solid #bfdbfe",
+                }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#1e40af", margin: "0 0 12px" }}>💡 Bắt đầu tạo thiệp đầu tiên</h3>
+                    <ol style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {[
+                            "Chọn mẫu thiệp yêu thích từ bộ sưu tập 50+ template",
+                            "Điền thông tin: tên cô dâu & chú rể, ngày cưới, địa điểm",
+                            "Upload ảnh cưới và tùy chỉnh nội dung",
+                            "Xuất bản & chia sẻ link cho khách mời qua Zalo, Facebook",
+                        ].map((tip, i) => (
+                            <li key={i} style={{ fontSize: 13, color: "#1e40af", lineHeight: 1.6 }}>{tip}</li>
+                        ))}
+                    </ol>
+                </div>
+            )}
+
+            <style>{`
+                @media (max-width: 768px) {
+                    div[style*="gridTemplateColumns: repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
+                    div[style*="gridTemplateColumns: repeat(2"] { grid-template-columns: 1fr !important; }
+                }
+            `}</style>
         </div>
     );
 }
