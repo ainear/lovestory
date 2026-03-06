@@ -1,16 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Gift } from "@/types/database";
 
 export default async function GiftsPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let gifts: any[] = [];
+    let gifts: Gift[] = [];
     if (user) {
         const { data: projects } = await supabase
             .from("projects")
             .select("id")
             .eq("user_id", user.id);
-        const projectIds = (projects || []).map((p: any) => p.id);
+        const projectIds = (projects || []).map((p) => p.id);
 
         if (projectIds.length > 0) {
             const { data } = await supabase
@@ -22,7 +23,7 @@ export default async function GiftsPage() {
         }
     }
 
-    const totalAmount = gifts.reduce((sum: number, g: any) => sum + (g.amount || 0), 0);
+    const totalAmount = gifts.reduce((sum: number, g) => sum + (g.amount || 0), 0);
 
     return (
         <div>
