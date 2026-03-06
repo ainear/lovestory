@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { DashboardNav } from "./_components/DashboardNav";
 
 export default async function DashboardLayout({
     children,
@@ -68,30 +69,7 @@ export default async function DashboardLayout({
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, padding: "0 12px", display: "flex", flexDirection: "column", gap: 2 }}>
-                    <NavGroup label="HOME">
-                        <NavItem href="/dashboard" icon="📊" label="Tổng quan" />
-                        <NavItem href="/dashboard/my-plan" icon="⭐" label="Gói dịch vụ" />
-                        <NavItem href="/templates" icon="✏️" label="Tạo thiết kế" />
-                    </NavGroup>
-
-                    <NavGroup label="THIỆP CỦA TÔI">
-                        <NavItem href="/dashboard/projects" icon="💌" label="Thiệp online" />
-                        <NavItem href="/dashboard/videos" icon="🎬" label="Video của tôi" />
-                        <NavItem href="/ai-video" icon="✨" label="Tạo AI Video" />
-                    </NavGroup>
-
-                    <NavGroup label="KHÁCH MỜI">
-                        <NavItem href="/dashboard/guests" icon="👥" label="Danh sách khách" />
-                        <NavItem href="/dashboard/wishes" icon="💬" label="Lời chúc" />
-                        <NavItem href="/dashboard/rsvp" icon="✅" label="Xác nhận tham dự" />
-                        <NavItem href="/dashboard/gifts" icon="🎁" label="Quà tặng" />
-                    </NavGroup>
-
-                    <NavGroup label="TÀI KHOẢN">
-                        <NavItem href="/dashboard/profile" icon="👤" label="Thông tin cá nhân" />
-                    </NavGroup>
-                </nav>
+                <DashboardNav />
 
                 {/* User Card */}
                 <div style={{ padding: "16px 12px", borderTop: "1px solid #e8e8ec" }}>
@@ -161,25 +139,5 @@ export default async function DashboardLayout({
                 {children}
             </main>
         </div>
-    );
-}
-
-function NavGroup({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#b0b0bb", letterSpacing: 1.2, margin: "0 0 6px 12px", textTransform: "uppercase" }}>
-                {label}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>{children}</div>
-        </div>
-    );
-}
-
-function NavItem({ href, icon, label }: { href: string; icon: string; label: string }) {
-    return (
-        <Link href={href} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, fontSize: 14, color: "#4b5563", textDecoration: "none", transition: "all 0.15s" }}>
-            <span style={{ fontSize: 16 }}>{icon}</span>
-            <span>{label}</span>
-        </Link>
     );
 }
