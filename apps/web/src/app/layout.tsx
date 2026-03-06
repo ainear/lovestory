@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "LoveStory" }],
   creator: "LoveStory",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://web-pi-green-39.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://7app.online"),
   openGraph: {
     type: "website",
     locale: "vi_VN",
