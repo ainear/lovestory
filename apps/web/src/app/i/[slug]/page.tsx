@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface InvitationData {
     groomName: string;
@@ -17,6 +17,56 @@ interface InvitationData {
     bankName: string;
     bankAccount: string;
     bankOwner: string;
+}
+
+// ── Confetti Canvas ──
+function ConfettiCanvas() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const colors = ["#ff6b9d", "#c084fc", "#f9a8d4", "#fbbf24", "#34d399", "#60a5fa", "#fb7185"];
+        const particles: { x: number; y: number; w: number; h: number; color: string; vx: number; vy: number; rot: number; vr: number }[] = [];
+        for (let i = 0; i < 120; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * -canvas.height,
+                w: 4 + Math.random() * 6,
+                h: 8 + Math.random() * 6,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                vx: (Math.random() - 0.5) * 3,
+                vy: 2 + Math.random() * 4,
+                rot: Math.random() * Math.PI * 2,
+                vr: (Math.random() - 0.5) * 0.2,
+            });
+        }
+        let frame = 0;
+        const maxFrames = 180; // ~3 seconds at 60fps
+        function animate() {
+            if (frame >= maxFrames) { ctx!.clearRect(0, 0, canvas!.width, canvas!.height); return; }
+            ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.vr;
+                p.vy += 0.05; // gravity
+                ctx!.save();
+                ctx!.translate(p.x, p.y);
+                ctx!.rotate(p.rot);
+                ctx!.fillStyle = p.color;
+                ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx!.restore();
+            });
+            frame++;
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }, []);
+    return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 100 }} />;
 }
 
 // ── Envelope Animation Component ──
@@ -508,7 +558,9 @@ function GiftQrWidget({ bankName, bankAccount, bankOwner }: { bankName: string; 
 export default function PublicInvitationPage({ params }: { params: Promise<{ slug: string }> }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
     const [loading, setLoading] = useState(true);
+    const audioRef = useRef<HTMLAudioElement>(null);
     const [projectId, setProjectId] = useState("");
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
@@ -611,8 +663,22 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
     const handleOpen = () => {
         setIsOpen(true);
-        setIsPlaying(true);
+        setShowConfetti(true);
+        // Auto-play music on envelope open (user gesture)
+        if (audioRef.current) {
+            audioRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
+        } else {
+            setIsPlaying(true);
+        }
     };
+
+    const toggleMusic = useCallback(() => {
+        if (audioRef.current) {
+            if (isPlaying) { audioRef.current.pause(); }
+            else { audioRef.current.play().catch(() => { }); }
+        }
+        setIsPlaying(!isPlaying);
+    }, [isPlaying]);
 
     if (!isOpen) {
         return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} onOpen={handleOpen} />;
@@ -630,9 +696,20 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 animation: "fadeIn 0.8s ease-in",
             }}
         >
+            {/* Background Music Audio */}
+            <audio
+                ref={audioRef}
+                src="https://cdn.pixabay.com/audio/2024/11/29/audio_d60d894fa1.mp3"
+                loop
+                preload="auto"
+            />
+
+            {/* Confetti */}
+            {showConfetti && <ConfettiCanvas />}
+
             {/* Music Toggle */}
             <button
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={toggleMusic}
                 style={{
                     position: "fixed",
                     bottom: 24,
