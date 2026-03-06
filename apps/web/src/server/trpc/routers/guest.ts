@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+/** Strip HTML tags & trim to prevent XSS */
+function sanitize(str: string, maxLen = 500): string {
+    return str.replace(/<[^>]*>/g, "").trim().slice(0, maxLen);
+}
 
 export const guestRouter = router({
     // Public — guests can submit wishes without auth
@@ -12,16 +18,36 @@ export const guestRouter = router({
                 emoji: z.string().max(10).optional(),
             }),
         )
-        .mutation(async ({ input }) => {
-            // TODO: Insert into database + rate limit
-            return { success: true };
+        .mutation(async ({ ctx, input }) => {
+            const rl = checkRateLimit(`trpc-wish:${input.projectId}`, { limit: 10, windowSec: 60 });
+            if (!rl.allowed) throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
+
+            const { data, error } = await ctx.supabase
+                .from("wishes")
+                .insert({
+                    project_id: input.projectId,
+                    guest_name: sanitize(input.guestName, 100),
+                    message: sanitize(input.message, 500),
+                    emoji: sanitize(input.emoji || "❤️", 10),
+                })
+                .select()
+                .single();
+
+            if (error) throw new Error(error.message);
+            return { success: true, data };
         }),
 
     getWishes: publicProcedure
         .input(z.object({ projectId: z.string().uuid() }))
-        .query(async ({ input }) => {
-            // TODO: Query from database
-            return [];
+        .query(async ({ ctx, input }) => {
+            const { data } = await ctx.supabase
+                .from("wishes")
+                .select("id, guest_name, message, emoji, created_at")
+                .eq("project_id", input.projectId)
+                .order("created_at", { ascending: false })
+                .limit(50);
+
+            return data || [];
         }),
 
     // Public — RSVP without auth
@@ -31,27 +57,73 @@ export const guestRouter = router({
                 projectId: z.string().uuid(),
                 guestName: z.string().min(1).max(100),
                 status: z.enum(["confirmed", "declined", "maybe"]),
-                guestCount: z.number().min(1).max(20).default(1),
-                notes: z.string().max(300).optional(),
+                guestCount: z.number().min(1).max(50).default(1),
+                phone: z.string().max(20).optional(),
             }),
         )
-        .mutation(async ({ input }) => {
-            // TODO: Insert into database + rate limit
-            return { success: true };
+        .mutation(async ({ ctx, input }) => {
+            const rl = checkRateLimit(`trpc-rsvp:${input.projectId}`, { limit: 10, windowSec: 60 });
+            if (!rl.allowed) throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
+
+            const { data, error } = await ctx.supabase
+                .from("rsvps")
+                .insert({
+                    project_id: input.projectId,
+                    guest_name: sanitize(input.guestName, 100),
+                    status: input.status,
+                    guest_count: input.guestCount,
+                    phone: sanitize(input.phone || "", 20),
+                })
+                .select()
+                .single();
+
+            if (error) throw new Error(error.message);
+            return { success: true, data };
         }),
 
-    // Protected — owner views
+    // Protected — owner views RSVPs
     listRsvps: protectedProcedure
         .input(z.object({ projectId: z.string().uuid() }))
         .query(async ({ ctx, input }) => {
-            // TODO: Query from database, verify ownership
-            return [];
+            // Verify ownership
+            const { data: project } = await ctx.supabase
+                .from("projects")
+                .select("id")
+                .eq("id", input.projectId)
+                .eq("user_id", ctx.user.id)
+                .single();
+
+            if (!project) throw new Error("Project not found");
+
+            const { data } = await ctx.supabase
+                .from("rsvps")
+                .select("*")
+                .eq("project_id", input.projectId)
+                .order("created_at", { ascending: false });
+
+            return data || [];
         }),
 
+    // Protected — owner views gifts
     listGifts: protectedProcedure
         .input(z.object({ projectId: z.string().uuid() }))
         .query(async ({ ctx, input }) => {
-            // TODO: Query from database, verify ownership
-            return [];
+            // Verify ownership
+            const { data: project } = await ctx.supabase
+                .from("projects")
+                .select("id")
+                .eq("id", input.projectId)
+                .eq("user_id", ctx.user.id)
+                .single();
+
+            if (!project) throw new Error("Project not found");
+
+            const { data } = await ctx.supabase
+                .from("gifts")
+                .select("*")
+                .eq("project_id", input.projectId)
+                .order("created_at", { ascending: false });
+
+            return data || [];
         }),
 });
