@@ -476,7 +476,7 @@ function WishWallWidget({ projectId }: { projectId: string }) {
     useEffect(() => {
         fetch(`/api/wishes?projectId=${projectId}`)
             .then(r => r.json())
-            .then(d => setWishes((d.data || []).map((w: any) => ({ name: w.guest_name, message: w.message, emoji: w.emoji || "❤️" }))))
+            .then(d => setWishes((d.data || []).map((w: { guest_name: string; message: string; emoji?: string }) => ({ name: w.guest_name, message: w.message, emoji: w.emoji || "❤️" }))))
             .catch(() => { });
     }, [projectId]);
 

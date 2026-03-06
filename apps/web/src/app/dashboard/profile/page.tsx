@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import type { Order } from "@/types/database";
 
 const PLAN_CONFIG = {
     free: { name: "🆓 Miễn phí", color: "#6b7280", bg: "#f3f4f6", maxProjects: 1, maxPhotos: 10 },
@@ -13,7 +14,7 @@ export default async function ProfilePage() {
 
     // Get subscription
     let currentPlan = "free";
-    let subscription: any = null;
+    let subscription: { plan: string; expires_at: string | null; started_at?: string; orders?: Order[] } | null = null;
     if (user) {
         const { data } = await supabase
             .from("subscriptions")
@@ -27,7 +28,7 @@ export default async function ProfilePage() {
     }
 
     // Get order history
-    let orders: any[] = [];
+    let orders: Order[] = [];
     if (user) {
         const { data } = await supabase
             .from("orders")
@@ -121,7 +122,7 @@ export default async function ProfilePage() {
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <span style={{ fontSize: 13, color: "#6b7280" }}>Kích hoạt</span>
                             <span style={{ fontSize: 13, color: "#1f2937" }}>
-                                {new Date(subscription.started_at).toLocaleDateString("vi-VN")}
+                                {subscription.started_at ? new Date(subscription.started_at).toLocaleDateString("vi-VN") : "—"}
                             </span>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
