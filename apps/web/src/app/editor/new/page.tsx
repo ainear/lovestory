@@ -339,9 +339,9 @@ function EditorContent() {
 
                     {activeSection === "photos" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <div style={{ background: "#fef3c7", borderRadius: 12, padding: 16, border: "1px solid #fde68a" }}>
-                                <p style={{ fontSize: 12, color: "#92400e", margin: 0 }}>
-                                    📷 Dán link ảnh từ Google Photos, iCloud, Imgur hoặc bất kỳ đường dẫn ảnh nào. Tối đa 6 ảnh.
+                            <div style={{ background: "#f0fdf4", borderRadius: 12, padding: 16, border: "1px solid #bbf7d0" }}>
+                                <p style={{ fontSize: 12, color: "#166534", margin: 0 }}>
+                                    📤 Upload ảnh trực tiếp hoặc dán link. Tối đa 6 ảnh, mỗi ảnh ≤ 5MB.
                                 </p>
                             </div>
                             {formData.photos.map((url, i) => (
@@ -349,10 +349,10 @@ function EditorContent() {
                                     <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
                                         Ảnh {i + 1}
                                     </label>
-                                    <div style={{ display: "flex", gap: 8 }}>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                                         <input
                                             type="url"
-                                            placeholder="https://example.com/photo.jpg"
+                                            placeholder="https://... hoặc upload ảnh →"
                                             value={url}
                                             onChange={(e) => {
                                                 const newPhotos = [...formData.photos];
@@ -365,6 +365,39 @@ function EditorContent() {
                                                 background: "#fff",
                                             }}
                                         />
+                                        <label style={{
+                                            padding: "8px 12px", borderRadius: 10,
+                                            background: "linear-gradient(135deg, #10b981, #059669)",
+                                            color: "#fff", fontSize: 12, fontWeight: 600,
+                                            cursor: "pointer", whiteSpace: "nowrap",
+                                            display: "flex", alignItems: "center", gap: 4,
+                                        }}>
+                                            📤
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                                style={{ display: "none" }}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const fd = new FormData();
+                                                    fd.append("file", file);
+                                                    fd.append("projectId", "new");
+                                                    try {
+                                                        const res = await fetch("/api/upload", { method: "POST", body: fd });
+                                                        const data = await res.json();
+                                                        if (data.url) {
+                                                            const newPhotos = [...formData.photos];
+                                                            newPhotos[i] = data.url;
+                                                            setFormData(prev => ({ ...prev, photos: newPhotos }));
+                                                        } else {
+                                                            alert(data.error || "Upload lỗi");
+                                                        }
+                                                    } catch { alert("Upload lỗi"); }
+                                                    e.target.value = "";
+                                                }}
+                                            />
+                                        </label>
                                         {url && (
                                             <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", flexShrink: 0, border: "1px solid #e5e7eb" }}>
                                                 <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
