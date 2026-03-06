@@ -702,6 +702,24 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         loadProject();
     }, []);
 
+    const handleOpen = () => {
+        setIsOpen(true);
+        setShowConfetti(true);
+        if (audioRef.current) {
+            audioRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
+        } else {
+            setIsPlaying(true);
+        }
+    };
+
+    const toggleMusic = useCallback(() => {
+        if (audioRef.current) {
+            if (isPlaying) { audioRef.current.pause(); }
+            else { audioRef.current.play().catch(() => { }); }
+        }
+        setIsPlaying(!isPlaying);
+    }, [isPlaying]);
+
     if (loading) {
         return (
             <div style={{
@@ -731,25 +749,6 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             </div>
         );
     }
-
-    const handleOpen = () => {
-        setIsOpen(true);
-        setShowConfetti(true);
-        // Auto-play music on envelope open (user gesture)
-        if (audioRef.current) {
-            audioRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
-        } else {
-            setIsPlaying(true);
-        }
-    };
-
-    const toggleMusic = useCallback(() => {
-        if (audioRef.current) {
-            if (isPlaying) { audioRef.current.pause(); }
-            else { audioRef.current.play().catch(() => { }); }
-        }
-        setIsPlaying(!isPlaying);
-    }, [isPlaying]);
 
     if (!isOpen) {
         return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} onOpen={handleOpen} />;
