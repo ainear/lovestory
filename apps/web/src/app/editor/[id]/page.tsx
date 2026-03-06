@@ -580,13 +580,99 @@ export default function EditorEditPage() {
                                     <p style={{ fontSize: 12 * (zoom / 100), color: theme.textColor, lineHeight: 1.6, fontStyle: "italic", opacity: 0.8 }}>&ldquo;{formData.message}&rdquo;</p>
                                 )}
 
-                                {formData.photos.filter(p => p.trim()).length > 0 && (
+                                {formData.photos.filter(p => p.trim()).length > 0 ? (
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, margin: "16px 0" }}>
                                         {formData.photos.filter(p => p.trim()).slice(0, 4).map((url, i) => (
                                             <div key={i} style={{ borderRadius: 8, overflow: "hidden", aspectRatio: "1" }}>
                                                 <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                             </div>
                                         ))}
+                                    </div>
+                                ) : (
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, margin: "16px 0" }}>
+                                        {[0, 1, 2, 3].map(i => (
+                                            <div key={i} style={{
+                                                borderRadius: 8, aspectRatio: "1",
+                                                background: `linear-gradient(135deg, ${theme.accent}15, ${theme.accent}08)`,
+                                                border: `1px dashed ${theme.accent}40`,
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                            }}>
+                                                <span style={{ fontSize: 20 * (zoom / 100), opacity: 0.3 }}>📷</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {widgetToggles.countdown && (
+                                    <div style={{
+                                        background: "rgba(255,255,255,0.6)", borderRadius: 12,
+                                        padding: `${14 * (zoom / 100)}px`, margin: "0 0 16px",
+                                        backdropFilter: "blur(10px)",
+                                    }}>
+                                        <p style={{ fontSize: 10 * (zoom / 100), color: theme.accent, letterSpacing: 2, margin: "0 0 8px", fontWeight: 600 }}>ĐẾM NGƯỢC</p>
+                                        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+                                            {[
+                                                { val: "88", label: "Ngày" },
+                                                { val: "12", label: "Giờ" },
+                                                { val: "34", label: "Phút" },
+                                                { val: "56", label: "Giây" },
+                                            ].map((d, i) => (
+                                                <div key={i} style={{ textAlign: "center" }}>
+                                                    <div style={{
+                                                        width: 42 * (zoom / 100), height: 42 * (zoom / 100),
+                                                        borderRadius: 8, background: theme.accent + "18",
+                                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                                        fontSize: 16 * (zoom / 100), fontWeight: 700, color: theme.accent,
+                                                    }}>{d.val}</div>
+                                                    <p style={{ fontSize: 8 * (zoom / 100), color: theme.textColor, margin: "4px 0 0", opacity: 0.6 }}>{d.label}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {widgetToggles.rsvp && (
+                                    <div style={{
+                                        background: "rgba(255,255,255,0.6)", borderRadius: 12,
+                                        padding: `${14 * (zoom / 100)}px`, margin: "0 0 16px",
+                                        backdropFilter: "blur(10px)",
+                                    }}>
+                                        <p style={{ fontSize: 10 * (zoom / 100), color: theme.accent, letterSpacing: 2, margin: "0 0 8px", fontWeight: 600 }}>XÁC NHẬN THAM DỰ</p>
+                                        <div style={{
+                                            padding: `${8 * (zoom / 100)}px ${12 * (zoom / 100)}px`,
+                                            borderRadius: 8, border: `1px solid ${theme.accent}30`,
+                                            fontSize: 11 * (zoom / 100), color: theme.textColor,
+                                            opacity: 0.5, textAlign: "left",
+                                        }}>Nhập họ tên...</div>
+                                        <button style={{
+                                            marginTop: 8, width: "100%",
+                                            padding: `${8 * (zoom / 100)}px`, borderRadius: 8,
+                                            border: "none", background: theme.accent,
+                                            color: "#fff", fontSize: 11 * (zoom / 100), fontWeight: 600,
+                                            cursor: "default", opacity: 0.8,
+                                        }}>Gửi xác nhận</button>
+                                    </div>
+                                )}
+
+                                {widgetToggles.qr && (formData.bankName || formData.bankAccount) && (
+                                    <div style={{
+                                        background: "rgba(255,255,255,0.6)", borderRadius: 12,
+                                        padding: `${14 * (zoom / 100)}px`, margin: "0 0 16px",
+                                        backdropFilter: "blur(10px)",
+                                    }}>
+                                        <p style={{ fontSize: 10 * (zoom / 100), color: theme.accent, letterSpacing: 2, margin: "0 0 8px", fontWeight: 600 }}>MỪNG CƯỚI</p>
+                                        <div style={{
+                                            width: 80 * (zoom / 100), height: 80 * (zoom / 100),
+                                            background: theme.accent + "10", borderRadius: 8,
+                                            margin: "0 auto 8px", display: "flex",
+                                            alignItems: "center", justifyContent: "center",
+                                            border: `1px dashed ${theme.accent}40`,
+                                        }}>
+                                            <span style={{ fontSize: 24 * (zoom / 100), opacity: 0.4 }}>📱</span>
+                                        </div>
+                                        <p style={{ fontSize: 10 * (zoom / 100), color: theme.textColor, margin: 0, opacity: 0.6 }}>
+                                            {formData.bankName} • {formData.bankAccount}
+                                        </p>
                                     </div>
                                 )}
 
