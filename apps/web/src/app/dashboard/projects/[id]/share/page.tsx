@@ -11,6 +11,8 @@ export default function SharePage() {
     const [project, setProject] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [emailTo, setEmailTo] = useState("");
+    const [emailCopied, setEmailCopied] = useState(false);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -265,6 +267,52 @@ export default function SharePage() {
                             <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>{project.status === "published" ? "Đã xuất bản" : "Bản nháp"}</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Email Invite */}
+                <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.04)", padding: "24px 28px", marginTop: 20 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#1f2937", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                        ✉️ Gửi thiệp qua Email
+                    </h3>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                        <input
+                            type="email"
+                            placeholder="email@example.com"
+                            value={emailTo}
+                            onChange={(e) => setEmailTo(e.target.value)}
+                            style={{
+                                flex: 1, padding: "12px 16px", borderRadius: 12,
+                                border: "1px solid #e5e7eb", fontSize: 13, outline: "none", background: "#f9fafb",
+                            }}
+                        />
+                        <a
+                            href={`mailto:${emailTo}?subject=${encodeURIComponent(`💌 Thiệp mời đám cưới: ${title}`)}&body=${encodeURIComponent(`Xin chào,\n\nTrân trọng kính mời bạn đến dự lễ cưới của ${title}.\n${project.wedding_date ? `\n📅 Ngày: ${new Date(project.wedding_date).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}` : ""}${project.venue_name ? `\n📍 Địa điểm: ${project.venue_name}` : ""}${project.venue_address ? ` - ${project.venue_address}` : ""}\n\n👉 Xem thiệp mời tại: ${inviteUrl}\n\nRất mong được đón tiếp bạn!\n${title}`)}`}
+                            style={{
+                                padding: "12px 20px", borderRadius: 12, border: "none",
+                                background: "linear-gradient(135deg, #f43f5e, #e11d48)", color: "#fff",
+                                fontSize: 13, fontWeight: 600, textDecoration: "none",
+                                display: "flex", alignItems: "center", gap: 6,
+                                opacity: emailTo ? 1 : 0.5, pointerEvents: emailTo ? "auto" : "none",
+                            }}
+                        >
+                            ✉️ Gửi
+                        </a>
+                    </div>
+                    <button
+                        onClick={() => {
+                            const body = `Xin chào,\n\nTrân trọng kính mời bạn đến dự lễ cưới của ${title}.\n${project.wedding_date ? `📅 Ngày: ${new Date(project.wedding_date).toLocaleDateString("vi-VN")}\n` : ""}${project.venue_name ? `📍 ${project.venue_name}\n` : ""}\n👉 Xem thiệp: ${inviteUrl}\n\nRất mong được đón tiếp bạn!`;
+                            navigator.clipboard.writeText(body);
+                            setEmailCopied(true);
+                            setTimeout(() => setEmailCopied(false), 2000);
+                        }}
+                        style={{
+                            width: "100%", padding: "10px", borderRadius: 10,
+                            border: "1px solid #e5e7eb", background: emailCopied ? "#ecfdf5" : "#fff",
+                            color: emailCopied ? "#059669" : "#6b7280", fontSize: 12, cursor: "pointer",
+                        }}
+                    >
+                        {emailCopied ? "✅ Đã copy nội dung email!" : "📋 Copy nội dung để gửi thủ công"}
+                    </button>
                 </div>
 
                 {/* Action Buttons */}
