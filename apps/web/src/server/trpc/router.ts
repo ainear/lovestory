@@ -5,6 +5,7 @@ import { templateRouter } from "./routers/template";
 import { guestRouter } from "./routers/guest";
 import { billingRouter } from "./routers/billing";
 import { mediaRouter } from "./routers/media";
+import { videoRouter } from "./routers/video";
 
 export const appRouter = router({
     auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
     guest: guestRouter,
     billing: billingRouter,
     media: mediaRouter,
+    video: videoRouter,
 });
 
 export type AppRouter = typeof appRouter;
