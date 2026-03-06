@@ -1,17 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Wish } from "@/types/database";
 
 export default async function WishesPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let wishes: any[] = [];
+    let wishes: Wish[] = [];
     if (user) {
         // Get user's project IDs first
         const { data: projects } = await supabase
             .from("projects")
             .select("id")
             .eq("user_id", user.id);
-        const projectIds = (projects || []).map((p: any) => p.id);
+        const projectIds = (projects || []).map((p) => p.id);
 
         if (projectIds.length > 0) {
             const { data } = await supabase

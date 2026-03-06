@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Rsvp } from "@/types/database";
 
 const STATUS_CONFIG = {
     confirmed: { label: "✅ Tham dự", color: "#059669", bg: "#ecfdf5" },
@@ -10,13 +11,13 @@ export default async function RsvpPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let rsvps: any[] = [];
+    let rsvps: Rsvp[] = [];
     if (user) {
         const { data: projects } = await supabase
             .from("projects")
             .select("id")
             .eq("user_id", user.id);
-        const projectIds = (projects || []).map((p: any) => p.id);
+        const projectIds = (projects || []).map((p) => p.id);
 
         if (projectIds.length > 0) {
             const { data } = await supabase
@@ -29,7 +30,7 @@ export default async function RsvpPage() {
     }
 
     const confirmed = rsvps.filter((r) => r.status === "confirmed");
-    const totalGuests = confirmed.reduce((sum: number, r: any) => sum + (r.guest_count || 0), 0);
+    const totalGuests = confirmed.reduce((sum: number, r) => sum + (r.guest_count || 0), 0);
 
     return (
         <div>

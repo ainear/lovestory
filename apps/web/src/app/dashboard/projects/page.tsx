@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import DeleteButton from "./DeleteButton";
+import type { Project } from "@/types/database";
 
 const STATUS_MAP = {
     draft: { label: "Bản nháp", color: "#9ca3af", bg: "#f3f4f6" },
@@ -14,7 +15,7 @@ export default async function ProjectsPage() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    let projects: any[] = [];
+    let projects: Project[] = [];
     if (user) {
         const { data } = await supabase
             .from("projects")
