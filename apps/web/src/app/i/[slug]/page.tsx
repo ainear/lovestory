@@ -645,7 +645,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 .select("*")
                 .eq("slug", slug)
                 .eq("status", "published")
-                .single();
+                .maybeSingle();
 
             if (project) {
                 setProjectId(project.id);
