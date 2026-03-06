@@ -126,4 +126,80 @@ export const guestRouter = router({
 
             return data || [];
         }),
+
+    // Protected — add a guest to a project
+    addGuest: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string().uuid(),
+                name: z.string().min(1).max(100),
+                email: z.string().email().optional().or(z.literal("")),
+                phone: z.string().max(20).optional(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Verify ownership
+            const { data: project } = await ctx.supabase
+                .from("projects")
+                .select("id, slug")
+                .eq("id", input.projectId)
+                .eq("user_id", ctx.user.id)
+                .single();
+
+            if (!project) throw new Error("Project not found");
+
+            const { data, error } = await ctx.supabase
+                .from("guests")
+                .insert({
+                    project_id: input.projectId,
+                    user_id: ctx.user.id,
+                    name: sanitize(input.name, 100),
+                    email: input.email || null,
+                    phone: sanitize(input.phone || "", 20) || null,
+                    status: "pending",
+                })
+                .select()
+                .single();
+
+            if (error) throw new Error(error.message);
+            return { success: true, data };
+        }),
+
+    // Protected — list guests for a project
+    listGuests: protectedProcedure
+        .input(z.object({ projectId: z.string().uuid() }))
+        .query(async ({ ctx, input }) => {
+            // Verify ownership
+            const { data: project } = await ctx.supabase
+                .from("projects")
+                .select("id")
+                .eq("id", input.projectId)
+                .eq("user_id", ctx.user.id)
+                .single();
+
+            if (!project) throw new Error("Project not found");
+
+            const { data } = await ctx.supabase
+                .from("guests")
+                .select("id, name, email, phone, status, created_at")
+                .eq("project_id", input.projectId)
+                .order("created_at", { ascending: false });
+
+            return data || [];
+        }),
+
+    // Protected — delete a guest
+    deleteGuest: protectedProcedure
+        .input(z.object({ guestId: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            // Verify ownership via user_id on guest row
+            const { error } = await ctx.supabase
+                .from("guests")
+                .delete()
+                .eq("id", input.guestId)
+                .eq("user_id", ctx.user.id);
+
+            if (error) throw new Error(error.message);
+            return { success: true };
+        }),
 });

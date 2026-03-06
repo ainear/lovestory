@@ -13,6 +13,7 @@ import {
     type TextOverlay,
 } from "@/server/services/ffmpeg-builder";
 import { generateLoveStoryText } from "@/server/services/ai-text";
+import { sendVideoReadyEmail } from "@/server/services/email";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -280,7 +281,23 @@ export async function POST(req: NextRequest) {
             })
             .eq("id", videoId);
 
-        // 8. Cleanup temp files
+        // 8a. Send "Video Ready" email (fire-and-forget)
+        try {
+            const { data: userData } = await supabase.auth.admin.getUserById(
+                (await supabase.from("videos").select("user_id").eq("id", videoId).single()).data?.user_id || ""
+            );
+            if (userData?.user?.email) {
+                sendVideoReadyEmail(
+                    userData.user.email,
+                    userData.user.user_metadata?.full_name || userData.user.email.split("@")[0],
+                    outputUrl,
+                    thumbUrl,
+                ).catch((e: unknown) => console.warn("[Email] video-ready failed:", e));
+            }
+        } catch {
+            // Non-blocking — email failure must not fail the pipeline
+        }
+
         await cleanupWorkDir(workDir);
 
         return NextResponse.json({

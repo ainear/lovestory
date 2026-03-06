@@ -77,10 +77,12 @@ export default async function DashboardLayout({
 
                     <NavGroup label="THIỆP CỦA TÔI">
                         <NavItem href="/dashboard/projects" icon="💌" label="Thiệp online" />
-                        <NavItem href="/ai-video" icon="🎬" label="AI Video" />
+                        <NavItem href="/dashboard/videos" icon="🎬" label="Video của tôi" />
+                        <NavItem href="/ai-video" icon="✨" label="Tạo AI Video" />
                     </NavGroup>
 
                     <NavGroup label="KHÁCH MỜI">
+                        <NavItem href="/dashboard/guests" icon="👥" label="Danh sách khách" />
                         <NavItem href="/dashboard/wishes" icon="💬" label="Lời chúc" />
                         <NavItem href="/dashboard/rsvp" icon="✅" label="Xác nhận tham dự" />
                         <NavItem href="/dashboard/gifts" icon="🎁" label="Quà tặng" />
