@@ -230,6 +230,26 @@ export default function SharePage() {
                             >
                                 💬 Messenger
                             </a>
+
+                            {/* WhatsApp */}
+                            <a
+                                href={`https://wa.me/?text=${encodeURIComponent(`Thiệp mời: ${title}\n${inviteUrl}`)}`}
+                                target="_blank"
+                                style={{
+                                    padding: "10px 18px",
+                                    borderRadius: 12,
+                                    background: "#25d366",
+                                    color: "#fff",
+                                    fontSize: 13,
+                                    fontWeight: 500,
+                                    textDecoration: "none",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                }}
+                            >
+                                📱 WhatsApp
+                            </a>
                         </div>
                     </div>
 
