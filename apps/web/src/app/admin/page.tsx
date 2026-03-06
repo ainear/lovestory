@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
                         </tr>
                     </thead>
                     <tbody>
-                        {(recentOrders || []).map((order: any) => (
+                        {(recentOrders || []).map((order: Order) => (
                             <tr key={order.id} style={{ borderBottom: "1px solid #1e293b" }}>
                                 <td style={{ padding: "12px 16px", fontSize: 13, color: "#e2e8f0", fontFamily: "monospace" }}>{order.order_code}</td>
                                 <td style={{ padding: "12px 16px", fontSize: 13, color: "#e2e8f0" }}>{order.plan === "basic" ? "⭐ Basic" : "👑 Premium"}</td>
