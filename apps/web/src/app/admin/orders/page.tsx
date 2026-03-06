@@ -1,4 +1,5 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import type { Order } from "@/types/database";
 
 export default async function AdminOrdersPage() {
     const supabase = createServerClient(
@@ -13,8 +14,8 @@ export default async function AdminOrdersPage() {
         .limit(50);
 
     const totalRevenue = (orders || [])
-        .filter((o: any) => o.status === "paid")
-        .reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+        .filter((o: Order) => o.status === "paid")
+        .reduce((sum: number, o: Order) => sum + (o.amount || 0), 0);
 
     return (
         <div>
@@ -40,7 +41,7 @@ export default async function AdminOrdersPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {(orders || []).map((order: any) => (
+                        {(orders || []).map((order: Order) => (
                             <tr key={order.id} style={{ borderBottom: "1px solid #1e293b" }}>
                                 <td style={{ padding: "12px 14px", fontSize: 12, color: "#e2e8f0", fontFamily: "monospace" }}>{order.order_code}</td>
                                 <td style={{ padding: "12px 14px", fontSize: 11, color: "#64748b", fontFamily: "monospace" }}>{order.user_id?.slice(0, 8)}...</td>

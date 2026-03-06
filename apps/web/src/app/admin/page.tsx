@@ -1,4 +1,5 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import type { Order } from "@/types/database";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -25,7 +26,7 @@ export default async function AdminDashboard() {
         supabase.from("orders").select("amount").eq("status", "paid"),
     ]);
 
-    const totalRevenue = (revenueData || []).reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+    const totalRevenue = (revenueData || []).reduce((sum: number, o: { amount?: number }) => sum + (o.amount || 0), 0);
 
     const stats = [
         { label: "Tổng Users", value: totalUsers || 0, icon: "👥", color: "#3b82f6", bg: "rgba(59,130,246,0.15)" },

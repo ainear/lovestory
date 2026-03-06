@@ -1,4 +1,5 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import type { Project } from "@/types/database";
 
 export default async function AdminProjectsPage() {
     const supabase = createServerClient(
@@ -12,8 +13,8 @@ export default async function AdminProjectsPage() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-    const published = (projects || []).filter((p: any) => p.status === "published").length;
-    const drafts = (projects || []).filter((p: any) => p.status === "draft").length;
+    const published = (projects || []).filter((p: Project) => p.status === "published").length;
+    const drafts = (projects || []).filter((p: Project) => p.status === "draft").length;
 
     return (
         <div>
@@ -42,7 +43,7 @@ export default async function AdminProjectsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {(projects || []).map((p: any) => (
+                        {(projects || []).map((p: Project) => (
                             <tr key={p.id} style={{ borderBottom: "1px solid #1e293b" }}>
                                 <td style={{ padding: "12px 14px" }}>
                                     <p style={{ fontSize: 14, fontWeight: 500, color: "#e2e8f0", margin: "0 0 2px" }}>{p.title || "Untitled"}</p>
