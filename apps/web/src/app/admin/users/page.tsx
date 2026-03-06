@@ -1,4 +1,5 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import type { Subscription } from "@/types/database";
 
 export default async function AdminUsersPage() {
     const supabase = createServerClient(
@@ -12,12 +13,12 @@ export default async function AdminUsersPage() {
 
     // Get subscriptions for all users
     const { data: subs } = await supabase.from("subscriptions").select("*");
-    const subMap = new Map((subs || []).map((s: any) => [s.user_id, s]));
+    const subMap = new Map((subs || []).map((s: Subscription) => [s.user_id, s]));
 
     // Get project counts
     const { data: projects } = await supabase.from("projects").select("user_id");
     const projectCounts = new Map<string, number>();
-    (projects || []).forEach((p: any) => {
+    (projects || []).forEach((p: { user_id: string }) => {
         projectCounts.set(p.user_id, (projectCounts.get(p.user_id) || 0) + 1);
     });
 
@@ -41,7 +42,7 @@ export default async function AdminUsersPage() {
                     </thead>
                     <tbody>
                         {users.map((user) => {
-                            const sub = subMap.get(user.id) as any;
+                            const sub = subMap.get(user.id) as Subscription | undefined;
                             const plan = sub?.plan || "free";
                             const projectCount = projectCounts.get(user.id) || 0;
                             const avatar = user.user_metadata?.avatar_url;

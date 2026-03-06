@@ -8,6 +8,7 @@ export interface Project {
     user_id: string;
     slug: string;
     template_id: string;
+    template: string;
     title: string;
     groom_name: string;
     bride_name: string;
@@ -59,8 +60,11 @@ export interface Subscription {
 export interface Order {
     id: string;
     user_id: string;
+    order_code: string;
     plan: string;
     amount: number;
     status: "pending" | "paid" | "failed";
+    payment_method: string;
+    paid_at: string | null;
     created_at: string;
 }
