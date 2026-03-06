@@ -140,21 +140,38 @@ export default async function ProjectsPage() {
                                 </div>
                                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                                     {project.status === "published" && (
-                                        <Link
-                                            href={`/i/${project.slug}`}
-                                            target="_blank"
-                                            style={{
-                                                padding: "8px 14px",
-                                                borderRadius: 8,
-                                                border: "1px solid #e5e7eb",
-                                                background: "#fff",
-                                                color: "#6b7280",
-                                                fontSize: 12,
-                                                textDecoration: "none",
-                                            }}
-                                        >
-                                            👁️ Xem
-                                        </Link>
+                                        <>
+                                            <Link
+                                                href={`/i/${project.slug}`}
+                                                target="_blank"
+                                                style={{
+                                                    padding: "8px 14px",
+                                                    borderRadius: 8,
+                                                    border: "1px solid #e5e7eb",
+                                                    background: "#fff",
+                                                    color: "#6b7280",
+                                                    fontSize: 12,
+                                                    textDecoration: "none",
+                                                }}
+                                            >
+                                                👁️ Xem
+                                            </Link>
+                                            <Link
+                                                href={`/dashboard/projects/${project.id}/share`}
+                                                style={{
+                                                    padding: "8px 14px",
+                                                    borderRadius: 8,
+                                                    border: "1px solid #fce7f3",
+                                                    background: "#fff5f8",
+                                                    color: "#be185d",
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    textDecoration: "none",
+                                                }}
+                                            >
+                                                📤 Share
+                                            </Link>
+                                        </>
                                     )}
                                     <Link
                                         href={`/editor/${project.id}`}
