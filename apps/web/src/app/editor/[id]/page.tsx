@@ -1,9 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+
+/* ─── SIDEBAR TABS (matches CineLove) ─── */
+const SIDEBAR_TABS = [
+    { key: "text", icon: "T", label: "Văn bản" },
+    { key: "images", icon: "🖼", label: "Hình ảnh" },
+    { key: "stock", icon: "✦", label: "Stock" },
+    { key: "bg", icon: "◧", label: "Nền" },
+    { key: "music", icon: "♫", label: "Âm nhạc" },
+    { key: "widgets", icon: "⧉", label: "Tiện ích" },
+    { key: "templates", icon: "⊞", label: "Mẫu" },
+    { key: "effects", icon: "✨", label: "Hiệu ứng" },
+] as const;
+
+/* ─── TEMPLATE THEMES ─── */
+const TEMPLATE_THEMES: Record<string, {
+    bg: string; accent: string; textColor: string; nameColor: string;
+    font: string; pattern: string; decorTop: string; decorBottom: string;
+}> = {
+    "rose-garden": {
+        bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+        accent: "#be185d", textColor: "#831843", nameColor: "#9f1239",
+        font: "'Georgia', serif", pattern: "🌹",
+        decorTop: "✿ ❀ ✿", decorBottom: "❀ ✿ ❀",
+    },
+    "midnight-romance": {
+        bg: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)",
+        accent: "#c084fc", textColor: "#e9d5ff", nameColor: "#f5f3ff",
+        font: "'Georgia', serif", pattern: "🌙",
+        decorTop: "☆ ✧ ☆", decorBottom: "✧ ☆ ✧",
+    },
+    "golden-hour": {
+        bg: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)",
+        accent: "#d97706", textColor: "#92400e", nameColor: "#78350f",
+        font: "'Georgia', serif", pattern: "🌅",
+        decorTop: "❋ ✤ ❋", decorBottom: "✤ ❋ ✤",
+    },
+};
 
 export default function EditorEditPage() {
     const params = useParams();
@@ -13,7 +50,9 @@ export default function EditorEditPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState("");
-    const [activeSection, setActiveSection] = useState("couple");
+    const [autoSaved, setAutoSaved] = useState(true);
+    const [activeTab, setActiveTab] = useState("text");
+    const [zoom, setZoom] = useState(100);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,37 +60,29 @@ export default function EditorEditPage() {
     );
 
     const [formData, setFormData] = useState({
-        groomName: "",
-        brideName: "",
-        weddingDate: "",
-        weddingTime: "",
-        venueName: "",
-        venueAddress: "",
-        groomParentNames: "",
-        brideParentNames: "",
-        story: "",
-        message: "",
+        groomName: "", brideName: "",
+        weddingDate: "", weddingTime: "",
+        venueName: "", venueAddress: "",
+        groomParentNames: "", brideParentNames: "",
+        story: "", message: "",
         googleMapsUrl: "",
-        bankName: "",
-        bankAccount: "",
-        bankOwner: "",
+        bankName: "", bankAccount: "", bankOwner: "",
         photos: ["", "", "", "", "", ""] as string[],
     });
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const [projectStatus, setProjectStatus] = useState("draft");
     const [slug, setSlug] = useState("");
 
-    // Load project from DB
+    const theme = TEMPLATE_THEMES[templateSlug] || TEMPLATE_THEMES["rose-garden"];
+
+    // ─── Load project from DB ───
     useEffect(() => {
         async function loadProject() {
             const { data: project, error } = await supabase
-                .from("projects")
-                .select("*")
-                .eq("id", projectId)
-                .single();
+                .from("projects").select("*").eq("id", projectId).single();
 
             if (error || !project) {
-                setSaveMsg("❌ Không tìm thấy thiệp");
+                setSaveMsg("Không tìm thấy thiệp");
                 setLoading(false);
                 return;
             }
@@ -84,55 +115,38 @@ export default function EditorEditPage() {
         loadProject();
     }, [projectId]);
 
-    const sections = [
-        { key: "couple", icon: "💑", label: "Cô dâu & Chú rể" },
-        { key: "event", icon: "📅", label: "Sự kiện" },
-        { key: "venue", icon: "📍", label: "Địa điểm" },
-        { key: "story", icon: "💕", label: "Câu chuyện" },
-        { key: "photos", icon: "📸", label: "Ảnh cưới" },
-        { key: "gift", icon: "🎁", label: "Quà tặng" },
-    ];
+    const handleChange = useCallback((field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        setAutoSaved(false);
+        setTimeout(() => setAutoSaved(true), 1500);
+    }, []);
 
-    function handleChange(field: string, value: string) {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    }
-
+    // ─── Save/Update project ───
     async function handleSave(publish = false) {
         setSaving(true);
         setSaveMsg("");
         try {
-            const updateData: Record<string, any> = {
+            const updateData: Record<string, unknown> = {
                 title: `${formData.groomName || "Chú rể"} & ${formData.brideName || "Cô dâu"}`,
                 template: templateSlug,
-                groom_name: formData.groomName,
-                bride_name: formData.brideName,
+                groom_name: formData.groomName, bride_name: formData.brideName,
                 wedding_date: formData.weddingDate || null,
                 wedding_time: formData.weddingTime || null,
-                venue_name: formData.venueName,
-                venue_address: formData.venueAddress,
+                venue_name: formData.venueName, venue_address: formData.venueAddress,
                 google_maps_url: formData.googleMapsUrl,
-                story: formData.story,
-                message: formData.message,
-                bank_name: formData.bankName,
-                bank_account: formData.bankAccount,
-                bank_owner: formData.bankOwner,
-                groom_parent_names: formData.groomParentNames,
-                bride_parent_names: formData.brideParentNames,
+                story: formData.story, message: formData.message,
+                bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
+                groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
                 updated_at: new Date().toISOString(),
             };
-
             if (publish) updateData.status = "published";
 
-            const { error } = await supabase
-                .from("projects")
-                .update(updateData)
-                .eq("id", projectId);
-
+            const { error } = await supabase.from("projects").update(updateData).eq("id", projectId);
             if (error) { setSaveMsg(`Lỗi: ${error.message}`); setSaving(false); return; }
 
             setProjectStatus(publish ? "published" : projectStatus);
-            setSaveMsg(publish ? "✅ Đã xuất bản!" : "✅ Đã lưu!");
+            setSaveMsg(publish ? "Đã xuất bản!" : "Đã lưu!");
         } catch {
             setSaveMsg("Lỗi kết nối");
         }
@@ -141,370 +155,456 @@ export default function EditorEditPage() {
 
     if (loading) {
         return (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 18, color: "#6b7280" }}>
-                ⏳ Đang tải thiệp...
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f7fa" }}>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 32, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }}>💌</div>
+                    <p style={{ fontSize: 14, color: "#6b7280" }}>Đang tải thiệp...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", fontFamily: "'Inter', -apple-system, sans-serif" }}>
-            {/* Editor Panel */}
-            <div
-                style={{
-                    width: 420,
-                    background: "#fff",
-                    borderRight: "1px solid #e8e8ec",
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100vh",
-                    position: "fixed",
-                    left: 0,
-                    top: 0,
-                    zIndex: 30,
-                }}
-            >
-                {/* Header */}
-                <div
-                    style={{
-                        padding: "16px 20px",
-                        borderBottom: "1px solid #e8e8ec",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                    }}
-                >
-                    <Link
-                        href="/dashboard/projects"
+        <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', -apple-system, sans-serif", background: "#f5f7fa", overflow: "hidden" }}>
+
+            {/* ═══ LEFT: ICON SIDEBAR (64px) ═══ */}
+            <div style={{
+                width: 64, background: "#fff", borderRight: "1px solid #e8e8ec",
+                display: "flex", flexDirection: "column", alignItems: "center",
+                paddingTop: 8, gap: 2, flexShrink: 0, zIndex: 20,
+            }}>
+                {SIDEBAR_TABS.map(tab => (
+                    <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                         style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 10,
-                            border: "1px solid #e5e7eb",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            textDecoration: "none",
-                            fontSize: 16,
-                            color: "#6b7280",
-                        }}
-                    >
-                        ←
-                    </Link>
-                    <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 600, color: "#1f2937", margin: 0 }}>
-                            ✏️ Chỉnh sửa thiệp
-                        </h2>
-                        <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
-                            Mẫu: {templateSlug.replace(/-/g, " ")} ·{" "}
-                            <span style={{ color: projectStatus === "published" ? "#059669" : "#f59e0b" }}>
-                                {projectStatus === "published" ? "🟢 Đã xuất bản" : "📝 Bản nháp"}
-                            </span>
-                        </p>
-                    </div>
-                    {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✅") ? "#059669" : "#dc2626" }}>{saveMsg}</span>}
-                    <button
-                        onClick={() => handleSave(false)}
-                        disabled={saving}
-                        style={{
-                            padding: "8px 20px",
-                            borderRadius: 10,
-                            background: saving ? "#9ca3af" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                            color: "#fff",
-                            fontSize: 13,
-                            fontWeight: 600,
-                            border: "none",
-                            cursor: saving ? "not-allowed" : "pointer",
-                        }}
-                    >
-                        {saving ? "⏳..." : "💾 Lưu"}
+                            width: 52, padding: "10px 0", border: "none", borderRadius: 10,
+                            background: activeTab === tab.key ? "#eef2ff" : "transparent",
+                            color: activeTab === tab.key ? "#4f46e5" : "#6b7280",
+                            cursor: "pointer", display: "flex", flexDirection: "column",
+                            alignItems: "center", gap: 2, fontSize: 18, transition: "all 0.15s",
+                        }}>
+                        <span>{tab.icon}</span>
+                        <span style={{ fontSize: 9, fontWeight: 500 }}>{tab.label}</span>
                     </button>
+                ))}
+            </div>
+
+            {/* ═══ LEFT: CONTENT PANEL (340px) ═══ */}
+            <div style={{
+                width: 340, background: "#fff", borderRight: "1px solid #e8e8ec",
+                display: "flex", flexDirection: "column", height: "100vh", flexShrink: 0, overflow: "hidden",
+            }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid #f3f4f6" }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0 }}>
+                        {SIDEBAR_TABS.find(t => t.key === activeTab)?.icon}{" "}
+                        {SIDEBAR_TABS.find(t => t.key === activeTab)?.label}
+                    </h3>
                 </div>
 
-                {/* Section Tab */}
-                <div
-                    style={{
-                        display: "flex",
-                        gap: 4,
-                        padding: "12px 16px",
-                        borderBottom: "1px solid #f3f4f6",
-                        overflowX: "auto",
-                    }}
-                >
-                    {sections.map((s) => (
-                        <button
-                            key={s.key}
-                            onClick={() => setActiveSection(s.key)}
-                            style={{
-                                padding: "6px 14px",
-                                borderRadius: 8,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                border: "none",
-                                cursor: "pointer",
-                                whiteSpace: "nowrap",
-                                background: activeSection === s.key ? "#f0f0ff" : "transparent",
-                                color: activeSection === s.key ? "#6366f1" : "#6b7280",
-                            }}
-                        >
-                            {s.icon} {s.label}
-                        </button>
-                    ))}
-                </div>
+                <div style={{ flex: 1, overflow: "auto", padding: "16px 20px" }}>
 
-                {/* Form Fields */}
-                <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
-                    {activeSection === "couple" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <FormField label="Tên Chú rể" placeholder="Nguyễn Văn A" value={formData.groomName} onChange={(v) => handleChange("groomName", v)} />
-                            <FormField label="Tên Cô dâu" placeholder="Trần Thị B" value={formData.brideName} onChange={(v) => handleChange("brideName", v)} />
-                            <FormField label="Bố mẹ Chú rể" placeholder="Ông Nguyễn Văn C & Bà Lê Thị D" value={formData.groomParentNames} onChange={(v) => handleChange("groomParentNames", v)} />
-                            <FormField label="Bố mẹ Cô dâu" placeholder="Ông Trần Văn E & Bà Phạm Thị F" value={formData.brideParentNames} onChange={(v) => handleChange("brideParentNames", v)} />
+                    {/* ── TEXT TAB ── */}
+                    {activeTab === "text" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                            <PanelSection title="Cô dâu & Chú rể">
+                                <FormField label="Tên Chú rể" placeholder="Nguyễn Văn A" value={formData.groomName} onChange={v => handleChange("groomName", v)} />
+                                <FormField label="Tên Cô dâu" placeholder="Trần Thị B" value={formData.brideName} onChange={v => handleChange("brideName", v)} />
+                                <FormField label="Bố mẹ Chú rể" placeholder="Ông... & Bà..." value={formData.groomParentNames} onChange={v => handleChange("groomParentNames", v)} />
+                                <FormField label="Bố mẹ Cô dâu" placeholder="Ông... & Bà..." value={formData.brideParentNames} onChange={v => handleChange("brideParentNames", v)} />
+                            </PanelSection>
+                            <PanelSection title="Sự kiện">
+                                <FormField label="Ngày cưới" type="date" value={formData.weddingDate} onChange={v => handleChange("weddingDate", v)} />
+                                <FormField label="Giờ cưới" type="time" value={formData.weddingTime} onChange={v => handleChange("weddingTime", v)} />
+                            </PanelSection>
+                            <PanelSection title="Địa điểm">
+                                <FormField label="Tên địa điểm" placeholder="Trung tâm tiệc cưới" value={formData.venueName} onChange={v => handleChange("venueName", v)} />
+                                <FormField label="Địa chỉ" placeholder="123 Đường..." value={formData.venueAddress} onChange={v => handleChange("venueAddress", v)} />
+                                <FormField label="Google Maps URL" placeholder="https://maps.google.com/..." value={formData.googleMapsUrl} onChange={v => handleChange("googleMapsUrl", v)} />
+                            </PanelSection>
+                            <PanelSection title="Nội dung">
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Câu chuyện tình yêu</label>
+                                    <textarea placeholder="Chúng tôi gặp nhau..." value={formData.story} onChange={e => handleChange("story", e.target.value)} rows={4}
+                                        style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "inherit", color: "#1f2937" }} />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Lời mời</label>
+                                    <textarea placeholder="Trân trọng kính mời..." value={formData.message} onChange={e => handleChange("message", e.target.value)} rows={3}
+                                        style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "inherit", color: "#1f2937" }} />
+                                </div>
+                            </PanelSection>
+                            <PanelSection title="Quà tặng (QR)">
+                                <FormField label="Ngân hàng" placeholder="Vietcombank" value={formData.bankName} onChange={v => handleChange("bankName", v)} />
+                                <FormField label="Số tài khoản" placeholder="0123456789" value={formData.bankAccount} onChange={v => handleChange("bankAccount", v)} />
+                                <FormField label="Chủ tài khoản" placeholder="Nguyễn Văn A" value={formData.bankOwner} onChange={v => handleChange("bankOwner", v)} />
+                            </PanelSection>
                         </div>
                     )}
 
-                    {activeSection === "event" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <FormField label="Ngày cưới" type="date" value={formData.weddingDate} onChange={(v) => handleChange("weddingDate", v)} />
-                            <FormField label="Giờ lễ cưới" placeholder="17:00" value={formData.weddingTime} onChange={(v) => handleChange("weddingTime", v)} />
-                        </div>
-                    )}
-
-                    {activeSection === "venue" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <FormField label="Tên địa điểm" placeholder="Trung tâm hội nghị ABC" value={formData.venueName} onChange={(v) => handleChange("venueName", v)} />
-                            <FormField label="Địa chỉ" placeholder="123 Đường XYZ, Quận 1, TP.HCM" value={formData.venueAddress} onChange={(v) => handleChange("venueAddress", v)} />
-                            <FormField label="Google Maps URL" placeholder="https://maps.google.com/..." value={formData.googleMapsUrl} onChange={(v) => handleChange("googleMapsUrl", v)} />
-                        </div>
-                    )}
-
-                    {activeSection === "story" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <div>
-                                <label style={{ fontSize: 13, fontWeight: 500, color: "#374151", display: "block", marginBottom: 6 }}>Câu chuyện tình yêu</label>
-                                <textarea
-                                    placeholder="Chúng tôi gặp nhau vào một ngày đẹp trời..."
-                                    value={formData.story}
-                                    onChange={(e) => handleChange("story", e.target.value)}
-                                    rows={5}
-                                    style={{
-                                        width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 14,
-                                        resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "inherit", color: "#1f2937", background: "#fff",
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: 13, fontWeight: 500, color: "#374151", display: "block", marginBottom: 6 }}>Lời nhắn</label>
-                                <textarea
-                                    placeholder="Sự hiện diện của bạn là niềm vui lớn..."
-                                    value={formData.message}
-                                    onChange={(e) => handleChange("message", e.target.value)}
-                                    rows={3}
-                                    style={{
-                                        width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 14,
-                                        resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "inherit", color: "#1f2937", background: "#fff",
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {activeSection === "photos" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <div style={{ background: "#f0fdf4", borderRadius: 12, padding: 16, border: "1px solid #bbf7d0" }}>
-                                <p style={{ fontSize: 12, color: "#166534", margin: 0 }}>
-                                    📤 Upload ảnh trực tiếp hoặc dán link. Tối đa 6 ảnh, mỗi ảnh ≤ 5MB.
-                                </p>
-                            </div>
+                    {/* ── IMAGES TAB ── */}
+                    {activeTab === "images" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Upload hoặc dán link. Tối đa 6 ảnh.</p>
                             {formData.photos.map((url, i) => (
-                                <div key={i}>
-                                    <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
-                                        Ảnh {i + 1}
+                                <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                    <input type="url" placeholder={`Ảnh ${i + 1}`} value={url}
+                                        onChange={e => { const p = [...formData.photos]; p[i] = e.target.value; setFormData(prev => ({ ...prev, photos: p })); }}
+                                        style={{ flex: 1, padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, outline: "none" }} />
+                                    <label style={{ padding: "6px 10px", borderRadius: 8, background: "#10b981", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                                        ↑
+                                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
+                                            const file = e.target.files?.[0]; if (!file) return;
+                                            const fd = new FormData(); fd.append("file", file); fd.append("projectId", projectId);
+                                            try {
+                                                const res = await fetch("/api/upload", { method: "POST", body: fd });
+                                                const data = await res.json();
+                                                if (data.url) { const p = [...formData.photos]; p[i] = data.url; setFormData(prev => ({ ...prev, photos: p })); }
+                                            } catch { /* ignore */ }
+                                            e.target.value = "";
+                                        }} />
                                     </label>
-                                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                        <input
-                                            type="url"
-                                            placeholder="https://... hoặc upload ảnh →"
-                                            value={url}
-                                            onChange={(e) => {
-                                                const newPhotos = [...formData.photos];
-                                                newPhotos[i] = e.target.value;
-                                                setFormData(prev => ({ ...prev, photos: newPhotos }));
-                                            }}
-                                            style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 13, outline: "none", background: "#fff" }}
-                                        />
-                                        <label style={{
-                                            padding: "8px 12px", borderRadius: 10,
-                                            background: "linear-gradient(135deg, #10b981, #059669)",
-                                            color: "#fff", fontSize: 12, fontWeight: 600,
-                                            cursor: "pointer", whiteSpace: "nowrap",
-                                            display: "flex", alignItems: "center", gap: 4,
-                                        }}>
-                                            📤
-                                            <input
-                                                type="file"
-                                                accept="image/jpeg,image/png,image/webp,image/gif"
-                                                style={{ display: "none" }}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (!file) return;
-                                                    const fd = new FormData();
-                                                    fd.append("file", file);
-                                                    fd.append("projectId", projectId);
-                                                    try {
-                                                        const res = await fetch("/api/upload", { method: "POST", body: fd });
-                                                        const data = await res.json();
-                                                        if (data.url) {
-                                                            const newPhotos = [...formData.photos];
-                                                            newPhotos[i] = data.url;
-                                                            setFormData(prev => ({ ...prev, photos: newPhotos }));
-                                                        } else {
-                                                            alert(data.error || "Upload lỗi");
-                                                        }
-                                                    } catch { alert("Upload lỗi"); }
-                                                    e.target.value = "";
-                                                }}
-                                            />
-                                        </label>
-                                        {url && (
-                                            <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", flexShrink: 0, border: "1px solid #e5e7eb" }}>
-                                                <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                                            </div>
-                                        )}
+                                    {url && <div style={{ width: 32, height: 32, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
+                                        <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                    </div>}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── STOCK TAB ── */}
+                    {activeTab === "stock" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Chọn trang trí cho thiệp</p>
+                            {["Hoa & Lá", "Viền & Khung", "Chữ nghệ thuật", "Biểu tượng"].map((cat, i) => (
+                                <div key={i}>
+                                    <p style={{ fontSize: 11, fontWeight: 600, color: "#374151", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 1 }}>{cat}</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                                        {["🌹", "🌸", "💐", "🍃", "❀", "✿", "❋", "✤", "♡", "💕", "💒", "🎀", "𝓐", "𝓑", "𝓒", "𝓓"].slice(i * 4, i * 4 + 4).map((e, j) => (
+                                            <div key={j} style={{ width: "100%", aspectRatio: "1", borderRadius: 8, border: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, cursor: "pointer", background: "#fafafa" }}>{e}</div>
+                                        ))}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {activeSection === "gift" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            <FormField label="Tên ngân hàng" placeholder="Vietcombank" value={formData.bankName} onChange={(v) => handleChange("bankName", v)} />
-                            <FormField label="Số tài khoản" placeholder="0123456789" value={formData.bankAccount} onChange={(v) => handleChange("bankAccount", v)} />
-                            <FormField label="Chủ tài khoản" placeholder="NGUYEN VAN A" value={formData.bankOwner} onChange={(v) => handleChange("bankOwner", v)} />
+                    {/* ── BACKGROUND TAB ── */}
+                    {activeTab === "bg" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Chọn nền</p>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                                {[
+                                    { name: "Hồng nhạt", bg: "linear-gradient(180deg, #fce7f3, #fff)" },
+                                    { name: "Tím đêm", bg: "linear-gradient(180deg, #0f0825, #2d1b69)" },
+                                    { name: "Vàng ấm", bg: "linear-gradient(180deg, #fdf6e3, #fffbeb)" },
+                                    { name: "Xanh pastel", bg: "linear-gradient(180deg, #ecfdf5, #f0fdf4)" },
+                                    { name: "Đỏ cổ điển", bg: "linear-gradient(180deg, #7f1d1d, #991b1b)" },
+                                    { name: "Trắng tinh", bg: "linear-gradient(180deg, #ffffff, #f9fafb)" },
+                                ].map((c, i) => (
+                                    <div key={i} style={{ aspectRatio: "3/4", borderRadius: 8, background: c.bg, border: "1px solid #e5e7eb", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                                        <span style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontSize: 9, color: i === 1 || i === 4 ? "#fff" : "#6b7280", fontWeight: 500 }}>{c.name}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
-                </div>
 
-                {/* Bottom Actions */}
-                <div
-                    style={{
-                        padding: "16px 20px",
-                        borderTop: "1px solid #e8e8ec",
-                        display: "flex",
-                        gap: 10,
-                    }}
-                >
-                    <button
-                        onClick={() => handleSave(true)}
-                        disabled={saving}
-                        style={{
-                            flex: 1,
-                            padding: "12px",
-                            borderRadius: 12,
-                            border: "none",
-                            background: "linear-gradient(135deg, #10b981, #059669)",
-                            color: "#fff",
-                            fontSize: 14,
-                            fontWeight: 600,
-                            cursor: saving ? "not-allowed" : "pointer",
-                        }}
-                    >
-                        🚀 Xuất bản
-                    </button>
-                    {projectStatus === "published" && slug && (
-                        <Link
-                            href={`/i/${slug}`}
-                            target="_blank"
-                            style={{
-                                padding: "12px 16px",
-                                borderRadius: 12,
-                                border: "1px solid #e5e7eb",
-                                background: "#fff",
-                                color: "#6b7280",
-                                fontSize: 13,
-                                fontWeight: 500,
-                                textDecoration: "none",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 6,
-                            }}
-                        >
-                            👁️ Xem
-                        </Link>
+                    {/* ── MUSIC TAB ── */}
+                    {activeTab === "music" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Chọn nhạc nền</p>
+                            {[
+                                { name: "A Thousand Years", artist: "Christina Perri", duration: "4:45" },
+                                { name: "Perfect", artist: "Ed Sheeran", duration: "4:23" },
+                                { name: "Can't Help Falling in Love", artist: "Elvis Presley", duration: "3:02" },
+                                { name: "Marry Me", artist: "Train", duration: "3:33" },
+                                { name: "All of Me", artist: "John Legend", duration: "4:29" },
+                            ].map((track, i) => (
+                                <div key={i} style={{
+                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
+                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+                                    background: i === 0 ? "#eef2ff" : "#fff",
+                                }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `hsl(${i * 60 + 330}, 60%, 90%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>♫</div>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{track.name}</p>
+                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{track.artist}</p>
+                                    </div>
+                                    <span style={{ fontSize: 10, color: "#9ca3af" }}>{track.duration}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── WIDGETS TAB ── */}
+                    {activeTab === "widgets" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Tiện ích tương tác</p>
+                            {[
+                                { icon: "📅", name: "Lịch", desc: "Lịch tháng cưới" },
+                                { icon: "⏱", name: "Đếm ngược", desc: "Countdown" },
+                                { icon: "🗺", name: "Bản đồ", desc: "Google Maps" },
+                                { icon: "✅", name: "RSVP", desc: "Xác nhận tham dự" },
+                                { icon: "💬", name: "Lời chúc", desc: "Tường lời chúc" },
+                                { icon: "🎁", name: "QR Mừng cưới", desc: "QR chuyển khoản" },
+                                { icon: "📸", name: "Album ảnh", desc: "Slider ảnh" },
+                                { icon: "📞", name: "Gọi điện", desc: "Nút gọi" },
+                            ].map((w, i) => (
+                                <div key={i} style={{
+                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
+                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: "#fff",
+                                }}>
+                                    <span style={{ fontSize: 20 }}>{w.icon}</span>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{w.name}</p>
+                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                    </div>
+                                    <div style={{ width: 32, height: 18, borderRadius: 9, background: "#d1d5db", position: "relative" }}>
+                                        <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: 2 }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── TEMPLATES TAB ── */}
+                    {activeTab === "templates" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Đổi mẫu thiệp</p>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                                {Object.entries(TEMPLATE_THEMES).map(([s, t]) => (
+                                    <div key={s} style={{ borderRadius: 10, overflow: "hidden", border: templateSlug === s ? "2px solid #4f46e5" : "1px solid #e5e7eb", cursor: "pointer" }}
+                                        onClick={() => setTemplateSlug(s)}>
+                                        <div style={{ height: 80, background: t.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>{t.pattern}</div>
+                                        <div style={{ padding: "6px 8px" }}>
+                                            <p style={{ fontSize: 10, fontWeight: 600, color: "#1f2937", margin: 0 }}>{s.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── EFFECTS TAB ── */}
+                    {activeTab === "effects" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Hiệu ứng toàn trang</p>
+                            {[
+                                { icon: "💕", name: "Tim rơi", desc: "Hearts falling" },
+                                { icon: "🍃", name: "Lá bay", desc: "Floating leaves" },
+                                { icon: "❄", name: "Tuyết rơi", desc: "Snow particles" },
+                                { icon: "🎊", name: "Confetti", desc: "Celebration" },
+                                { icon: "✨", name: "Lấp lánh", desc: "Sparkle" },
+                            ].map((fx, i) => (
+                                <div key={i} style={{
+                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
+                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: "#fff",
+                                }}>
+                                    <span style={{ fontSize: 20 }}>{fx.icon}</span>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{fx.name}</p>
+                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{fx.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Preview Panel */}
-            <div
-                style={{
-                    flex: 1,
-                    marginLeft: 420,
-                    background: "#f8f9fa",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 40,
-                    minHeight: "100vh",
-                }}
-            >
-                <div
-                    style={{
-                        width: 380,
-                        background: "#fff",
-                        borderRadius: 24,
-                        overflow: "hidden",
-                        boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
-                        border: "1px solid #e8e8ec",
-                    }}
-                >
-                    {/* Card Preview */}
-                    <div
-                        style={{
-                            background: "linear-gradient(135deg, #fce7f3, #fdf2f8, #fff1f2)",
-                            padding: "40px 28px",
-                            textAlign: "center",
-                        }}
-                    >
-                        <p style={{ fontSize: 12, color: "#be185d", textTransform: "uppercase", letterSpacing: 3 }}>Thiệp mời</p>
-                        <h2 style={{ fontSize: 28, fontWeight: 700, color: "#831843", margin: "12px 0" }}>
-                            {formData.groomName || "Chú rể"} & {formData.brideName || "Cô dâu"}
-                        </h2>
-                        {formData.groomParentNames && <p style={{ fontSize: 12, color: "#9d174d", margin: "4px 0 0" }}>Con Ông/Bà: {formData.groomParentNames}</p>}
-                        {formData.brideParentNames && <p style={{ fontSize: 12, color: "#9d174d", margin: "4px 0 0" }}>Con Ông/Bà: {formData.brideParentNames}</p>}
+            {/* ═══ CENTER: CANVAS + TOP TOOLBAR ═══ */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+                {/* ── TOP TOOLBAR ── */}
+                <div style={{
+                    height: 52, background: "#fff", borderBottom: "1px solid #e8e8ec",
+                    display: "flex", alignItems: "center", padding: "0 20px", gap: 12, flexShrink: 0,
+                }}>
+                    <Link href="/dashboard/projects" style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", marginRight: 8 }}>
+                        <span style={{ fontSize: 20 }}>❤️</span>
+                        <span style={{ fontSize: 15, fontWeight: 700, background: "linear-gradient(135deg, #ff6b9d, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>LoveStory</span>
+                    </Link>
+
+                    <div style={{ display: "flex", gap: 4 }}>
+                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14, color: "#9ca3af" }}>↶</button>
+                        <button style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14, color: "#9ca3af" }}>↷</button>
                     </div>
-                    <div style={{ padding: "24px 28px" }}>
-                        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-                            <div style={{ flex: 1, padding: "12px 16px", background: "#fef2f2", borderRadius: 12, textAlign: "center" }}>
-                                <p style={{ fontSize: 10, color: "#be185d", margin: 0 }}>📅 Ngày cưới</p>
-                                <p style={{ fontSize: 14, fontWeight: 600, color: "#831843", margin: "4px 0 0" }}>
-                                    {formData.weddingDate ? new Date(formData.weddingDate).toLocaleDateString("vi-VN") : "DD/MM/YYYY"}
-                                </p>
-                            </div>
-                            <div style={{ flex: 1, padding: "12px 16px", background: "#fef2f2", borderRadius: 12, textAlign: "center" }}>
-                                <p style={{ fontSize: 10, color: "#be185d", margin: 0 }}>⏰ Thời gian</p>
-                                <p style={{ fontSize: 14, fontWeight: 600, color: "#831843", margin: "4px 0 0" }}>{formData.weddingTime || "HH:MM"}</p>
+
+                    <div style={{ flex: 1 }} />
+
+                    <span style={{ fontSize: 11, color: autoSaved ? "#10b981" : "#9ca3af" }}>
+                        {autoSaved ? "✓ Tự động lưu: Bật" : "○ Đang lưu..."}
+                    </span>
+
+                    {saveMsg && <span style={{ fontSize: 11, color: saveMsg.includes("Lỗi") ? "#dc2626" : "#059669", fontWeight: 500 }}>{saveMsg}</span>}
+
+                    <button onClick={() => slug && window.open(`/i/${slug}`, "_blank")} style={{
+                        padding: "6px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
+                        background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500, cursor: "pointer",
+                    }}>
+                        👁 Xem trước
+                    </button>
+
+                    <button onClick={() => handleSave(false)} disabled={saving} style={{
+                        padding: "6px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
+                        background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500,
+                        cursor: saving ? "not-allowed" : "pointer",
+                    }}>
+                        {saving ? "⏳..." : "💾 Lưu"}
+                    </button>
+
+                    <button onClick={() => handleSave(true)} disabled={saving} style={{
+                        padding: "6px 20px", borderRadius: 8, border: "none",
+                        background: saving ? "#9ca3af" : "linear-gradient(135deg, #10b981, #059669)",
+                        color: "#fff", fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
+                    }}>
+                        🚀 Xuất bản
+                    </button>
+                </div>
+
+                {/* ── CANVAS ── */}
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#e8ecf1", position: "relative", overflow: "auto" }}>
+                    <div style={{
+                        width: 375 * (zoom / 100), minHeight: 667 * (zoom / 100),
+                        borderRadius: 32 * (zoom / 100), background: "#fff",
+                        overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+                        position: "relative", flexShrink: 0,
+                    }}>
+                        {/* Notch */}
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 44 * (zoom / 100), background: "#000", borderRadius: `${32 * (zoom / 100)}px ${32 * (zoom / 100)}px 0 0`, zIndex: 5 }}>
+                            <div style={{ width: 120 * (zoom / 100), height: 24 * (zoom / 100), background: "#000", borderRadius: `0 0 ${16 * (zoom / 100)}px ${16 * (zoom / 100)}px`, margin: "0 auto" }} />
+                        </div>
+
+                        {/* Template Content */}
+                        <div style={{ paddingTop: 44 * (zoom / 100), minHeight: "100%", overflow: "auto", background: theme.bg }}>
+                            <div style={{ textAlign: "center", padding: `${40 * (zoom / 100)}px ${24 * (zoom / 100)}px` }}>
+                                <p style={{ fontSize: 16 * (zoom / 100), opacity: 0.3, margin: "0 0 8px", letterSpacing: 8 }}>{theme.decorTop}</p>
+                                <p style={{ fontSize: 11 * (zoom / 100), color: theme.accent, letterSpacing: 3, margin: "0 0 12px", fontWeight: 600 }}>SAVE THE DATE</p>
+                                <h2 style={{ fontSize: 28 * (zoom / 100), fontWeight: 300, color: theme.nameColor, margin: "0 0 4px", fontStyle: "italic", fontFamily: theme.font }}>{formData.groomName || "Chú rể"}</h2>
+                                <p style={{ fontSize: 18 * (zoom / 100), color: theme.accent, margin: "0 0 4px" }}>&</p>
+                                <h2 style={{ fontSize: 28 * (zoom / 100), fontWeight: 300, color: theme.nameColor, margin: "0 0 20px", fontStyle: "italic", fontFamily: theme.font }}>{formData.brideName || "Cô dâu"}</h2>
+
+                                {(formData.groomParentNames || formData.brideParentNames) && (
+                                    <div style={{ marginBottom: 20, opacity: 0.7 }}>
+                                        {formData.groomParentNames && <p style={{ fontSize: 10 * (zoom / 100), color: theme.textColor, margin: "0 0 2px" }}>Con trai: {formData.groomParentNames}</p>}
+                                        {formData.brideParentNames && <p style={{ fontSize: 10 * (zoom / 100), color: theme.textColor, margin: 0 }}>Con gái: {formData.brideParentNames}</p>}
+                                    </div>
+                                )}
+
+                                <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 12, padding: `${12 * (zoom / 100)}px`, margin: "0 auto 20px", maxWidth: 200 * (zoom / 100) }}>
+                                    <p style={{ fontSize: 13 * (zoom / 100), color: theme.textColor, margin: 0, fontWeight: 500 }}>
+                                        {formData.weddingDate ? new Date(formData.weddingDate).toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Chọn ngày cưới"}
+                                    </p>
+                                    {formData.weddingTime && <p style={{ fontSize: 11 * (zoom / 100), color: theme.accent, margin: "4px 0 0" }}>⏰ {formData.weddingTime}</p>}
+                                </div>
+
+                                {(formData.venueName || formData.venueAddress) && (
+                                    <div style={{ marginBottom: 20 }}>
+                                        <p style={{ fontSize: 13 * (zoom / 100), fontWeight: 500, color: theme.textColor, margin: "0 0 4px" }}>📍 {formData.venueName}</p>
+                                        <p style={{ fontSize: 11 * (zoom / 100), color: theme.textColor, margin: 0, opacity: 0.7 }}>{formData.venueAddress}</p>
+                                    </div>
+                                )}
+
+                                {formData.story && (
+                                    <div style={{ background: "rgba(255,255,255,0.4)", borderRadius: 12, padding: `${16 * (zoom / 100)}px`, margin: "0 0 20px", textAlign: "left" }}>
+                                        <p style={{ fontSize: 10 * (zoom / 100), color: theme.accent, letterSpacing: 2, margin: "0 0 6px", fontWeight: 600 }}>OUR STORY</p>
+                                        <p style={{ fontSize: 12 * (zoom / 100), color: theme.textColor, lineHeight: 1.7, margin: 0 }}>{formData.story}</p>
+                                    </div>
+                                )}
+
+                                {formData.message && (
+                                    <p style={{ fontSize: 12 * (zoom / 100), color: theme.textColor, lineHeight: 1.6, fontStyle: "italic", opacity: 0.8 }}>&ldquo;{formData.message}&rdquo;</p>
+                                )}
+
+                                {formData.photos.filter(p => p.trim()).length > 0 && (
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, margin: "16px 0" }}>
+                                        {formData.photos.filter(p => p.trim()).slice(0, 4).map((url, i) => (
+                                            <div key={i} style={{ borderRadius: 8, overflow: "hidden", aspectRatio: "1" }}>
+                                                <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <p style={{ fontSize: 16 * (zoom / 100), opacity: 0.3, margin: "20px 0 0", letterSpacing: 8 }}>{theme.decorBottom}</p>
                             </div>
                         </div>
-                        {formData.venueName && (
-                            <div style={{ padding: "12px 16px", background: "#fef2f2", borderRadius: 12, marginBottom: 16 }}>
-                                <p style={{ fontSize: 10, color: "#be185d", margin: 0 }}>📍 Địa điểm</p>
-                                <p style={{ fontSize: 14, fontWeight: 600, color: "#831843", margin: "4px 0 0" }}>{formData.venueName}</p>
-                                {formData.venueAddress && <p style={{ fontSize: 12, color: "#be185d", margin: "2px 0 0" }}>{formData.venueAddress}</p>}
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div style={{ position: "absolute", bottom: 20, right: 20, display: "flex", alignItems: "center", gap: 4, background: "#fff", borderRadius: 10, padding: "4px 8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                        <button onClick={() => setZoom(z => Math.max(50, z - 10))} style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#f3f4f6", cursor: "pointer", fontSize: 14 }}>−</button>
+                        <span style={{ fontSize: 11, color: "#6b7280", minWidth: 36, textAlign: "center" }}>{zoom}%</span>
+                        <button onClick={() => setZoom(z => Math.min(150, z + 10))} style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#f3f4f6", cursor: "pointer", fontSize: 14 }}>+</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══ RIGHT: PROPERTY PANEL (280px) ═══ */}
+            <div style={{
+                width: 280, background: "#fff", borderLeft: "1px solid #e8e8ec",
+                display: "flex", flexDirection: "column", height: "100vh", flexShrink: 0, overflow: "auto",
+            }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid #f3f4f6" }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0 }}>✏️ Tuỳ chỉnh</h3>
+                </div>
+
+                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div>
+                        <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Danh mục *</label>
+                        <select style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, color: "#1f2937", outline: "none", cursor: "pointer" }}>
+                            <option>Thiệp cưới</option>
+                            <option>Sinh nhật</option>
+                            <option>Sự kiện</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Trạng thái</label>
+                        <div style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: projectStatus === "published" ? "#10b981" : "#fbbf24" }} />
+                            {projectStatus === "published" ? "Công khai" : "Nháp"}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Mẫu thiệp</label>
+                        <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>{templateSlug.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    </div>
+
+                    {/* Share URL */}
+                    {slug && projectStatus === "published" && (
+                        <div>
+                            <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Link thiệp</label>
+                            <div style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#4f46e5", wordBreak: "break-all" }}>
+                                7app.online/i/{slug}
                             </div>
-                        )}
-                        {formData.story && (
-                            <div style={{ marginBottom: 16 }}>
-                                <p style={{ fontSize: 13, fontWeight: 600, color: "#831843", margin: "0 0 6px" }}>💕 Câu chuyện tình yêu</p>
-                                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>{formData.story}</p>
+                        </div>
+                    )}
+
+                    {/* Preview Card */}
+                    <div>
+                        <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 8 }}>Bản xem trước</label>
+                        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb", aspectRatio: "9/16", background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <div style={{ textAlign: "center" }}>
+                                <p style={{ fontSize: 8, color: theme.accent, margin: 0 }}>SAVE THE DATE</p>
+                                <p style={{ fontSize: 12, color: theme.nameColor, fontStyle: "italic", margin: "4px 0 0", fontFamily: theme.font }}>{formData.groomName || "Chú rể"} & {formData.brideName || "Cô dâu"}</p>
                             </div>
-                        )}
-                        {formData.message && (
-                            <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, fontStyle: "italic" }}>
-                                &ldquo;{formData.message}&rdquo;
-                            </p>
-                        )}
+                        </div>
+                    </div>
+
+                    {/* Premium banner */}
+                    <div style={{ background: "#eef2ff", borderRadius: 12, padding: "14px 16px", border: "1px solid #c7d2fe" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#1f2937" }}>Tính năng nâng cao</span>
+                            <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#4f46e5", color: "#fff", fontWeight: 700 }}>Basic+</span>
+                        </div>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 4 }}>
+                            {["Xoá watermark", "Nhạc nền tuỳ chọn", "Font Premium", "Hiệu ứng đặc biệt"].map((f, i) => (
+                                <li key={i} style={{ fontSize: 11, color: "#4b5563", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4f46e5", flexShrink: 0 }} /> {f}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -512,40 +612,24 @@ export default function EditorEditPage() {
     );
 }
 
-function FormField({
-    label,
-    placeholder,
-    value,
-    onChange,
-    type = "text",
-}: {
-    label: string;
-    placeholder?: string;
-    value: string;
-    onChange: (v: string) => void;
-    type?: string;
+/* ─── Reusable Components ─── */
+function PanelSection({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <div>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", letterSpacing: 1, textTransform: "uppercase", margin: "0 0 10px" }}>{title}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
+        </div>
+    );
+}
+
+function FormField({ label, placeholder, value, onChange, type = "text" }: {
+    label: string; placeholder?: string; value: string; onChange: (v: string) => void; type?: string;
 }) {
     return (
         <div>
-            <label style={{ fontSize: 13, fontWeight: 500, color: "#374151", display: "block", marginBottom: 6 }}>{label}</label>
-            <input
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #e5e7eb",
-                    fontSize: 14,
-                    color: "#1f2937",
-                    background: "#fff",
-                    outline: "none",
-                    boxSizing: "border-box",
-                    transition: "border-color 0.2s",
-                }}
-            />
+            <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>{label}</label>
+            <input type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, color: "#1f2937", background: "#fff", outline: "none", boxSizing: "border-box" }} />
         </div>
     );
 }
