@@ -34,10 +34,27 @@ export default async function RsvpPage() {
 
     return (
         <div>
-            <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: 0 }}>✅ Xác nhận tham dự</h2>
-                <p style={{ fontSize: 14, color: "#6b7280", margin: "4px 0 0" }}>{rsvps.length} phản hồi</p>
+            <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: 0 }}>✅ Xác nhận tham dự</h2>
+                    <p style={{ fontSize: 14, color: "#6b7280", margin: "4px 0 0" }}>{rsvps.length} phản hồi</p>
+                </div>
+                {rsvps.length > 0 && (
+                    <a
+                        href={`/api/guests/export?projectId=${rsvps[0]?.project_id}`}
+                        download
+                        style={{
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                            padding: "8px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
+                            background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500,
+                            textDecoration: "none", flexShrink: 0,
+                        }}
+                    >
+                        📥 Xuất CSV
+                    </a>
+                )}
             </div>
+
 
             {/* Stats */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>

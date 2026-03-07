@@ -57,6 +57,7 @@ export default function EditorEditPage() {
     const [autoSaved, setAutoSaved] = useState(true);
     const [activeTab, setActiveTab] = useState("text");
     const [zoom, setZoom] = useState(100);
+    const [guestInput, setGuestInput] = useState("");
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,6 +73,9 @@ export default function EditorEditPage() {
         googleMapsUrl: "",
         bankName: "", bankAccount: "", bankOwner: "",
         photos: ["", "", "", "", "", ""] as string[],
+        musicUrl: "",
+        musicName: "",
+        youtubeUrl: "",
     });
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const [projectStatus, setProjectStatus] = useState("draft");
@@ -114,6 +118,9 @@ export default function EditorEditPage() {
                     try { const p = JSON.parse(project.photos || "[]"); while (p.length < 6) p.push(""); return p; }
                     catch { return ["", "", "", "", "", ""]; }
                 })(),
+                musicUrl: project.music_url || "",
+                musicName: project.music_name || "",
+                youtubeUrl: project.youtube_url || "",
             });
             setTemplateSlug(project.template || "rose-garden");
             setProjectStatus(project.status || "draft");
@@ -145,6 +152,9 @@ export default function EditorEditPage() {
                 bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
                 groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                music_url: formData.musicUrl || null,
+                music_name: formData.musicName || null,
+                youtube_url: formData.youtubeUrl || null,
                 template: templateSlug,
                 title: `${formData.groomName || "Chú rể"} & ${formData.brideName || "Cô dâu"}`,
                 updated_at: new Date().toISOString(),
@@ -172,6 +182,9 @@ export default function EditorEditPage() {
                 bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
                 groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                music_url: formData.musicUrl || null,
+                music_name: formData.musicName || null,
+                youtube_url: formData.youtubeUrl || null,
                 updated_at: new Date().toISOString(),
             };
             if (publish) updateData.status = "published";
@@ -356,31 +369,69 @@ export default function EditorEditPage() {
                     )}
 
                     {/* ── MUSIC TAB ── */}
-                    {activeTab === "music" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Chọn nhạc nền</p>
-                            {[
-                                { name: "A Thousand Years", artist: "Christina Perri", duration: "4:45" },
-                                { name: "Perfect", artist: "Ed Sheeran", duration: "4:23" },
-                                { name: "Can't Help Falling in Love", artist: "Elvis Presley", duration: "3:02" },
-                                { name: "Marry Me", artist: "Train", duration: "3:33" },
-                                { name: "All of Me", artist: "John Legend", duration: "4:29" },
-                            ].map((track, i) => (
-                                <div key={i} style={{
-                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
-                                    background: i === 0 ? "#eef2ff" : "#fff",
-                                }}>
-                                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `hsl(${i * 60 + 330}, 60%, 90%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>♫</div>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{track.name}</p>
-                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{track.artist}</p>
+                    {activeTab === "music" && (() => {
+                        const TRACKS = [
+                            { name: "A Thousand Years", artist: "Romantic Piano", url: "https://cdn.pixabay.com/audio/2023/11/13/audio_82e5584e33.mp3" },
+                            { name: "Wedding Bells", artist: "Classical Romance", url: "https://cdn.pixabay.com/audio/2024/02/28/audio_23d30d14de.mp3" },
+                            { name: "Eternal Love", artist: "Cinematic Piano", url: "https://cdn.pixabay.com/audio/2023/08/14/audio_e4e22b7399.mp3" },
+                            { name: "Beautiful Day", artist: "Soft Acoustic", url: "https://cdn.pixabay.com/audio/2024/01/15/audio_c8b1cd1f0e.mp3" },
+                            { name: "Forever Yours", artist: "Orchestral", url: "https://cdn.pixabay.com/audio/2024/11/29/audio_d60d894fa1.mp3" },
+                            { name: "Romantic Waltz", artist: "Classical", url: "https://cdn.pixabay.com/audio/2023/06/07/audio_53866fcf96.mp3" },
+                            { name: "Không nhạc nền", artist: "Tắt nhạc", url: "" },
+                        ];
+
+                        return (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 4px" }}>Chọn nhạc nền cho thiệp</p>
+                                {formData.musicName && (
+                                    <div style={{ padding: "8px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #86efac", fontSize: 11, color: "#166534", display: "flex", alignItems: "center", gap: 6 }}>
+                                        <span>🎵</span> Đang dùng: <strong>{formData.musicName}</strong>
                                     </div>
-                                    <span style={{ fontSize: 10, color: "#9ca3af" }}>{track.duration}</span>
+                                )}
+                                {TRACKS.map((track, i) => {
+                                    const isSelected = formData.musicUrl === track.url;
+                                    return (
+                                        <div key={i}
+                                            onClick={() => {
+                                                setFormData(prev => ({ ...prev, musicUrl: track.url, musicName: track.url ? track.name : "" }));
+                                                setAutoSaved(false);
+                                                if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+                                                autoSaveTimer.current = setTimeout(autoSaveToDb, 2000);
+                                            }}
+                                            style={{
+                                                padding: "10px 14px", borderRadius: 10,
+                                                border: `1px solid ${isSelected ? "#86efac" : "#e5e7eb"}`,
+                                                display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+                                                background: isSelected ? "#f0fdf4" : "#fff",
+                                                transition: "all 0.15s",
+                                            }}>
+                                            <div style={{ width: 32, height: 32, borderRadius: 8, background: track.url ? `hsl(${i * 60 + 330}, 60%, 90%)` : "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+                                                {track.url ? "♫" : "🚫"}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#166534" : "#1f2937", margin: 0 }}>{track.name}</p>
+                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{track.artist}</p>
+                                            </div>
+                                            {isSelected && <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 600 }}>✓</span>}
+                                        </div>
+                                    );
+                                })}
+                                <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 10, border: "1px dashed #e5e7eb", background: "#fafafa" }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 6px", fontWeight: 500 }}>Hoặc dán link nhạc MP3</p>
+                                    <input
+                                        type="url"
+                                        placeholder="https://example.com/song.mp3"
+                                        value={formData.musicUrl.startsWith("https://www.soundhelix") ? "" : formData.musicUrl}
+                                        onChange={e => {
+                                            setFormData(prev => ({ ...prev, musicUrl: e.target.value, musicName: e.target.value ? "Nhạc tùy chỉnh" : "" }));
+                                            setAutoSaved(false);
+                                        }}
+                                        style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 11, outline: "none", boxSizing: "border-box" }}
+                                    />
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            </div>
+                        );
+                    })()}
 
                     {/* ── WIDGETS TAB ── */}
                     {activeTab === "widgets" && (
@@ -428,8 +479,29 @@ export default function EditorEditPage() {
                                     </div>
                                 );
                             })}
+                            {/* YouTube Embed */}
+                            <div style={{ marginTop: 8, padding: "12px 14px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fafafa" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                    <span style={{ fontSize: 18 }}>▶️</span>
+                                    <div>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>Video YouTube</p>
+                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>Nhúng video vào thiệp</p>
+                                    </div>
+                                </div>
+                                <input
+                                    type="url"
+                                    placeholder="https://youtube.com/watch?v=..."
+                                    value={formData.youtubeUrl}
+                                    onChange={e => { handleChange("youtubeUrl", e.target.value); }}
+                                    style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 11, outline: "none", boxSizing: "border-box" }}
+                                />
+                                {formData.youtubeUrl && (
+                                    <p style={{ fontSize: 10, color: "#10b981", margin: "4px 0 0" }}>✓ Video sẽ hiển thị trong thiệp</p>
+                                )}
+                            </div>
                         </div>
                     )}
+
 
                     {/* ── TEMPLATES TAB ── */}
                     {activeTab === "templates" && (
@@ -723,14 +795,40 @@ export default function EditorEditPage() {
                     </div>
 
                     {/* Share URL */}
-                    {slug && projectStatus === "published" && (
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Link thiệp</label>
-                            <div style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#4f46e5", wordBreak: "break-all" }}>
-                                7app.online/i/{slug}
+                    {slug && projectStatus === "published" && (() => {
+                        const baseUrl = `https://7app.online/i/${slug}`;
+                        const personalLink = guestInput.trim() ? `${baseUrl}?guest=${encodeURIComponent(guestInput.trim())}` : baseUrl;
+                        return (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <label style={{ fontSize: 12, fontWeight: 500, color: "#374151" }}>🔗 Link thiệp</label>
+                                <div
+                                    onClick={() => { navigator.clipboard.writeText(baseUrl); }}
+                                    style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#4f46e5", wordBreak: "break-all", cursor: "pointer", background: "#f9fafb" }}
+                                    title="Click để copy"
+                                >
+                                    7app.online/i/{slug}
+                                </div>
+                                <label style={{ fontSize: 11, fontWeight: 500, color: "#374151", marginTop: 4 }}>👤 Link theo tên khách mời</label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tên khách mời..."
+                                    value={guestInput}
+                                    onChange={e => setGuestInput(e.target.value)}
+                                    style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 11, outline: "none" }}
+                                />
+                                {guestInput.trim() && (
+                                    <div
+                                        onClick={() => { navigator.clipboard.writeText(personalLink); }}
+                                        style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #bbf7d0", fontSize: 10, color: "#166534", background: "#f0fdf4", cursor: "pointer", wordBreak: "break-all" }}
+                                        title="Click để copy"
+                                    >
+                                        ✓ {personalLink.replace("https://7app.online", "")}
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
+
 
                     {/* Preview Card */}
                     <div>

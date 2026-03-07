@@ -49,6 +49,7 @@ export function DashboardNav() {
                 <NavItem href="/dashboard" icon="📊" label="Tổng quan" exact />
                 <NavItem href="/dashboard/my-plan" icon="⭐" label="Gói dịch vụ" />
                 <NavItem href="/templates" icon="✏️" label="Tạo thiết kế" />
+                <NavItem href="/gallery" icon="🖼️" label="Bộ sưu tập" />
             </NavGroup>
 
             <NavGroup label="THIỆP CỦA TÔI">
