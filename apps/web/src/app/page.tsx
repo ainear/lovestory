@@ -32,8 +32,24 @@ export default function LandingPage() {
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             <Link href="/templates" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Mẫu thiệp</Link>
-            <Link href="#pricing" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
+            <Link href="/gallery" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>🖼️ Khám phá</Link>
+            <Link href="/pricing" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
             <Link href="/ai-video" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>🎬 AI Video</Link>
+            <Link
+              href="/login"
+              style={{
+                padding: "8px 16px",
+                borderRadius: 10,
+                border: "1px solid #e5e7eb",
+                color: "#374151",
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: "none",
+                background: "#fff",
+              }}
+            >
+              Đăng nhập
+            </Link>
             <Link
               href="/login"
               style={{
@@ -42,13 +58,15 @@ export default function LandingPage() {
                 background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
                 color: "#fff",
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 700,
                 textDecoration: "none",
+                boxShadow: "0 2px 8px rgba(255,107,157,0.3)",
               }}
             >
-              Đăng nhập
+              Đăng ký miễn phí
             </Link>
           </div>
+
         </div>
       </nav>
 
@@ -182,7 +200,7 @@ export default function LandingPage() {
               { icon: "✅", title: "RSVP thông minh", desc: "Nhận xác nhận tham dự, quản lý danh sách khách mời tự động" },
               { icon: "💬", title: "Tường lời chúc", desc: "Khách mời gửi lời chúc kèm emoji — lưu giữ kỷ niệm đẹp" },
               { icon: "🎁", title: "QR mừng cưới", desc: "Tích hợp QR chuyển khoản — nhận quà dễ dàng, chuyên nghiệp" },
-              { icon: "🎬", title: "Video AI (Sắp ra)", desc: "Tạo video cinematic từ ảnh cưới bằng AI — sắp ra mắt!" },
+              { icon: "🎬", title: "Video AI Cinematic", desc: "Upload 3+ ảnh → AI tạo video cinematic cực đẹp chỉ trong vài phút!" },
             ].map((f, i) => (
               <div
                 key={i}
@@ -217,7 +235,112 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it Works */}
+      {/* AI Video Showcase */}
+      <section style={{ padding: "80px 24px", background: "linear-gradient(180deg, #0f0c29 0%, #1a0533 50%, #0f0c29 100%)", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+          <div>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "6px 14px", borderRadius: 20,
+              background: "rgba(192,132,252,0.15)", border: "1px solid rgba(192,132,252,0.3)",
+              color: "#c084fc", fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 24,
+            }}>
+              ✨ TÍNH NĂNG MỚI
+            </div>
+            <h2 style={{ fontSize: 38, fontWeight: 800, color: "#fff", margin: "0 0 16px", lineHeight: 1.2 }}>
+              Video Cinematic{" "}
+              <span style={{ background: "linear-gradient(135deg, #ff6b9d, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                từ AI
+              </span>
+            </h2>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, margin: "0 0 32px" }}>
+              Upload 3+ ảnh cưới → AI tự động tạo video có hiệu ứng Ken Burns, chuyển cảnh đẹp, nhạc nền và chữ chý rể cô dâu. Xuất video 1080p về máy chỉ trong vài phút.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
+              {[
+                { icon: "🎬", text: "4 phong cách: Cinematic, Romantic, Vintage, Modern" },
+                { icon: "🧠", text: "AI generate lời chú thích tứ thiơ (Gemini AI)" },
+                { icon: "⏱️", text: "Render xong trong 3-5 phút" },
+                { icon: "📹", text: "Xuất 1080p Full HD, tải xuống trực tiếp" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.8)" }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/ai-video"
+              style={{
+                display: "inline-block", padding: "14px 32px", borderRadius: 14,
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none",
+                boxShadow: "0 8px 32px rgba(255,107,157,0.4)",
+              }}
+            >
+              🎬 Thử tạo AI Video ngay
+            </Link>
+          </div>
+
+          {/* Video Preview Card */}
+          <div style={{ position: "relative" }}>
+            <div style={{
+              borderRadius: 24, overflow: "hidden",
+              background: "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(99,102,241,0.15))",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(20px)",
+              padding: 24,
+            }}>
+              {/* Mock video player */}
+              <div style={{
+                background: "linear-gradient(135deg, #1a1a2e, #16213e)",
+                borderRadius: 16, paddingBottom: "56.25%", position: "relative", marginBottom: 16,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              }}>
+                <div style={{
+                  position: "absolute", inset: 0, display: "flex", alignItems: "center",
+                  justifyContent: "center", flexDirection: "column", gap: 12,
+                }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: "50%",
+                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 22, boxShadow: "0 8px 24px rgba(255,107,157,0.5)",
+                  }}>▶</div>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>Cinematic Wedding Video</p>
+                </div>
+              </div>
+              {/* Style badges */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {["Cinematic", "Romantic", "Vintage", "Modern"].map((s, i) => (
+                  <span key={i} style={{
+                    padding: "4px 12px", borderRadius: 20,
+                    background: i === 0 ? "linear-gradient(135deg, #ff6b9d, #c084fc)" : "rgba(255,255,255,0.08)",
+                    color: i === 0 ? "#fff" : "rgba(255,255,255,0.6)",
+                    fontSize: 12, fontWeight: 600,
+                  }}>{s}</span>
+                ))}
+              </div>
+            </div>
+            {/* Floating badge */}
+            <div style={{
+              position: "absolute", top: -16, right: -16,
+              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              borderRadius: 16, padding: "10px 16px",
+              boxShadow: "0 8px 24px rgba(255,107,157,0.5)",
+            }}>
+              <p style={{ color: "#fff", fontSize: 13, fontWeight: 700, margin: 0 }}>✨ AI Powered</p>
+            </div>
+          </div>
+        </div>
+
+        <style>{`
+          @media (max-width: 768px) {
+            div[style*="gridTemplateColumns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
+      </section>
+
       <section style={{ padding: "80px 24px", background: "#f9fafb" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>QUY TRÌNH</p>

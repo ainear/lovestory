@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface InvitationData {
     groomName: string;
@@ -17,7 +18,11 @@ interface InvitationData {
     bankName: string;
     bankAccount: string;
     bankOwner: string;
+    groomPhone?: string;
     photos: string[];
+    musicUrl?: string;
+    musicName?: string;
+    youtubeUrl?: string;
 }
 
 // ── Template Themes ──
@@ -133,10 +138,12 @@ function ConfettiCanvas() {
 function EnvelopeAnimation({
     groomName,
     brideName,
+    guestName,
     onOpen,
 }: {
     groomName: string;
     brideName: string;
+    guestName?: string;
     onOpen: () => void;
 }) {
     return (
@@ -218,6 +225,11 @@ function EnvelopeAnimation({
                 >
                     {groomName} & {brideName}
                 </h2>
+                {guestName && (
+                    <p style={{ fontSize: 13, color: "#be185d", margin: "10px 0 0", fontWeight: 500 }}>
+                        💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
+                    </p>
+                )}
             </div>
 
             {/* Tap hint */}
@@ -615,8 +627,76 @@ function GiftQrWidget({ bankName, bankAccount, bankOwner }: { bankName: string; 
     );
 }
 
+// ── Photo Slideshow Component ──
+function PhotoSlideshow({ photos, accent }: { photos: string[]; accent: string }) {
+    const [slide, setSlide] = useState(0);
+    useEffect(() => {
+        if (photos.length <= 1) return;
+        const t = setInterval(() => setSlide(s => (s + 1) % photos.length), 3500);
+        return () => clearInterval(t);
+    }, [photos.length]);
+    if (photos.length === 0) return null;
+    return (
+        <section style={{ padding: "0 24px 24px" }}>
+            <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 20 }}>
+                <p style={{ fontSize: 12, color: accent, letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>📸 KHOẢNH KHẮC</p>
+                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "4/3", background: "#f3f4f6" }}>
+                    {photos.map((url, i) => (
+                        <div key={i} style={{ position: "absolute", inset: 0, opacity: i === slide ? 1 : 0, transition: "opacity 0.8s ease", zIndex: i === slide ? 1 : 0 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt={`Ảnh cưới ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                        </div>
+                    ))}
+                    {photos.length > 1 && (
+                        <>
+                            <button onClick={() => setSlide(s => (s - 1 + photos.length) % photos.length)}
+                                style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.35)", color: "#fff", cursor: "pointer", fontSize: 18 }}>‹</button>
+                            <button onClick={() => setSlide(s => (s + 1) % photos.length)}
+                                style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.35)", color: "#fff", cursor: "pointer", fontSize: 18 }}>›</button>
+                        </>
+                    )}
+                    <div style={{ position: "absolute", bottom: 10, right: 12, zIndex: 10, background: "rgba(0,0,0,0.4)", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#fff" }}>
+                        {slide + 1} / {photos.length}
+                    </div>
+                </div>
+                {photos.length > 1 && (
+                    <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
+                        {photos.map((_, i) => (
+                            <button key={i} onClick={() => setSlide(i)}
+                                style={{ width: i === slide ? 16 : 6, height: 6, borderRadius: 4, border: "none", background: i === slide ? accent : "#d1d5db", cursor: "pointer", transition: "all 0.3s", padding: 0 }} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+}
+
+// ── YouTube Embed Component ──
+function YouTubeEmbed({ url, accent }: { url: string; accent: string }) {
+    const m = url.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
+    if (!m) return null;
+    return (
+        <section style={{ padding: "0 24px 24px" }}>
+            <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 20 }}>
+                <p style={{ fontSize: 12, color: accent, letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>▶️ VIDEO</p>
+                <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "16/9", background: "#000" }}>
+                    <iframe
+                        src={`https://www.youtube.com/embed/${m[1]}?rel=0&modestbranding=1`}
+                        title="Wedding Video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ width: "100%", height: "100%", border: "none" }}
+                    />
+                </div>
+            </div>
+        </section>
+    );
+}
+
 // ── Main Public Invitation ──
 export default function PublicInvitationPage({ params }: { params: Promise<{ slug: string }> }) {
+
     const [isOpen, setIsOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
@@ -624,12 +704,14 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const audioRef = useRef<HTMLAudioElement>(null);
     const [projectId, setProjectId] = useState("");
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
+    const searchParams = useSearchParams();
+    const guestName = searchParams.get("guest") || "";
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
         venueName: "", venueAddress: "", googleMapsUrl: "",
         groomParentNames: "", brideParentNames: "", story: "",
         message: "", bankName: "", bankAccount: "", bankOwner: "",
-        photos: [],
+        photos: [], musicUrl: "", musicName: "",
     });
 
     useEffect(() => {
@@ -666,7 +748,11 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     bankName: project.bank_name || "",
                     bankAccount: project.bank_account || "",
                     bankOwner: project.bank_owner || "",
+                    groomPhone: project.groom_phone || "",
                     photos: (() => { try { return JSON.parse(project.photos || "[]"); } catch { return []; } })(),
+                    musicUrl: project.music_url || "",
+                    musicName: project.music_name || "",
+                    youtubeUrl: project.youtube_url || "",
                 });
 
                 // Increment view count
@@ -752,7 +838,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     }
 
     if (!isOpen) {
-        return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} onOpen={handleOpen} />;
+        return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} guestName={guestName} onOpen={handleOpen} />;
     }
 
     const theme = THEMES[templateSlug] || DEFAULT_THEME;
@@ -771,38 +857,48 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             }}
         >
             {/* Background Music Audio */}
-            <audio
-                ref={audioRef}
-                src="https://cdn.pixabay.com/audio/2024/11/29/audio_d60d894fa1.mp3"
-                loop
-                preload="auto"
-            />
+            {data.musicUrl && (
+                <audio
+                    ref={audioRef}
+                    src={data.musicUrl}
+                    loop
+                    preload="auto"
+                />
+            )}
 
             {/* Confetti */}
             {showConfetti && <ConfettiCanvas />}
 
-            {/* Music Toggle */}
-            <button
-                onClick={toggleMusic}
-                style={{
-                    position: "fixed",
-                    bottom: 24,
-                    right: 24,
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    border: "none",
-                    color: "#fff",
-                    fontSize: 20,
-                    cursor: "pointer",
-                    boxShadow: "0 4px 16px rgba(255,107,157,0.4)",
-                    zIndex: 50,
-                    animation: isPlaying ? "spin 3s linear infinite" : "none",
-                    background: theme.buttonGrad,
-                }}
-            >
-                {isPlaying ? "🎵" : "🔇"}
-            </button>
+            {/* Floating Music Player */}
+            {data.musicUrl && (
+                <div style={{
+                    position: "fixed", bottom: 24, right: 16, zIndex: 50,
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "rgba(0,0,0,0.75)", backdropFilter: "blur(10px)",
+                    borderRadius: 40, padding: "8px 14px 8px 10px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                    maxWidth: 200,
+                }}>
+                    <button
+                        onClick={toggleMusic}
+                        style={{
+                            width: 32, height: 32, borderRadius: "50%", border: "none",
+                            background: theme.buttonGrad, color: "#fff", fontSize: 14,
+                            cursor: "pointer", flexShrink: 0, display: "flex",
+                            alignItems: "center", justifyContent: "center",
+                            animation: isPlaying ? "spin 3s linear infinite" : "none",
+                        }}
+                    >
+                        {isPlaying ? "🎵" : "🔇"}
+                    </button>
+                    <div style={{ overflow: "hidden", flex: 1 }}>
+                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", margin: 0 }}>Nhạc nền</p>
+                        <p style={{ fontSize: 11, color: "#fff", margin: 0, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {data.musicName || "Nhạc cưới"}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Hero Section */}
             <section style={{ textAlign: "center", padding: "60px 24px 40px" }}>
@@ -822,6 +918,15 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
                         {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
                         {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
+                    </div>
+                )}
+                {guestName && (
+                    <div style={{
+                        marginTop: 20, padding: "10px 20px", borderRadius: 12,
+                        background: "rgba(255,255,255,0.5)", display: "inline-block",
+                        fontSize: 14, color: theme.accent, fontStyle: "italic",
+                    }}>
+                        💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
                     </div>
                 )}
             </section>
@@ -850,30 +955,11 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 </section>
             )}
 
-            {/* Photo Gallery */}
-            {data.photos.length > 0 && (
-                <section style={{ padding: "0 24px 24px" }}>
-                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 16px", textAlign: "center" }}>📸 KHOẢNH KHẮC</p>
-                        <div style={{ display: "grid", gridTemplateColumns: data.photos.length === 1 ? "1fr" : "repeat(2, 1fr)", gap: 8 }}>
-                            {data.photos.map((url, i) => (
-                                <div key={i} style={{
-                                    borderRadius: 12, overflow: "hidden", aspectRatio: i === 0 && data.photos.length % 2 !== 0 ? "16/9" : "1/1",
-                                    gridColumn: i === 0 && data.photos.length % 2 !== 0 ? "1 / -1" : undefined,
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                                }}>
-                                    <img
-                                        src={url}
-                                        alt={`Ảnh cưới ${i + 1}`}
-                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                                        loading="lazy"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
+            {/* Photo Slideshow */}
+            <PhotoSlideshow photos={data.photos} accent={theme.accent} />
+
+            {/* YouTube Embed */}
+            {data.youtubeUrl && <YouTubeEmbed url={data.youtubeUrl} accent={theme.accent} />}
 
             {/* Venue + Map */}
             {data.venueName && (
@@ -915,6 +1001,34 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     Made with ❤️ by <strong>LoveStory</strong>
                 </p>
             </footer>
+
+            {/* Floating Click-to-Call button */}
+            {data.groomPhone && (
+                <a
+                    href={`tel:${data.groomPhone}`}
+                    style={{
+                        position: "fixed",
+                        bottom: 24,
+                        left: 20,
+                        zIndex: 90,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "10px 16px",
+                        borderRadius: 50,
+                        background: "linear-gradient(135deg, #10b981, #059669)",
+                        color: "#fff",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        textDecoration: "none",
+                        boxShadow: "0 4px 20px rgba(16,185,129,0.35)",
+                        animation: "pulse 2s infinite",
+                    }}
+                >
+                    📞 <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{data.groomPhone}</span>
+                </a>
+            )}
+
 
             <style>{`
         @keyframes fadeIn {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { sendPaymentConfirmedEmail } from "@/server/services/email";
 
 // SePay webhook handler
 // SePay sends POST request when a bank transfer is detected
@@ -78,6 +79,16 @@ export async function POST(req: NextRequest) {
                 started_at: new Date().toISOString(),
                 expires_at: null, // Lifetime for now
             }, { onConflict: "user_id" });
+
+        // Send payment-confirmed email (fire-and-forget)
+        supabase.auth.admin.getUserById(order.user_id).then(({ data }) => {
+            const email = data?.user?.email;
+            const name = data?.user?.user_metadata?.full_name || email?.split("@")[0] || "bạn";
+            if (email) {
+                sendPaymentConfirmedEmail(email, name, order.plan)
+                    .catch((e: unknown) => console.warn("[Email] payment-confirmed failed:", e));
+            }
+        }).catch(() => { /* non-blocking */ });
 
         return NextResponse.json({ success: true, orderCode });
     } catch (err) {

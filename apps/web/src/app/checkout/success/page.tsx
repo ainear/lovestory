@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { CheckoutStatusPoller } from "./poller";
 
 export default async function CheckoutSuccessPage({
     searchParams,
@@ -29,6 +30,8 @@ export default async function CheckoutSuccessPage({
         }
     }
 
+    const isPaid = orderStatus === "paid";
+
     return (
         <div
             style={{
@@ -36,51 +39,142 @@ export default async function CheckoutSuccessPage({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "linear-gradient(180deg, #ecfdf5 0%, #fff 100%)",
+                background: isPaid
+                    ? "linear-gradient(180deg, #ecfdf5 0%, #fff 100%)"
+                    : "linear-gradient(180deg, #fefce8 0%, #fff 100%)",
                 fontFamily: "'Inter', sans-serif",
             }}
         >
             <div style={{ textAlign: "center", maxWidth: 440, padding: 40 }}>
-                <div
-                    style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #34d399, #10b981)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 40,
-                        margin: "0 auto 24px",
-                        boxShadow: "0 12px 32px rgba(16,185,129,0.3)",
-                    }}
-                >
-                    ✅
-                </div>
-                <h1 style={{ fontSize: 28, fontWeight: 700, color: "#059669", margin: "0 0 8px" }}>
-                    Thanh toán thành công!
-                </h1>
-                <p style={{ fontSize: 16, color: "#6b7280", margin: "0 0 8px" }}>
-                    Bạn đã nâng cấp lên gói <strong>{planName}</strong>
-                </p>
+                {isPaid ? (
+                    <>
+                        <div
+                            style={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: "50%",
+                                background:
+                                    "linear-gradient(135deg, #34d399, #10b981)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 40,
+                                margin: "0 auto 24px",
+                                boxShadow:
+                                    "0 12px 32px rgba(16,185,129,0.3)",
+                            }}
+                        >
+                            ✅
+                        </div>
+                        <h1
+                            style={{
+                                fontSize: 28,
+                                fontWeight: 700,
+                                color: "#059669",
+                                margin: "0 0 8px",
+                            }}
+                        >
+                            Thanh toán thành công!
+                        </h1>
+                        <p
+                            style={{
+                                fontSize: 16,
+                                color: "#6b7280",
+                                margin: "0 0 8px",
+                            }}
+                        >
+                            Bạn đã nâng cấp lên gói{" "}
+                            <strong>{planName}</strong>
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <div
+                            style={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: "50%",
+                                background:
+                                    "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 40,
+                                margin: "0 auto 24px",
+                                boxShadow:
+                                    "0 12px 32px rgba(245,158,11,0.3)",
+                                animation: "pulse 2s infinite",
+                            }}
+                        >
+                            ⏳
+                        </div>
+                        <h1
+                            style={{
+                                fontSize: 24,
+                                fontWeight: 700,
+                                color: "#d97706",
+                                margin: "0 0 8px",
+                            }}
+                        >
+                            Đang xác nhận thanh toán...
+                        </h1>
+                        <p
+                            style={{
+                                fontSize: 14,
+                                color: "#6b7280",
+                                margin: "0 0 4px",
+                            }}
+                        >
+                            Hệ thống đang chờ xác nhận từ ngân hàng.
+                        </p>
+                        <p
+                            style={{
+                                fontSize: 13,
+                                color: "#9ca3af",
+                                margin: "0 0 24px",
+                            }}
+                        >
+                            Thường mất 1-3 phút. Trang sẽ tự cập nhật.
+                        </p>
+                        {/* Client-side polling component */}
+                        {orderCode && (
+                            <CheckoutStatusPoller orderCode={orderCode} />
+                        )}
+                    </>
+                )}
+
                 {orderCode && (
-                    <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 32px" }}>
+                    <p
+                        style={{
+                            fontSize: 12,
+                            color: "#9ca3af",
+                            margin: "0 0 32px",
+                        }}
+                    >
                         Mã đơn: {orderCode}
                     </p>
                 )}
 
-                <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 16,
+                        justifyContent: "center",
+                    }}
+                >
                     <Link
                         href="/dashboard"
                         style={{
                             padding: "14px 32px",
                             borderRadius: 12,
-                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                            background:
+                                "linear-gradient(135deg, #ff6b9d, #c084fc)",
                             color: "#fff",
                             fontSize: 14,
                             fontWeight: 600,
                             textDecoration: "none",
-                            boxShadow: "0 4px 16px rgba(255,107,157,0.3)",
+                            boxShadow:
+                                "0 4px 16px rgba(255,107,157,0.3)",
                         }}
                     >
                         🏠 Về Dashboard
@@ -102,6 +196,13 @@ export default async function CheckoutSuccessPage({
                     </Link>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+            `}</style>
         </div>
     );
 }

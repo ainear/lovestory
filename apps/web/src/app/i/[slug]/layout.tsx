@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { createClient } from "@supabase/supabase-js";
 
-// Dynamic OG metadata for social sharing on Zalo/Facebook/Telegram
+// Dynamic OG metadata: fetch real names from DB for correct Zalo/Facebook sharing
 export async function generateMetadata({
     params,
 }: {
@@ -8,14 +9,41 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { slug } = await params;
 
-    // TODO: fetch real data from DB by slug
-    // For now, demo data
-    const groomName = "Minh";
-    const brideName = "Mai";
-    const weddingDate = "15/06/2026";
+    let groomName = "";
+    let brideName = "";
+    let weddingDate = "";
+    let coverImage = "";
 
-    const title = `Thiệp mời cưới ${groomName} & ${brideName}`;
-    const description = `💌 ${groomName} & ${brideName} trân trọng kính mời quý khách đến chia sẻ niềm vui trong ngày lễ trọng đại — ${weddingDate}`;
+    try {
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+        const { data } = await supabase
+            .from("projects")
+            .select("groom_name, bride_name, wedding_date, cover_image")
+            .eq("slug", slug)
+            .eq("status", "published")
+            .maybeSingle();
+
+        if (data) {
+            groomName = data.groom_name || "";
+            brideName = data.bride_name || "";
+            weddingDate = data.wedding_date
+                ? new Date(data.wedding_date).toLocaleDateString("vi-VN", { day: "numeric", month: "long", year: "numeric" })
+                : "";
+            coverImage = data.cover_image || "";
+        }
+    } catch {
+        // Fallback gracefully
+    }
+
+    const names = groomName && brideName ? `${groomName} & ${brideName}` : "Thiệp cưới";
+    const title = `💒 Thiệp mời cưới ${names}`;
+    const description = weddingDate
+        ? `${names} trân trọng kính mời bạn đến chia sẻ hạnh phúc trong ngày lễ trọng đại — ${weddingDate} 💕`
+        : `${names} trân trọng kính mời bạn đến chia sẻ hạnh phúc trong ngày lễ trọng đại 💕`;
+    const url = `${process.env.NEXT_PUBLIC_APP_URL || "https://7app.online"}/i/${slug}`;
 
     return {
         title,
@@ -24,14 +52,16 @@ export async function generateMetadata({
             type: "website",
             locale: "vi_VN",
             siteName: "LoveStory",
-            title: `💒 ${title}`,
+            title,
             description,
-            url: `https://web-pi-green-39.vercel.app/i/${slug}`,
+            url,
+            ...(coverImage ? { images: [{ url: coverImage, width: 1200, height: 630, alt: names }] } : {}),
         },
         twitter: {
             card: "summary_large_image",
-            title: `💒 ${title}`,
+            title,
             description,
+            ...(coverImage ? { images: [coverImage] } : {}),
         },
         other: {
             "og:image:width": "1200",

@@ -12,6 +12,7 @@ export default async function DashboardPage() {
     let totalViews = 0;
     let totalRsvps = 0;
     let totalWishes = 0;
+    let totalVideos = 0;
     let maxProjects = 1; // free plan default
 
     if (user) {
@@ -25,10 +26,13 @@ export default async function DashboardPage() {
         if (sub?.plan === "basic") maxProjects = 5;
         else if (sub?.plan === "premium") maxProjects = 999;
 
-        const { data: projects } = await supabase
-            .from("projects")
-            .select("id, view_count")
-            .eq("user_id", user.id);
+        const [projectsResult, videosResult] = await Promise.all([
+            supabase.from("projects").select("id, view_count").eq("user_id", user.id),
+            supabase.from("videos").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+        ]);
+
+        const projects = projectsResult.data;
+        totalVideos = videosResult.count || 0;
 
         if (projects && projects.length > 0) {
             projectCount = projects.length;
@@ -67,12 +71,13 @@ export default async function DashboardPage() {
             </div>
 
             {/* Stats Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16, marginBottom: 32 }}>
                 {[
                     { icon: "💌", label: "Thiệp", value: projectCount, max: maxProjects === 999 ? null : maxProjects, color: "#ec4899" },
                     { icon: "👁️", label: "Lượt xem", value: totalViews, max: null, color: "#3b82f6" },
                     { icon: "✅", label: "RSVP", value: totalRsvps, max: null, color: "#10b981" },
                     { icon: "💬", label: "Lời chúc", value: totalWishes, max: null, color: "#8b5cf6" },
+                    { icon: "🎬", label: "Video AI", value: totalVideos, max: null, color: "#f59e0b" },
                 ].map((stat, i) => (
                     <div
                         key={i}
@@ -137,7 +142,7 @@ export default async function DashboardPage() {
 
             {/* Quick Actions */}
             <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", margin: "0 0 16px" }}>⚡ Hành động nhanh</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 32 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
                 <Link
                     href="/templates"
                     style={{
@@ -168,6 +173,21 @@ export default async function DashboardPage() {
                     <p style={{ fontSize: 28, margin: "0 0 8px" }}>📋</p>
                     <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>Quản lý thiệp</p>
                     <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Xem và chỉnh sửa</p>
+                </Link>
+                <Link
+                    href="/dashboard/videos"
+                    style={{
+                        display: "block",
+                        padding: 24,
+                        borderRadius: 16,
+                        background: "linear-gradient(135deg, #0f0c29, #302b63)",
+                        color: "#fff",
+                        textDecoration: "none",
+                    }}
+                >
+                    <p style={{ fontSize: 28, margin: "0 0 8px" }}>🎬</p>
+                    <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>Video của tôi</p>
+                    <p style={{ fontSize: 12, opacity: 0.7, margin: 0 }}>Xem và tải video AI</p>
                 </Link>
             </div>
 
