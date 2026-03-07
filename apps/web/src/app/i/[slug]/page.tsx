@@ -450,13 +450,22 @@ function RsvpWidget({ projectId }: { projectId: string }) {
                 <button
                     onClick={async () => {
                         if (!name) return;
+                        // Demo mode — just show success UI
+                        if (projectId === "demo") { setSubmitted(true); return; }
                         try {
-                            await fetch("/api/rsvp", {
+                            const res = await fetch("/api/rsvp", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ projectId, guestName: name, status, guestCount }),
                             });
-                        } catch { }
+                            if (!res.ok) {
+                                alert("Gửi xác nhận thất bại. Vui lòng thử lại.");
+                                return;
+                            }
+                        } catch {
+                            alert("Lỗi kết nối. Vui lòng thử lại.");
+                            return;
+                        }
                         setSubmitted(true);
                     }}
                     style={{
@@ -494,13 +503,26 @@ function WishWallWidget({ projectId }: { projectId: string }) {
 
     async function handleSubmit() {
         if (!name || !message) return;
+        // Demo mode — just show locally
+        if (projectId === "demo") {
+            setWishes((prev) => [{ name, message, emoji: selectedEmoji }, ...prev]);
+            setName(""); setMessage("");
+            return;
+        }
         try {
-            await fetch("/api/wishes", {
+            const res = await fetch("/api/wishes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId, guestName: name, message, emoji: selectedEmoji }),
             });
-        } catch { }
+            if (!res.ok) {
+                alert("Gửi lời chúc thất bại. Vui lòng thử lại.");
+                return;
+            }
+        } catch {
+            alert("Lỗi kết nối. Vui lòng thử lại.");
+            return;
+        }
         setWishes((prev) => [{ name, message, emoji: selectedEmoji }, ...prev]);
         setName("");
         setMessage("");
@@ -853,6 +875,9 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     story: "Chúng tôi gặp nhau vào một ngày mùa thu Sài Gòn. Ánh nắng chiều xuyên qua tán lá cổ thụ trên con đường Nguyễn Du, và tình yêu bắt đầu từ đó.",
                     message: "Sự hiện diện của bạn là niềm vinh hạnh lớn lao cho chúng tôi.",
                     bankName: "Vietcombank", bankAccount: "1234567890", bankOwner: "NGUYEN VAN MINH",
+                    musicUrl: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+                    musicName: "Beautiful Wedding",
+                    groomPhone: "0901234567",
                     photos: [
                         "https://images.unsplash.com/photo-1519741497674-611481863552?w=600",
                         "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600",
