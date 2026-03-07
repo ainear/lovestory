@@ -113,8 +113,7 @@ function EditorContent() {
 
             const slug = `${formData.groomName.toLowerCase().replace(/\s+/g, "-")}-${formData.brideName.toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
 
-            // Safe insert — only use columns that exist in DB table
-            // Extra wedding data stored in config JSONB
+            // Safe insert — use only columns that exist in DB
             const { error } = await supabase.from("projects").insert({
                 user_id: user.id,
                 title: `${formData.groomName} & ${formData.brideName}`,
@@ -123,22 +122,20 @@ function EditorContent() {
                 groom_name: formData.groomName,
                 bride_name: formData.brideName,
                 wedding_date: formData.weddingDate || null,
+                wedding_time: formData.weddingTime || null,
                 venue_name: formData.venueName || null,
                 venue_address: formData.venueAddress || null,
+                google_maps_url: formData.googleMapsUrl || null,
+                story: formData.story || null,
+                message: formData.message || null,
+                bank_name: formData.bankName || null,
+                bank_account: formData.bankAccount || null,
+                bank_owner: formData.bankOwner || null,
+                groom_parent_names: formData.groomParentNames || null,
+                bride_parent_names: formData.brideParentNames || null,
+                photos: formData.photos.filter(p => p.trim()),
                 status: publish ? "published" : "draft",
                 view_count: 0,
-                config: {
-                    wedding_time: formData.weddingTime || null,
-                    google_maps_url: formData.googleMapsUrl || null,
-                    story: formData.story || null,
-                    message: formData.message || null,
-                    bank_name: formData.bankName || null,
-                    bank_account: formData.bankAccount || null,
-                    bank_owner: formData.bankOwner || null,
-                    groom_parent_names: formData.groomParentNames || null,
-                    bride_parent_names: formData.brideParentNames || null,
-                    photos: formData.photos.filter(p => p.trim()),
-                },
             });
 
             if (error) {
