@@ -5,23 +5,29 @@
 
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 const FROM = "LoveStory <noreply@7app.online>";
 
 // ─── Generic sender ─────────────────────────────────────────────────────────
 
 async function sendEmail(to: string, subject: string, html: string) {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
-    if (error) {
-        console.error("[Email] Send failed:", error);
-        throw new Error(error.message);
-    }
+  const { error } = await getResend().emails.send({ from: FROM, to, subject, html });
+  if (error) {
+    console.error("[Email] Send failed:", error);
+    throw new Error(error.message);
+  }
 }
 
 // ─── Welcome Email ───────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string) {
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -64,22 +70,22 @@ export async function sendWelcomeEmail(to: string, name: string) {
 </body>
 </html>`;
 
-    await sendEmail(to, "🎉 Chào mừng đến với LoveStory!", html);
+  await sendEmail(to, "🎉 Chào mừng đến với LoveStory!", html);
 }
 
 // ─── Video Ready Email ────────────────────────────────────────────────────────
 
 export async function sendVideoReadyEmail(
-    to: string,
-    name: string,
-    videoUrl: string,
-    thumbnailUrl: string,
+  to: string,
+  name: string,
+  videoUrl: string,
+  thumbnailUrl: string,
 ) {
-    const thumb = thumbnailUrl
-        ? `<img src="${thumbnailUrl}" alt="Video thumbnail" style="width:100%;border-radius:12px;margin-bottom:24px;">`
-        : `<div style="background:linear-gradient(135deg,#0f0c29,#302b63);border-radius:12px;padding:40px;text-align:center;margin-bottom:24px;"><p style="font-size:48px;margin:0;">🎬</p></div>`;
+  const thumb = thumbnailUrl
+    ? `<img src="${thumbnailUrl}" alt="Video thumbnail" style="width:100%;border-radius:12px;margin-bottom:24px;">`
+    : `<div style="background:linear-gradient(135deg,#0f0c29,#302b63);border-radius:12px;padding:40px;text-align:center;margin-bottom:24px;"><p style="font-size:48px;margin:0;">🎬</p></div>`;
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -120,23 +126,23 @@ export async function sendVideoReadyEmail(
 </body>
 </html>`;
 
-    await sendEmail(to, "🎬 Video cưới AI của bạn đã sẵn sàng!", html);
+  await sendEmail(to, "🎬 Video cưới AI của bạn đã sẵn sàng!", html);
 }
 
 // ─── Payment Confirmed Email ──────────────────────────────────────────────────
 
 export async function sendPaymentConfirmedEmail(
-    to: string,
-    name: string,
-    plan: string,
+  to: string,
+  name: string,
+  plan: string,
 ) {
-    const planLabel = plan === "premium" ? "👑 Premium" : "⭐ Basic";
-    const planColor = plan === "premium" ? "#f59e0b" : "#8b5cf6";
-    const features = plan === "premium"
-        ? ["Không giới hạn thiệp", "Video AI 1080p/4K", "Xóa watermark", "Nhạc nền tùy chỉnh", "Font chữ tùy chỉnh"]
-        : ["Tối đa 5 thiệp", "Video AI 720p", "Xóa watermark", "Nhạc nền tùy chỉnh"];
+  const planLabel = plan === "premium" ? "👑 Premium" : "⭐ Basic";
+  const planColor = plan === "premium" ? "#f59e0b" : "#8b5cf6";
+  const features = plan === "premium"
+    ? ["Không giới hạn thiệp", "Video AI 1080p/4K", "Xóa watermark", "Nhạc nền tùy chỉnh", "Font chữ tùy chỉnh"]
+    : ["Tối đa 5 thiệp", "Video AI 720p", "Xóa watermark", "Nhạc nền tùy chỉnh"];
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -170,26 +176,26 @@ export async function sendPaymentConfirmedEmail(
 </body>
 </html>`;
 
-    await sendEmail(to, `✅ Kích hoạt thành công gói ${planLabel}`, html);
+  await sendEmail(to, `✅ Kích hoạt thành công gói ${planLabel}`, html);
 }
 
 // ─── RSVP Alert Email ─────────────────────────────────────────────────────────
 
 export async function sendRsvpAlertEmail(
-    to: string,
-    ownerName: string,
-    guestName: string,
-    status: "confirmed" | "declined" | "maybe",
-    projectTitle: string,
+  to: string,
+  ownerName: string,
+  guestName: string,
+  status: "confirmed" | "declined" | "maybe",
+  projectTitle: string,
 ) {
-    const statusMap = {
-        confirmed: { icon: "✅", text: "đã xác nhận tham dự", color: "#10b981" },
-        declined: { icon: "❌", text: "không thể tham dự", color: "#ef4444" },
-        maybe: { icon: "🤔", text: "có thể tham dự", color: "#f59e0b" },
-    };
-    const s = statusMap[status];
+  const statusMap = {
+    confirmed: { icon: "✅", text: "đã xác nhận tham dự", color: "#10b981" },
+    declined: { icon: "❌", text: "không thể tham dự", color: "#ef4444" },
+    maybe: { icon: "🤔", text: "có thể tham dự", color: "#f59e0b" },
+  };
+  const s = statusMap[status];
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -222,5 +228,5 @@ export async function sendRsvpAlertEmail(
 </body>
 </html>`;
 
-    await sendEmail(to, `${s.icon} ${guestName} ${s.text}`, html);
+  await sendEmail(to, `${s.icon} ${guestName} ${s.text}`, html);
 }
