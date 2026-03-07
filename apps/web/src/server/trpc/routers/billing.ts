@@ -19,7 +19,7 @@ const SEPAY_CHECKOUT_URL = SEPAY_SANDBOX
     : "https://pay.sepay.vn/v1/checkout/init";
 
 const APP_URL =
-    process.env.NEXT_PUBLIC_APP_URL || "https://web-pi-green-39.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL || "https://7app.online";
 
 function generateSignature(params: Record<string, string>): string {
     const sortedKeys = Object.keys(params).sort();

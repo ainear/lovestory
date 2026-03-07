@@ -9,7 +9,7 @@ const SEPAY_CHECKOUT_URL = SEPAY_SANDBOX
     ? "https://pay-sandbox.sepay.vn/v1/checkout/init"
     : "https://pay.sepay.vn/v1/checkout/init";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://web-pi-green-39.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://7app.online";
 
 interface CreateOrderBody {
     plan: "basic" | "premium";

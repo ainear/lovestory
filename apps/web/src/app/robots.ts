@@ -1,14 +1,16 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://7app.online";
+
     return {
         rules: [
             {
                 userAgent: "*",
                 allow: "/",
-                disallow: ["/dashboard/", "/admin/", "/editor/", "/api/", "/auth/"],
+                disallow: ["/dashboard/", "/api/", "/auth/"],
             },
         ],
-        sitemap: "https://7app.online/sitemap.xml",
+        sitemap: `${baseUrl}/sitemap.xml`,
     };
 }

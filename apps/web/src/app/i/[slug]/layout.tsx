@@ -26,7 +26,7 @@ export async function generateMetadata({
             siteName: "LoveStory",
             title: `💒 ${title}`,
             description,
-            url: `https://web-pi-green-39.vercel.app/i/${slug}`,
+            url: `${process.env.NEXT_PUBLIC_APP_URL || "https://7app.online"}/i/${slug}`,
         },
         twitter: {
             card: "summary_large_image",
