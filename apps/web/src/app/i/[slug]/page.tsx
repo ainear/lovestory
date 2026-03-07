@@ -694,13 +694,87 @@ function YouTubeEmbed({ url, accent }: { url: string; accent: string }) {
     );
 }
 
+// ── HeartButton: Floating like button with animated count ──
+function HeartButton({ slug }: { slug: string }) {
+    const [liked, setLiked] = useState(false);
+    const [count, setCount] = useState(0);
+    const [animating, setAnimating] = useState(false);
+
+    useEffect(() => {
+        // Load initial count
+        fetch(`/api/likes?slug=${slug}`)
+            .then(r => r.json())
+            .then(d => setCount(d.likes || 0))
+            .catch(() => { });
+        // Check localStorage
+        const key = `liked:${slug}`;
+        if (typeof window !== "undefined" && localStorage.getItem(key)) {
+            setLiked(true);
+        }
+    }, [slug]);
+
+    async function handleLike() {
+        if (liked) return;
+        setAnimating(true);
+        setLiked(true);
+        const key = `liked:${slug}`;
+        localStorage.setItem(key, "1");
+        try {
+            const res = await fetch("/api/likes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ slug }),
+            });
+            const d = await res.json();
+            setCount(d.likes || count + 1);
+        } catch {
+            setCount(c => c + 1);
+        }
+        setTimeout(() => setAnimating(false), 600);
+    }
+
+    return (
+        <button
+            onClick={handleLike}
+            disabled={liked}
+            style={{
+                position: "fixed",
+                bottom: 24,
+                right: 20,
+                zIndex: 90,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                padding: "10px 14px",
+                borderRadius: 50,
+                border: "none",
+                background: liked ? "linear-gradient(135deg, #ff6b9d, #ff3366)" : "rgba(255,255,255,0.95)",
+                color: liked ? "#fff" : "#ff6b9d",
+                fontSize: 22,
+                cursor: liked ? "default" : "pointer",
+                boxShadow: liked ? "0 4px 20px rgba(255,107,157,0.4)" : "0 2px 12px rgba(0,0,0,0.12)",
+                transform: animating ? "scale(1.3)" : "scale(1)",
+                transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+        >
+            <span style={{ lineHeight: 1 }}>{liked ? "❤️" : "🤍"}</span>
+            {count > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 700, lineHeight: 1 }}>{count}</span>
+            )}
+        </button>
+    );
+}
+
 // ── Main Public Invitation ──
 export default function PublicInvitationPage({ params }: { params: Promise<{ slug: string }> }) {
+
 
     const [isOpen, setIsOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [pageSlug, setPageSlug] = useState("");
     const audioRef = useRef<HTMLAudioElement>(null);
     const [projectId, setProjectId] = useState("");
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
@@ -714,10 +788,13 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         photos: [], musicUrl: "", musicName: "",
     });
 
+
     useEffect(() => {
         async function loadProject() {
             const { slug } = await params;
+            setPageSlug(slug);
             const { createBrowserClient } = await import("@supabase/ssr");
+
             const supabase = createBrowserClient(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
                 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -995,14 +1072,25 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 <GiftQrWidget bankName={data.bankName} bankAccount={data.bankAccount} bankOwner={data.bankOwner} />
             </section>
 
-            {/* Footer */}
-            <footer style={{ textAlign: "center", padding: "24px", borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
-                    Made with ❤️ by <strong>LoveStory</strong>
-                </p>
+            {/* Footer — LoveStory watermark (always visible) */}
+            <footer style={{ textAlign: "center", padding: "24px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                <a
+                    href="https://7app.online"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "6px 14px", borderRadius: 20,
+                        background: "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
+                        border: "1px solid rgba(255,107,157,0.15)",
+                        textDecoration: "none", fontSize: 12, color: "#9ca3af",
+                    }}
+                >
+                    ❤️ Tạo thiệp cưới miễn phí tại <strong style={{ color: "#ff6b9d", marginLeft: 4 }}>LoveStory</strong>
+                </a>
             </footer>
 
-            {/* Floating Click-to-Call button */}
+            {/* Floating Click-to-Call button (bottom-left) */}
             {data.groomPhone && (
                 <a
                     href={`tel:${data.groomPhone}`}
@@ -1028,6 +1116,11 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     📞 <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{data.groomPhone}</span>
                 </a>
             )}
+
+            {/* Floating Heart button (bottom-right) */}
+            {pageSlug && <HeartButton slug={pageSlug} />}
+
+
 
 
             <style>{`

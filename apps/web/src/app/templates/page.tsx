@@ -134,10 +134,22 @@ const TEMPLATES = [
         tier: "basic" as const,
         thumbnailUrl: "",
         color: "#ef4444",
-        emoji: "👨‍👩‍👧‍👦",
+        emoji: "👨\u200d👩\u200d👧\u200d👦",
         usageCount: 321,
     },
+    // ── Sprint K: 10 mẫu mới ──
+    { id: "13", slug: "autumn-leaves", name: "Autumn Leaves", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#d97706", emoji: "🍂", usageCount: 412 },
+    { id: "14", slug: "ocean-blue", name: "Ocean Blue", category: "wedding", tier: "premium" as const, thumbnailUrl: "", color: "#0284c7", emoji: "🌊", usageCount: 583 },
+    { id: "15", slug: "lavender-dream", name: "Lavender Dream", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#9333ea", emoji: "💜", usageCount: 739 },
+    { id: "16", slug: "do-truyen-thong", name: "Đỏ Truyền Thống", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#dc2626", emoji: "🏮", usageCount: 1102 },
+    { id: "17", slug: "forest-green", name: "Forest Green", category: "wedding", tier: "premium" as const, thumbnailUrl: "", color: "#16a34a", emoji: "🌿", usageCount: 298 },
+    { id: "18", slug: "peach-blossom", name: "Peach Blossom", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#fb923c", emoji: "🌼", usageCount: 867 },
+    { id: "19", slug: "royal-navy", name: "Royal Navy", category: "event", tier: "premium" as const, thumbnailUrl: "", color: "#1e3a5f", emoji: "👑", usageCount: 445 },
+    { id: "20", slug: "dusty-rose", name: "Dusty Rose", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#be185d", emoji: "🥀", usageCount: 623 },
+    { id: "21", slug: "celebration-gold", name: "Celebration Gold", category: "event", tier: "premium" as const, thumbnailUrl: "", color: "#ca8a04", emoji: "✨", usageCount: 511 },
+    { id: "22", slug: "crystal-white", name: "Crystal White", category: "wedding", tier: "basic" as const, thumbnailUrl: "", color: "#94a3b8", emoji: "💍", usageCount: 734 },
 ];
+
 
 const CATEGORIES = [
     { key: "all", label: "Tất cả", icon: "🎨" },
