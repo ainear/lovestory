@@ -18,6 +18,7 @@ interface InvitationData {
     bankName: string;
     bankAccount: string;
     bankOwner: string;
+    groomPhone?: string;
     photos: string[];
     musicUrl?: string;
     musicName?: string;
@@ -747,6 +748,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     bankName: project.bank_name || "",
                     bankAccount: project.bank_account || "",
                     bankOwner: project.bank_owner || "",
+                    groomPhone: project.groom_phone || "",
                     photos: (() => { try { return JSON.parse(project.photos || "[]"); } catch { return []; } })(),
                     musicUrl: project.music_url || "",
                     musicName: project.music_name || "",
@@ -999,6 +1001,34 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     Made with ❤️ by <strong>LoveStory</strong>
                 </p>
             </footer>
+
+            {/* Floating Click-to-Call button */}
+            {data.groomPhone && (
+                <a
+                    href={`tel:${data.groomPhone}`}
+                    style={{
+                        position: "fixed",
+                        bottom: 24,
+                        left: 20,
+                        zIndex: 90,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "10px 16px",
+                        borderRadius: 50,
+                        background: "linear-gradient(135deg, #10b981, #059669)",
+                        color: "#fff",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        textDecoration: "none",
+                        boxShadow: "0 4px 20px rgba(16,185,129,0.35)",
+                        animation: "pulse 2s infinite",
+                    }}
+                >
+                    📞 <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{data.groomPhone}</span>
+                </a>
+            )}
+
 
             <style>{`
         @keyframes fadeIn {

@@ -72,6 +72,7 @@ export default function EditorEditPage() {
         story: "", message: "",
         googleMapsUrl: "",
         bankName: "", bankAccount: "", bankOwner: "",
+        groomPhone: "",
         photos: ["", "", "", "", "", ""] as string[],
         musicUrl: "",
         musicName: "",
@@ -114,7 +115,9 @@ export default function EditorEditPage() {
                 bankName: project.bank_name || "",
                 bankAccount: project.bank_account || "",
                 bankOwner: project.bank_owner || "",
+                groomPhone: project.groom_phone || "",
                 photos: (() => {
+
                     try { const p = JSON.parse(project.photos || "[]"); while (p.length < 6) p.push(""); return p; }
                     catch { return ["", "", "", "", "", ""]; }
                 })(),
@@ -151,6 +154,7 @@ export default function EditorEditPage() {
                 story: formData.story, message: formData.message,
                 bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
                 groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
+                groom_phone: formData.groomPhone || null,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
                 music_url: formData.musicUrl || null,
                 music_name: formData.musicName || null,
@@ -181,6 +185,7 @@ export default function EditorEditPage() {
                 story: formData.story, message: formData.message,
                 bank_name: formData.bankName, bank_account: formData.bankAccount, bank_owner: formData.bankOwner,
                 groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
+                groom_phone: formData.groomPhone || null,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
                 music_url: formData.musicUrl || null,
                 music_name: formData.musicName || null,
@@ -270,7 +275,9 @@ export default function EditorEditPage() {
                                 <FormField label="Tên Cô dâu" placeholder="Trần Thị B" value={formData.brideName} onChange={v => handleChange("brideName", v)} />
                                 <FormField label="Bố mẹ Chú rể" placeholder="Ông... & Bà..." value={formData.groomParentNames} onChange={v => handleChange("groomParentNames", v)} />
                                 <FormField label="Bố mẹ Cô dâu" placeholder="Ông... & Bà..." value={formData.brideParentNames} onChange={v => handleChange("brideParentNames", v)} />
+                                <FormField label="📞 Số điện thoại liên hệ" placeholder="0901 234 567" value={formData.groomPhone} onChange={v => handleChange("groomPhone", v)} />
                             </PanelSection>
+
                             <PanelSection title="Sự kiện">
                                 <FormField label="Ngày cưới" type="date" value={formData.weddingDate} onChange={v => handleChange("weddingDate", v)} />
                                 <FormField label="Giờ cưới" type="time" value={formData.weddingTime} onChange={v => handleChange("weddingTime", v)} />
