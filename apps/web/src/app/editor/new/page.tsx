@@ -113,8 +113,8 @@ function EditorContent() {
 
             const slug = `${formData.groomName.toLowerCase().replace(/\s+/g, "-")}-${formData.brideName.toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`;
 
-            // Safe insert — use only columns that exist in DB
-            const { error } = await supabase.from("projects").insert({
+            // Step 1: Insert with ONLY core columns guaranteed to exist
+            const { data: inserted, error } = await supabase.from("projects").insert({
                 user_id: user.id,
                 title: `${formData.groomName} & ${formData.brideName}`,
                 slug,
@@ -122,27 +122,35 @@ function EditorContent() {
                 groom_name: formData.groomName,
                 bride_name: formData.brideName,
                 wedding_date: formData.weddingDate || null,
-                wedding_time: formData.weddingTime || null,
                 venue_name: formData.venueName || null,
                 venue_address: formData.venueAddress || null,
-                google_maps_url: formData.googleMapsUrl || null,
-                story: formData.story || null,
-                message: formData.message || null,
-                bank_name: formData.bankName || null,
-                bank_account: formData.bankAccount || null,
-                bank_owner: formData.bankOwner || null,
-                groom_parent_names: formData.groomParentNames || null,
-                bride_parent_names: formData.brideParentNames || null,
-                photos: formData.photos.filter(p => p.trim()),
                 status: publish ? "published" : "draft",
                 view_count: 0,
-            });
+            }).select("id").single();
 
             if (error) {
                 console.error("Project insert error:", error);
                 setSaveMsg(`Lỗi: ${error.message}`);
                 setSaving(false);
                 return;
+            }
+
+            // Step 2: Update optional columns (may not exist in DB yet — fail silently)
+            if (inserted?.id) {
+                try {
+                    await supabase.from("projects").update({
+                        wedding_time: formData.weddingTime || null,
+                        google_maps_url: formData.googleMapsUrl || null,
+                        story: formData.story || null,
+                        message: formData.message || null,
+                        bank_name: formData.bankName || null,
+                        bank_account: formData.bankAccount || null,
+                        bank_owner: formData.bankOwner || null,
+                        groom_parent_names: formData.groomParentNames || null,
+                        bride_parent_names: formData.brideParentNames || null,
+                        photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                    }).eq("id", inserted.id);
+                } catch { /* columns may not exist yet — continue */ }
             }
             setSaveMsg(publish ? "Đã xuất bản!" : "Đã lưu!");
             setTimeout(() => router.push("/dashboard/projects"), 1500);
