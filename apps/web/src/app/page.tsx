@@ -377,6 +377,64 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ═══ Template Showcase ═══ */}
+      <section style={{ padding: "80px 24px", background: "linear-gradient(180deg, #fdf2f8 0%, #f5f3ff 50%, #ecfeff 100%)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#c084fc", letterSpacing: 2, margin: "0 0 8px" }}>15+ MẪU THIỆP</p>
+            <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Bộ sưu tập mẫu thiệp</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>
+              Từ cổ điển sang trọng đến hiện đại tối giản — chọn phong cách phù hợp với đám cưới của bạn
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 20 }}>
+            {[
+              { name: "Rose Garden", bg: "linear-gradient(135deg, #fce7f3, #fdf2f8)", icon: "🌹", color: "#be185d" },
+              { name: "Midnight Romance", bg: "linear-gradient(135deg, #1e1b4b, #312e81)", icon: "🌙", color: "#a78bfa", textLight: true },
+              { name: "Golden Hour", bg: "linear-gradient(135deg, #fef3c7, #fffbeb)", icon: "🌅", color: "#b45309" },
+              { name: "Cherry Blossom", bg: "linear-gradient(135deg, #ffe4e6, #fff1f2)", icon: "🌸", color: "#e11d48" },
+              { name: "Ocean Breeze", bg: "linear-gradient(135deg, #cffafe, #ecfeff)", icon: "🌊", color: "#0891b2" },
+              { name: "Royal Navy", bg: "linear-gradient(135deg, #0f172a, #1e293b)", icon: "👑", color: "#fbbf24", textLight: true },
+              { name: "Emerald Forest", bg: "linear-gradient(135deg, #d1fae5, #ecfdf5)", icon: "🌿", color: "#059669" },
+              { name: "Classic Elegance", bg: "linear-gradient(135deg, #27272a, #18181b)", icon: "✦", color: "#facc15", textLight: true },
+            ].map((t, i) => (
+              <div key={i} style={{
+                borderRadius: 16, overflow: "hidden", background: t.bg,
+                padding: "32px 20px", textAlign: "center", position: "relative",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                cursor: "pointer",
+              }}>
+                <p style={{ fontSize: 32, margin: "0 0 12px" }}>{t.icon}</p>
+                <p style={{
+                  fontSize: 14, fontWeight: 600, margin: "0 0 4px",
+                  color: t.textLight ? "#fff" : "#1f2937",
+                }}>{t.name}</p>
+                <p style={{
+                  fontSize: 11, margin: 0,
+                  color: t.textLight ? "rgba(255,255,255,0.6)" : "#6b7280",
+                }}>Thiệp cưới</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <Link
+              href="/templates"
+              style={{
+                display: "inline-block", padding: "14px 32px", borderRadius: 12,
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                color: "#fff", fontSize: 15, fontWeight: 600, textDecoration: "none",
+                boxShadow: "0 4px 20px rgba(255,107,157,0.3)",
+              }}
+            >
+              Xem tất cả 15+ mẫu →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" style={{ padding: "80px 24px", background: "#fff" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>

@@ -81,8 +81,106 @@ const THEMES: Record<string, Theme> = {
         label: "#78716c", envelopeBg: "linear-gradient(180deg, #f5f5f4, #fafaf9)",
         buttonGrad: "linear-gradient(135deg, #78716c, #a8a29e)",
     },
+    "ocean-breeze": {
+        bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)",
+        accent: "#0891b2", accentLight: "#cffafe",
+        heading: "#164e63", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#0891b2", envelopeBg: "linear-gradient(180deg, #cffafe, #ecfeff)",
+        buttonGrad: "linear-gradient(135deg, #06b6d4, #0891b2)",
+    },
+    "rustic-charm": {
+        bg: "linear-gradient(180deg, #fefce8 0%, #fef9c3 30%, #fef3c7 100%)",
+        accent: "#a16207", accentLight: "#fef9c3",
+        heading: "#854d0e", text: "#44403c", card: "rgba(255,255,255,0.6)",
+        label: "#a16207", envelopeBg: "linear-gradient(180deg, #fef9c3, #fefce8)",
+        buttonGrad: "linear-gradient(135deg, #d97706, #a16207)",
+    },
+    "lavender-dream": {
+        bg: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 30%, #ddd6fe 100%)",
+        accent: "#7c3aed", accentLight: "#ede9fe",
+        heading: "#4c1d95", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#7c3aed", envelopeBg: "linear-gradient(180deg, #ede9fe, #f5f3ff)",
+        buttonGrad: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+    },
+    "emerald-forest": {
+        bg: "linear-gradient(180deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 100%)",
+        accent: "#059669", accentLight: "#d1fae5",
+        heading: "#064e3b", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#059669", envelopeBg: "linear-gradient(180deg, #d1fae5, #ecfdf5)",
+        buttonGrad: "linear-gradient(135deg, #10b981, #059669)",
+    },
+    "sunset-glow": {
+        bg: "linear-gradient(180deg, #fff7ed 0%, #ffedd5 30%, #fed7aa 100%)",
+        accent: "#ea580c", accentLight: "#ffedd5",
+        heading: "#7c2d12", text: "#44403c", card: "rgba(255,255,255,0.6)",
+        label: "#ea580c", envelopeBg: "linear-gradient(180deg, #ffedd5, #fff7ed)",
+        buttonGrad: "linear-gradient(135deg, #f97316, #ea580c)",
+    },
+    "minimalist-white": {
+        bg: "linear-gradient(180deg, #fafafa 0%, #f5f5f5 50%, #ffffff 100%)",
+        accent: "#525252", accentLight: "#f5f5f5",
+        heading: "#262626", text: "#404040", card: "rgba(255,255,255,0.8)",
+        label: "#525252", envelopeBg: "linear-gradient(180deg, #f5f5f5, #fafafa)",
+        buttonGrad: "linear-gradient(135deg, #525252, #737373)",
+    },
+    "royal-navy": {
+        bg: "linear-gradient(180deg, #0c1929 0%, #1e293b 30%, #0f172a 100%)",
+        accent: "#fbbf24", accentLight: "rgba(251,191,36,0.15)",
+        heading: "#f8fafc", text: "#e2e8f0", card: "rgba(255,255,255,0.06)",
+        label: "#fbbf24", envelopeBg: "linear-gradient(180deg, #1e293b, #0f172a)",
+        buttonGrad: "linear-gradient(135deg, #f59e0b, #fbbf24)",
+    },
+    "spring-garden": {
+        bg: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 100%)",
+        accent: "#16a34a", accentLight: "#dcfce7",
+        heading: "#14532d", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#16a34a", envelopeBg: "linear-gradient(180deg, #dcfce7, #f0fdf4)",
+        buttonGrad: "linear-gradient(135deg, #22c55e, #16a34a)",
+    },
+    "blush-romance": {
+        bg: "linear-gradient(180deg, #fff1f2 0%, #ffe4e6 30%, #fecdd3 100%)",
+        accent: "#e11d48", accentLight: "#ffe4e6",
+        heading: "#881337", text: "#374151", card: "rgba(255,255,255,0.5)",
+        label: "#e11d48", envelopeBg: "linear-gradient(180deg, #ffe4e6, #fff1f2)",
+        buttonGrad: "linear-gradient(135deg, #f43f5e, #e11d48)",
+    },
+    "tropical-paradise": {
+        bg: "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 30%, #99f6e4 100%)",
+        accent: "#0d9488", accentLight: "#ccfbf1",
+        heading: "#134e4a", text: "#374151", card: "rgba(255,255,255,0.55)",
+        label: "#0d9488", envelopeBg: "linear-gradient(180deg, #ccfbf1, #f0fdfa)",
+        buttonGrad: "linear-gradient(135deg, #14b8a6, #0d9488)",
+    },
 };
 const DEFAULT_THEME = THEMES["rose-garden"];
+
+// ── Scroll Reveal Component ──
+function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+            { threshold: 0.15 }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
+    return (
+        <div
+            ref={ref}
+            style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(30px)",
+                transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
+            }}
+        >
+            {children}
+        </div>
+    );
+}
 
 // ── Confetti Canvas ──
 function ConfettiCanvas() {
@@ -1035,67 +1133,85 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             {/* Calendar */}
             {data.weddingDate && (
-                <section style={{ padding: "0 24px 24px" }}>
-                    <CalendarWidget date={data.weddingDate} />
-                </section>
+                <ScrollReveal delay={0.1}>
+                    <section style={{ padding: "0 24px 24px" }}>
+                        <CalendarWidget date={data.weddingDate} />
+                    </section>
+                </ScrollReveal>
             )}
 
             {/* Countdown */}
             {data.weddingDate && (
-                <section style={{ padding: "0 24px 24px" }}>
-                    <CountdownWidget targetDate={`${data.weddingDate}T${data.weddingTime || "12:00"}`} />
-                </section>
+                <ScrollReveal delay={0.15}>
+                    <section style={{ padding: "0 24px 24px" }}>
+                        <CountdownWidget targetDate={`${data.weddingDate}T${data.weddingTime || "12:00"}`} />
+                    </section>
+                </ScrollReveal>
             )}
 
             {/* Story */}
             {data.story && (
-                <section style={{ padding: "0 24px 24px" }}>
-                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
-                        <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
-                    </div>
-                </section>
+                <ScrollReveal delay={0.1}>
+                    <section style={{ padding: "0 24px 24px" }}>
+                        <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
+                            <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💕 CÂU CHUYỆN CỦA CHÚNG TÔI</p>
+                            <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: 0 }}>{data.story}</p>
+                        </div>
+                    </section>
+                </ScrollReveal>
             )}
 
             {/* Photo Slideshow */}
-            <PhotoSlideshow photos={data.photos} accent={theme.accent} />
+            <ScrollReveal delay={0.1}>
+                <PhotoSlideshow photos={data.photos} accent={theme.accent} />
+            </ScrollReveal>
 
             {/* YouTube Embed */}
-            {data.youtubeUrl && <YouTubeEmbed url={data.youtubeUrl} accent={theme.accent} />}
+            {data.youtubeUrl && <ScrollReveal delay={0.1}><YouTubeEmbed url={data.youtubeUrl} accent={theme.accent} /></ScrollReveal>}
 
             {/* Venue + Map */}
             {data.venueName && (
-                <section style={{ padding: "0 24px 24px" }}>
-                    <MapWidget venueName={data.venueName} venueAddress={data.venueAddress} mapsUrl={data.googleMapsUrl} />
-                </section>
+                <ScrollReveal delay={0.1}>
+                    <section style={{ padding: "0 24px 24px" }}>
+                        <MapWidget venueName={data.venueName} venueAddress={data.venueAddress} mapsUrl={data.googleMapsUrl} />
+                    </section>
+                </ScrollReveal>
             )}
 
             {/* Message */}
             {data.message && (
-                <section style={{ padding: "0 24px 24px", textAlign: "center" }}>
-                    <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
-                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
-                        <p style={{ fontSize: 15, color: "#374151", fontStyle: "italic", lineHeight: 1.7, margin: 0 }}>
-                            &ldquo;{data.message}&rdquo;
-                        </p>
-                    </div>
-                </section>
+                <ScrollReveal delay={0.1}>
+                    <section style={{ padding: "0 24px 24px", textAlign: "center" }}>
+                        <div style={{ background: "rgba(255,255,255,0.5)", borderRadius: 20, padding: 24 }}>
+                            <p style={{ fontSize: 12, color: theme.label, letterSpacing: 3, margin: "0 0 12px" }}>💌 LỜI MỜI</p>
+                            <p style={{ fontSize: 15, color: "#374151", fontStyle: "italic", lineHeight: 1.7, margin: 0 }}>
+                                &ldquo;{data.message}&rdquo;
+                            </p>
+                        </div>
+                    </section>
+                </ScrollReveal>
             )}
 
             {/* RSVP */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <RsvpWidget projectId={projectId} />
-            </section>
+            <ScrollReveal delay={0.1}>
+                <section style={{ padding: "0 24px 24px" }}>
+                    <RsvpWidget projectId={projectId} />
+                </section>
+            </ScrollReveal>
 
             {/* Wish Wall */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <WishWallWidget projectId={projectId} />
-            </section>
+            <ScrollReveal delay={0.15}>
+                <section style={{ padding: "0 24px 24px" }}>
+                    <WishWallWidget projectId={projectId} />
+                </section>
+            </ScrollReveal>
 
             {/* Gift QR */}
-            <section style={{ padding: "0 24px 24px" }}>
-                <GiftQrWidget bankName={data.bankName} bankAccount={data.bankAccount} bankOwner={data.bankOwner} />
-            </section>
+            <ScrollReveal delay={0.1}>
+                <section style={{ padding: "0 24px 24px" }}>
+                    <GiftQrWidget bankName={data.bankName} bankAccount={data.bankAccount} bankOwner={data.bankOwner} />
+                </section>
+            </ScrollReveal>
 
             {/* Footer — LoveStory watermark (always visible) */}
             <footer style={{ textAlign: "center", padding: "24px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
