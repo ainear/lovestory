@@ -116,6 +116,100 @@ const TEMPLATE_THEMES: Record<string, {
         font: "'Playfair Display', serif", pattern: "✦",
         decorTop: "❖ ✦ ❖", decorBottom: "✦ ❖ ✦",
     },
+    // ── Birthday Themes ──
+    "confetti-pop": {
+        bg: "linear-gradient(135deg, #fef9c3 0%, #fce7f3 50%, #dbeafe 100%)",
+        accent: "#db2777", textColor: "#7e22ce", nameColor: "#1d4ed8",
+        font: "'Nunito', sans-serif", pattern: "🎊",
+        decorTop: "🎈 🎊 🎈", decorBottom: "🎉 🎊 🎉",
+    },
+    "balloon-fiesta": {
+        bg: "linear-gradient(180deg, #fef3c7 0%, #fde68a 30%, #fef9c3 100%)",
+        accent: "#f59e0b", textColor: "#92400e", nameColor: "#78350f",
+        font: "'Quicksand', sans-serif", pattern: "🎈",
+        decorTop: "🎈 ✨ 🎈", decorBottom: "✨ 🎂 ✨",
+    },
+    "neon-birthday": {
+        bg: "linear-gradient(180deg, #030712 0%, #0f0f23 30%, #0a0a1a 100%)",
+        accent: "#22d3ee", textColor: "#a5f3fc", nameColor: "#ecfeff",
+        font: "'Orbitron', sans-serif", pattern: "⚡",
+        decorTop: "⚡ 🎂 ⚡", decorBottom: "🌟 ⚡ 🌟",
+    },
+    // ── Anniversary Themes ──
+    "silver-anniversary": {
+        bg: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 30%, #cbd5e1 100%)",
+        accent: "#64748b", textColor: "#334155", nameColor: "#1e293b",
+        font: "'Cormorant Garamond', serif", pattern: "🔘",
+        decorTop: "◈ ✦ ◈", decorBottom: "✦ ◈ ✦",
+    },
+    "golden-anniversary": {
+        bg: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 30%, #fde68a 100%)",
+        accent: "#b45309", textColor: "#78350f", nameColor: "#451a03",
+        font: "'Playfair Display', serif", pattern: "🏆",
+        decorTop: "♔ ✦ ♔", decorBottom: "✦ ♔ ✦",
+    },
+    "pearl-romance": {
+        bg: "linear-gradient(180deg, #fafaf9 0%, #f5f5f4 30%, #e7e5e4 100%)",
+        accent: "#a78bfa", textColor: "#6d28d9", nameColor: "#5b21b6",
+        font: "'Crimson Text', serif", pattern: "🪷",
+        decorTop: "✧ 🪷 ✧", decorBottom: "🪷 ✧ 🪷",
+    },
+    // ── Seasonal Themes ──
+    "winter-frost": {
+        bg: "linear-gradient(180deg, #eff6ff 0%, #dbeafe 30%, #bfdbfe 100%)",
+        accent: "#1d4ed8", textColor: "#1e40af", nameColor: "#1e3a8a",
+        font: "'Lato', sans-serif", pattern: "❄️",
+        decorTop: "❄ ⛄ ❄", decorBottom: "⛄ ❄ ⛄",
+    },
+    "autumn-leaves": {
+        bg: "linear-gradient(180deg, #fff7ed 0%, #fed7aa 30%, #fdba74 100%)",
+        accent: "#c2410c", textColor: "#9a3412", nameColor: "#7c2d12",
+        font: "'Merriweather', serif", pattern: "🍂",
+        decorTop: "🍁 🍂 🍁", decorBottom: "🍂 🍁 🍂",
+    },
+    "summer-vibes": {
+        bg: "linear-gradient(180deg, #fef9c3 0%, #fde68a 20%, #fbbf24 100%)",
+        accent: "#d97706", textColor: "#92400e", nameColor: "#78350f",
+        font: "'Poppins', sans-serif", pattern: "☀️",
+        decorTop: "🌻 ☀️ 🌻", decorBottom: "☀️ 🌻 ☀️",
+    },
+    // ── Event / Gala Themes ──
+    "gala-night": {
+        bg: "linear-gradient(180deg, #1a0536 0%, #2d0a5e 30%, #1a0536 100%)",
+        accent: "#f59e0b", textColor: "#fde68a", nameColor: "#fef9c3",
+        font: "'Playfair Display', serif", pattern: "🥂",
+        decorTop: "✦ 🥂 ✦", decorBottom: "🥂 ✦ 🥂",
+    },
+    "bohemian-spirit": {
+        bg: "linear-gradient(135deg, #fef9c3 0%, #fde68a 30%, #fed7aa 70%, #fecdd3 100%)",
+        accent: "#b45309", textColor: "#78350f", nameColor: "#92400e",
+        font: "'Dancing Script', cursive", pattern: "🌙",
+        decorTop: "☽ ♈ ☽", decorBottom: "♈ ☽ ♈",
+    },
+    "nordic-minimal": {
+        bg: "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 100%)",
+        accent: "#0369a1", textColor: "#0c4a6e", nameColor: "#082f49",
+        font: "'Inter', sans-serif", pattern: "△",
+        decorTop: "△ ◯ △", decorBottom: "◯ △ ◯",
+    },
+    "sakura-night": {
+        bg: "linear-gradient(180deg, #1a0a2e 0%, #2d0a5e 50%, #0a0a1a 100%)",
+        accent: "#f472b6", textColor: "#fbcfe8", nameColor: "#fce7f3",
+        font: "'Noto Serif', serif", pattern: "🌸",
+        decorTop: "🌸 ✧ 🌸", decorBottom: "✧ 🌸 ✧",
+    },
+    "desert-rose": {
+        bg: "linear-gradient(180deg, #fdf4ff 0%, #fae8ff 30%, #f5d0fe 100%)",
+        accent: "#a21caf", textColor: "#701a75", nameColor: "#4a044e",
+        font: "'Crimson Text', serif", pattern: "🌹",
+        decorTop: "❀ 🌹 ❀", decorBottom: "🌹 ❀ 🌹",
+    },
+    "velvet-noir": {
+        bg: "linear-gradient(180deg, #0c0010 0%, #1a0028 40%, #0c0010 100%)",
+        accent: "#e879f9", textColor: "#e9d5ff", nameColor: "#fae8ff",
+        font: "'Playfair Display', serif", pattern: "🌃",
+        decorTop: "✦ 🌃 ✦", decorBottom: "🌃 ✦ 🌃",
+    },
 };
 
 /* ─── Drag-drop Section Reorder Widget ─── */
