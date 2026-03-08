@@ -25,7 +25,7 @@ export default async function DashboardLayout({
         .eq("user_id", user.id)
         .single();
 
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@7app.online";
+    const adminEmail = (process.env.ADMIN_EMAIL || "admin@7app.online").trim();
     const isAdmin = user.email === adminEmail;
     const planLabel = isAdmin ? "🛡️ Admin" : sub?.plan === "premium" ? "👑 Premium" : sub?.plan === "basic" ? "⭐ Basic" : "🆓 Free";
 

@@ -2,7 +2,7 @@ import { createClient as createServerClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@7app.online";
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@7app.online").trim();
 
 export async function POST(req: NextRequest) {
     // Auth check — must be admin
