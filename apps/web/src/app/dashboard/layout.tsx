@@ -51,6 +51,7 @@ export default async function DashboardLayout({
                     top: 0,
                     height: "100vh",
                     zIndex: 40,
+                    overflowY: "auto",
                 }}
             >
                 {/* Logo + Theme Toggle */}
