@@ -118,6 +118,69 @@ const TEMPLATE_THEMES: Record<string, {
     },
 };
 
+/* ─── Drag-drop Section Reorder Widget ─── */
+const DEFAULT_SECTIONS = [
+    { key: "calendar", icon: "📅", name: "Lịch cưới" },
+    { key: "countdown", icon: "⏱", name: "Đếm ngược" },
+    { key: "story", icon: "💑", name: "Câu chuyện" },
+    { key: "photos", icon: "📸", name: "Album ảnh" },
+    { key: "map", icon: "🗺", name: "Bản đồ" },
+    { key: "rsvp", icon: "✅", name: "RSVP" },
+    { key: "wishes", icon: "💬", name: "Lời chúc" },
+    { key: "qr", icon: "🎁", name: "Mừng cưới" },
+];
+
+function DragSectionOrder() {
+    const [sections, setSections] = useState(DEFAULT_SECTIONS);
+    const [dragging, setDragging] = useState<string | null>(null);
+
+    function handleDragOver(e: React.DragEvent, targetKey: string) {
+        e.preventDefault();
+        if (!dragging || dragging === targetKey) return;
+        setSections(prev => {
+            const arr = [...prev];
+            const fromIdx = arr.findIndex(s => s.key === dragging);
+            const toIdx = arr.findIndex(s => s.key === targetKey);
+            const [item] = arr.splice(fromIdx, 1);
+            arr.splice(toIdx, 0, item);
+            return arr;
+        });
+    }
+
+    return (
+        <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fafafa" }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: "0 0 10px" }}>
+                ↕️ Thứ tự phần
+            </p>
+            <p style={{ fontSize: 10, color: "#9ca3af", margin: "0 0 8px" }}>Kéo để sắp xếp thứ tự hiển thị</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {sections.map((s) => (
+                    <div
+                        key={s.key}
+                        draggable
+                        onDragStart={() => setDragging(s.key)}
+                        onDragEnd={() => setDragging(null)}
+                        onDragOver={e => handleDragOver(e, s.key)}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 8,
+                            padding: "6px 10px", borderRadius: 8, background: "#fff",
+                            border: dragging === s.key ? "1px dashed #c084fc" : "1px solid #e5e7eb",
+                            cursor: "grab", opacity: dragging === s.key ? 0.5 : 1,
+                            transition: "all 0.15s",
+                        }}
+                    >
+                        <span style={{ color: "#9ca3af", fontSize: 12, userSelect: "none" }}>⠿</span>
+                        <span style={{ fontSize: 14 }}>{s.icon}</span>
+                        <span style={{ fontSize: 12, color: "#374151", fontWeight: 500 }}>{s.name}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+
+
 export default function EditorEditPage() {
     const params = useParams();
     const router = useRouter();
@@ -151,6 +214,7 @@ export default function EditorEditPage() {
         youtubeUrl: "",
     });
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
+    const [categoryValue, setCategoryValue] = useState("wedding");
     const [projectStatus, setProjectStatus] = useState("draft");
     const [slug, setSlug] = useState("");
     const [widgetToggles, setWidgetToggles] = useState<Record<string, boolean>>({
@@ -198,6 +262,7 @@ export default function EditorEditPage() {
                 youtubeUrl: project.youtube_url || "",
             });
             setTemplateSlug(project.template || "rose-garden");
+            setCategoryValue(project.category || "wedding");
             setProjectStatus(project.status || "draft");
             setSlug(project.slug || "");
             setLoading(false);
@@ -228,6 +293,7 @@ export default function EditorEditPage() {
                 groom_parent_names: formData.groomParentNames, bride_parent_names: formData.brideParentNames,
                 groom_phone: formData.groomPhone || null,
                 photos: JSON.stringify(formData.photos.filter(p => p.trim())),
+                category: categoryValue,
                 music_url: formData.musicUrl || null,
                 music_name: formData.musicName || null,
                 youtube_url: formData.youtubeUrl || null,
@@ -583,6 +649,9 @@ export default function EditorEditPage() {
                                     <p style={{ fontSize: 10, color: "#10b981", margin: "4px 0 0" }}>✓ Video sẽ hiển thị trong thiệp</p>
                                 )}
                             </div>
+
+                            {/* ── DRAG-DROP SECTION REORDER ── */}
+                            <DragSectionOrder />
                         </div>
                     )}
 
@@ -858,10 +927,16 @@ export default function EditorEditPage() {
                 <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
                     <div>
                         <label style={{ fontSize: 12, fontWeight: 500, color: "#374151", display: "block", marginBottom: 4 }}>Danh mục *</label>
-                        <select style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, color: "#1f2937", outline: "none", cursor: "pointer" }}>
-                            <option>Thiệp cưới</option>
-                            <option>Sinh nhật</option>
-                            <option>Sự kiện</option>
+                        <select
+                            value={categoryValue}
+                            onChange={e => { setCategoryValue(e.target.value); }}
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, color: "#1f2937", outline: "none", cursor: "pointer", background: "#fff" }}
+                        >
+                            <option value="wedding">💍 Thiệp cưới</option>
+                            <option value="birthday">🎂 Sinh nhật</option>
+                            <option value="event">🎉 Sự kiện</option>
+                            <option value="anniversary">💕 Kỷ niệm</option>
+                            <option value="other">📋 Khác</option>
                         </select>
                     </div>
 
