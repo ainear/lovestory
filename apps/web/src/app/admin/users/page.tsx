@@ -1,5 +1,6 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
 import type { Subscription } from "@/types/database";
+import { PlanChanger } from "./PlanChanger";
 
 export default async function AdminUsersPage() {
     const supabase = createServerClient(
@@ -63,13 +64,7 @@ export default async function AdminUsersPage() {
                                     <td style={{ padding: "10px 14px", fontSize: 13, color: "#e2e8f0" }}>{user.email}</td>
                                     <td style={{ padding: "10px 14px", fontSize: 13, color: "#cbd5e1" }}>{name}</td>
                                     <td style={{ padding: "10px 14px" }}>
-                                        <span style={{
-                                            padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                                            color: plan === "premium" ? "#f59e0b" : plan === "basic" ? "#8b5cf6" : "#64748b",
-                                            background: plan === "premium" ? "rgba(245,158,11,0.15)" : plan === "basic" ? "rgba(139,92,246,0.15)" : "rgba(100,116,139,0.15)",
-                                        }}>
-                                            {plan === "premium" ? "👑 Premium" : plan === "basic" ? "⭐ Basic" : "🆓 Free"}
-                                        </span>
+                                        <PlanChanger userId={user.id} currentPlan={plan} />
                                     </td>
                                     <td style={{ padding: "10px 14px", fontSize: 13, color: "#e2e8f0" }}>{projectCount}</td>
                                     <td style={{ padding: "10px 14px" }}>

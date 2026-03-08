@@ -24,7 +24,10 @@ export default async function DashboardLayout({
         .select("plan")
         .eq("user_id", user.id)
         .single();
-    const planLabel = sub?.plan === "premium" ? "👑 Premium" : sub?.plan === "basic" ? "⭐ Basic" : "🆓 Free";
+
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@7app.online";
+    const isAdmin = user.email === adminEmail;
+    const planLabel = isAdmin ? "🛡️ Admin" : sub?.plan === "premium" ? "👑 Premium" : sub?.plan === "basic" ? "⭐ Basic" : "🆓 Free";
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "var(--dash-bg)" }}>
@@ -115,7 +118,7 @@ export default async function DashboardLayout({
 
                 {/* Logout + Admin */}
                 <div style={{ padding: "12px 16px", borderTop: "1px solid var(--dash-border)" }}>
-                    {user.email === process.env.ADMIN_EMAIL && (
+                    {isAdmin && (
                         <Link href="/admin" style={{ display: "block", padding: "8px 12px", borderRadius: 8, fontSize: 12, color: "#f43f5e", textDecoration: "none", marginBottom: 6, fontWeight: 600 }}>
                             🛡️ Admin Panel
                         </Link>
