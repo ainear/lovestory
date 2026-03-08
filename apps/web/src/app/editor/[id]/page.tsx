@@ -306,6 +306,8 @@ export default function EditorEditPage() {
         musicUrl: "",
         musicName: "",
         youtubeUrl: "",
+        particleEffect: "petals",
+        fontFamily: "serif",
     });
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const [categoryValue, setCategoryValue] = useState("wedding");
@@ -354,6 +356,8 @@ export default function EditorEditPage() {
                 musicUrl: project.music_url || "",
                 musicName: project.music_name || "",
                 youtubeUrl: project.youtube_url || "",
+                particleEffect: project.particle_effect || "petals",
+                fontFamily: project.font_family || "serif",
             });
             setTemplateSlug(project.template || "rose-garden");
             setCategoryValue(project.category || "wedding");
@@ -391,6 +395,8 @@ export default function EditorEditPage() {
                 music_url: formData.musicUrl || null,
                 music_name: formData.musicName || null,
                 youtube_url: formData.youtubeUrl || null,
+                particle_effect: formData.particleEffect || "petals",
+                font_family: formData.fontFamily || "serif",
                 template: templateSlug,
                 title: `${formData.groomName || "Chú rể"} & ${formData.brideName || "Cô dâu"}`,
                 updated_at: new Date().toISOString(),
@@ -768,30 +774,93 @@ export default function EditorEditPage() {
                         </div>
                     )}
 
-                    {/* ── EFFECTS TAB ── */}
-                    {activeTab === "effects" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Hiệu ứng toàn trang</p>
-                            {[
-                                { icon: "💕", name: "Tim rơi", desc: "Hearts falling" },
-                                { icon: "🍃", name: "Lá bay", desc: "Floating leaves" },
-                                { icon: "❄", name: "Tuyết rơi", desc: "Snow particles" },
-                                { icon: "🎊", name: "Confetti", desc: "Celebration" },
-                                { icon: "✨", name: "Lấp lánh", desc: "Sparkle" },
-                            ].map((fx, i) => (
-                                <div key={i} style={{
-                                    padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                    display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: "#fff",
-                                }}>
-                                    <span style={{ fontSize: 20 }}>{fx.icon}</span>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", margin: 0 }}>{fx.name}</p>
-                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{fx.desc}</p>
+                    {/* ── EFFECTS TAB: Particle Effect + Font Picker ── */}
+                    {activeTab === "effects" && (() => {
+                        const EFFECTS = [
+                            { key: "petals", icon: "🌸", name: "Cánh hoa", desc: "Hoa rơi nhẹ nhàng" },
+                            { key: "hearts", icon: "💕", name: "Trái tim", desc: "Tim bay lên" },
+                            { key: "bokeh", icon: "✨", name: "Bokeh", desc: "Ánh sáng lung linh" },
+                            { key: "snowflakes", icon: "❄️", name: "Tuyết rơi", desc: "Tuyết bay" },
+                            { key: "none", icon: "🚫", name: "Không hiệu ứng", desc: "Tắt hiệu ứng" },
+                        ];
+                        const FONTS = [
+                            { key: "serif", label: "Playfair Display", preview: "Cổ điển & Sang trọng", style: "'Playfair Display', Georgia, serif" },
+                            { key: "script", label: "Dancing Script", preview: "Lãng mạn & Mềm mại", style: "'Dancing Script', cursive" },
+                            { key: "sans", label: "Inter", preview: "Hiện đại & Tối giản", style: "'Inter', sans-serif" },
+                            { key: "traditional", label: "Cormorant", preview: "Cổ kính & Tinh tế", style: "'Cormorant Garamond', serif" },
+                            { key: "bold", label: "Lora Bold", preview: "Mạnh mẽ & Nổi bật", style: "'Lora', serif" },
+                        ];
+                        return (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                                {/* Font Picker */}
+                                <div>
+                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
+                                        🔤 Font chữ
+                                    </p>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                        {FONTS.map(f => {
+                                            const isSelected = formData.fontFamily === f.key;
+                                            return (
+                                                <div key={f.key}
+                                                    onClick={() => {
+                                                        handleChange("fontFamily", f.key);
+                                                        setAutoSaved(false);
+                                                        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+                                                        autoSaveTimer.current = setTimeout(autoSaveToDb, 1500);
+                                                    }}
+                                                    style={{
+                                                        padding: "10px 14px", borderRadius: 10,
+                                                        border: `1px solid ${isSelected ? "#818cf8" : "#e5e7eb"}`,
+                                                        background: isSelected ? "#eef2ff" : "#fff",
+                                                        cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+                                                    }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <p style={{ fontSize: 15, fontFamily: f.style, color: "#1f2937", margin: 0, fontWeight: 500 }}>Nguyễn Văn A</p>
+                                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: "2px 0 0" }}>{f.label} · {f.preview}</p>
+                                                    </div>
+                                                    {isSelected && <span style={{ fontSize: 10, color: "#6366f1", fontWeight: 700 }}>✓</span>}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+
+                                {/* Particle Effects */}
+                                <div>
+                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
+                                        ✨ Hiệu ứng bay
+                                    </p>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                        {EFFECTS.map(fx => {
+                                            const isSelected = formData.particleEffect === fx.key;
+                                            return (
+                                                <div key={fx.key}
+                                                    onClick={() => {
+                                                        handleChange("particleEffect", fx.key);
+                                                        setAutoSaved(false);
+                                                        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+                                                        autoSaveTimer.current = setTimeout(autoSaveToDb, 1500);
+                                                    }}
+                                                    style={{
+                                                        padding: "10px 14px", borderRadius: 10,
+                                                        border: `1px solid ${isSelected ? "#f9a8d4" : "#e5e7eb"}`,
+                                                        background: isSelected ? "#fdf2f8" : "#fff",
+                                                        display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+                                                    }}>
+                                                    <span style={{ fontSize: 20 }}>{fx.icon}</span>
+                                                    <div style={{ flex: 1 }}>
+                                                        <p style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#9d174d" : "#1f2937", margin: 0 }}>{fx.name}</p>
+                                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{fx.desc}</p>
+                                                    </div>
+                                                    {isSelected && <span style={{ fontSize: 10, color: "#ec4899", fontWeight: 700 }}>✓</span>}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
 

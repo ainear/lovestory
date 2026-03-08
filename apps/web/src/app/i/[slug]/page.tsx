@@ -828,6 +828,88 @@ function YouTubeEmbed({ url, accent }: { url: string; accent: string }) {
     );
 }
 
+// ── ParticleCanvas: floating petal / heart / bokeh / snowflake effects ──
+function ParticleCanvas({ effect }: { effect: string }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        if (!effect || effect === "none") return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        };
+        resize();
+        window.addEventListener("resize", resize);
+
+        const EMOJIS: Record<string, string[]> = {
+            petals: ["🌸", "🌺", "✿", "❀"],
+            hearts: ["💕", "❤️", "💗", "💖"],
+            snowflakes: ["❄️", "❅", "❆", "✦"],
+            bokeh: [],
+        };
+
+        interface Particle { x: number; y: number; size: number; speed: number; opacity: number; rotation: number; rotSpeed: number; emoji: string; }
+        const particles: Particle[] = Array.from({ length: 30 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            size: Math.random() * 16 + 10,
+            speed: Math.random() * 0.8 + 0.3,
+            opacity: Math.random() * 0.6 + 0.2,
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 2,
+            emoji: effect === "bokeh" ? "" : EMOJIS[effect]?.[Math.floor(Math.random() * 4)] || "🌸",
+        }));
+
+        let animId: number;
+        function draw() {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const p of particles) {
+                ctx.save();
+                ctx.globalAlpha = p.opacity;
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                if (effect === "bokeh") {
+                    ctx.beginPath();
+                    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+                    grad.addColorStop(0, "rgba(255,200,230,0.8)");
+                    grad.addColorStop(1, "rgba(255,200,230,0)");
+                    ctx.fillStyle = grad;
+                    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.font = `${p.size}px serif`;
+                    ctx.fillText(p.emoji, -p.size / 2, p.size / 2);
+                }
+                ctx.restore();
+                p.y += p.speed;
+                p.x += Math.sin(p.y / 80) * 0.5;
+                p.rotation += p.rotSpeed;
+                if (p.y > canvas.height + 20) {
+                    p.y = -20;
+                    p.x = Math.random() * canvas.width;
+                }
+            }
+            animId = requestAnimationFrame(draw);
+        }
+        draw();
+        return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+    }, [effect]);
+
+    if (!effect || effect === "none") return null;
+    return (
+        <canvas ref={canvasRef} style={{
+            position: "fixed", inset: 0, width: "100%", height: "100%",
+            pointerEvents: "none", zIndex: 5,
+        }} />
+    );
+}
+
 // ── ShareButtons: Zalo + Facebook + Copy link ──
 function ShareButtons({ slug, groomName, brideName }: { slug: string; groomName: string; brideName: string }) {
     const [copied, setCopied] = useState(false);
@@ -971,6 +1053,8 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const [templateSlug, setTemplateSlug] = useState("rose-garden");
     const searchParams = useSearchParams();
     const guestName = searchParams.get("guest") || "";
+    const [particleEffect, setParticleEffect] = useState("petals");
+    const [fontFamily, setFontFamily] = useState("'Georgia', serif");
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
         venueName: "", venueAddress: "", googleMapsUrl: "",
@@ -1001,6 +1085,16 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             if (project) {
                 setProjectId(project.id);
                 setTemplateSlug(project.template || "rose-garden");
+                // Sprint 6: particle + font
+                setParticleEffect(project.particle_effect || "petals");
+                const FONT_MAP: Record<string, string> = {
+                    serif: "'Playfair Display', Georgia, serif",
+                    script: "'Dancing Script', cursive",
+                    sans: "'Inter', system-ui, sans-serif",
+                    traditional: "'Cormorant Garamond', Georgia, serif",
+                    bold: "'Lora', Georgia, serif",
+                };
+                setFontFamily(FONT_MAP[project.font_family || "serif"] || FONT_MAP.serif);
                 setData({
                     groomName: project.groom_name || "Chú rể",
                     brideName: project.bride_name || "Cô dâu",
@@ -1119,7 +1213,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             style={{
                 minHeight: "100vh",
                 background: theme.bg,
-                fontFamily: "'Inter', -apple-system, sans-serif",
+                fontFamily: fontFamily,
                 maxWidth: 480,
                 margin: "0 auto",
                 position: "relative",
@@ -1127,6 +1221,8 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 color: theme.text,
             }}
         >
+            {/* Particle Effect Overlay */}
+            <ParticleCanvas effect={particleEffect} />
             {/* Background Music Audio */}
             {data.musicUrl && (
                 <audio
@@ -1288,34 +1384,79 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     );
                 }
 
-                // ── CLASSIC (default): Current design ──
+                // ── CLASSIC (default) + photo-as-hero if photo uploaded ──
+                const heroPhoto = data.photos.filter(p => p.trim())[0];
                 return (
-                    <section style={{ textAlign: "center", padding: "60px 24px 40px" }}>
-                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 4, margin: "0 0 24px" }}>
-                            WE ARE GETTING MARRIED
-                        </p>
-                        <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
-                            {data.groomName}
-                        </h1>
-                        <p style={{ fontSize: 24, color: theme.accent, margin: "0 0 4px" }}>&amp;</p>
-                        <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
-                            {data.brideName}
-                        </h1>
-                        {(data.groomParentNames || data.brideParentNames) && (
-                            <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
-                                {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
-                                {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
-                            </div>
-                        )}
-                        {guestName && (
+                    <section style={{
+                        textAlign: "center",
+                        padding: heroPhoto ? "0" : "60px 24px 40px",
+                        position: "relative",
+                        minHeight: heroPhoto ? 420 : undefined,
+                        overflow: "hidden",
+                    }}>
+                        {/* Photo hero background */}
+                        {heroPhoto && (
                             <div style={{
-                                marginTop: 20, padding: "10px 20px", borderRadius: 12,
-                                background: "rgba(255,255,255,0.5)", display: "inline-block",
-                                fontSize: 14, color: theme.accent, fontStyle: "italic",
+                                position: "absolute", inset: 0,
+                                backgroundImage: `url(${heroPhoto})`,
+                                backgroundSize: "cover", backgroundPosition: "center top",
+                                zIndex: 0,
                             }}>
-                                💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
+                                <div style={{
+                                    position: "absolute", inset: 0,
+                                    background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.75) 100%)",
+                                }} />
                             </div>
                         )}
+                        <div style={{
+                            position: "relative", zIndex: 1,
+                            padding: heroPhoto ? "70px 24px 50px" : "0",
+                        }}>
+                            <p style={{
+                                fontSize: 10, letterSpacing: 5, margin: "0 0 20px",
+                                color: heroPhoto ? "rgba(255,255,255,0.7)" : theme.label,
+                                textTransform: "uppercase",
+                            }}>WE ARE GETTING MARRIED</p>
+                            <h1 style={{
+                                fontSize: 42, fontWeight: 300,
+                                color: heroPhoto ? "#fff" : theme.heading,
+                                fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.2,
+                                textShadow: heroPhoto ? "0 2px 12px rgba(0,0,0,0.4)" : "none",
+                            }}>{data.groomName}</h1>
+                            <p style={{ fontSize: 22, color: theme.accent, margin: "0 0 4px" }}>&amp;</p>
+                            <h1 style={{
+                                fontSize: 42, fontWeight: 300,
+                                color: heroPhoto ? "#fff" : theme.heading,
+                                fontStyle: "italic", margin: "0 0 28px", lineHeight: 1.2,
+                                textShadow: heroPhoto ? "0 2px 12px rgba(0,0,0,0.4)" : "none",
+                            }}>{data.brideName}</h1>
+                            {data.weddingDate && (
+                                <p style={{
+                                    fontSize: 12, letterSpacing: 3, margin: "0 0 16px",
+                                    color: heroPhoto ? "rgba(255,255,255,0.85)" : theme.label,
+                                }}>
+                                    {new Date(data.weddingDate).toLocaleDateString("vi-VN", {
+                                        day: "numeric", month: "long", year: "numeric",
+                                    })}
+                                </p>
+                            )}
+                            {(data.groomParentNames || data.brideParentNames) && (
+                                <div style={{ fontSize: 12, color: heroPhoto ? "rgba(255,255,255,0.7)" : "#9ca3af", lineHeight: 1.6 }}>
+                                    {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
+                                    {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
+                                </div>
+                            )}
+                            {guestName && (
+                                <div style={{
+                                    marginTop: 20, padding: "10px 20px", borderRadius: 12,
+                                    background: heroPhoto ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.5)",
+                                    backdropFilter: "blur(8px)", display: "inline-block",
+                                    fontSize: 14, color: heroPhoto ? "#fff" : theme.accent, fontStyle: "italic",
+                                }}>
+                                    💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
+                                </div>
+                            )}
+                        </div>
                     </section>
                 );
             })()}
