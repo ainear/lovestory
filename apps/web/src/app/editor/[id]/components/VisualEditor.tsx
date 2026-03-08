@@ -1,19 +1,22 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
+import { StockPanel } from "./sidebar/StockPanel";
+import { StickerPanel } from "./sidebar/StickerPanel";
 
 // ── Sidebar tab map ──
 const TABS = [
-    { key: "text", icon: <Type size={20} />, label: "Văn bản" },
-    { key: "image", icon: <ImageIcon size={20} />, label: "Hình ảnh" },
-    { key: "bg", icon: <Palette size={20} />, label: "Nền" },
-    { key: "effects", icon: <Sparkles size={20} />, label: "Hiệu ứng" },
-    { key: "music", icon: <Music size={20} />, label: "Âm nhạc" },
-    { key: "templates", icon: <LayoutTemplate size={20} />, label: "Mẫu" },
+    { key: "text", icon: <Type size={18} />, label: "Văn bản" },
+    { key: "image", icon: <ImageIcon size={18} />, label: "Hình ảnh" },
+    { key: "stock", icon: <LayoutTemplate size={18} />, label: "Stock" },
+    { key: "sticker", icon: <Smile size={18} />, label: "Sticker" },
+    { key: "bg", icon: <Palette size={18} />, label: "Nền" },
+    { key: "effects", icon: <Sparkles size={18} />, label: "Hiệu ứng" },
+    { key: "music", icon: <Music size={18} />, label: "Âm nhạc" },
 ];
 
 // Text preset styles
@@ -358,6 +361,38 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     ))}
                                 </div>
                             </div>
+                        )}
+
+                        {/* STOCK TAB */}
+                        {activeTab === "stock" && (
+                            <StockPanel
+                                onAddImage={(url) => dispatch({
+                                    type: "ADD_ELEMENT",
+                                    element: {
+                                        id: `el-${Date.now()}`,
+                                        type: "image",
+                                        x: 20, y: 200,
+                                        width: 350, height: 280,
+                                        rotation: 0, opacity: 1,
+                                        zIndex: state.elements.length + 1, locked: false,
+                                        props: { src: url, objectFit: "cover", borderRadius: 12, opacity: 1 },
+                                    },
+                                })}
+                            />
+                        )}
+
+                        {/* STICKER TAB */}
+                        {activeTab === "sticker" && (
+                            <StickerPanel
+                                onAddSticker={(el) => dispatch({
+                                    type: "ADD_ELEMENT",
+                                    element: {
+                                        ...el,
+                                        id: `el-${Date.now()}`,
+                                        zIndex: state.elements.length + 1,
+                                    },
+                                })}
+                            />
                         )}
 
                         {/* EFFECTS TAB */}
