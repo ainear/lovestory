@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { CanvasInvitation } from "./CanvasInvitation";
 
 interface InvitationData {
     groomName: string;
@@ -1118,6 +1119,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const guestName = searchParams.get("guest") || "";
     const [particleEffect, setParticleEffect] = useState("petals");
     const [fontFamily, setFontFamily] = useState("'Georgia', serif");
+    const [canvasJson, setCanvasJson] = useState<string | null>(null);
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
         venueName: "", venueAddress: "", googleMapsUrl: "",
@@ -1147,6 +1149,12 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             if (project) {
                 setProjectId(project.id);
+                // Sprint 7: canvas_json early-return check
+                if (project.canvas_json) {
+                    setCanvasJson(project.canvas_json);
+                    setLoading(false);
+                    return;
+                }
                 setTemplateSlug(project.template || "rose-garden");
                 // Sprint 6: particle + font
                 setParticleEffect(project.particle_effect || "petals");
@@ -1248,6 +1256,11 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </div>
         );
+    }
+
+    // Sprint 7: Canvas editor mode — render from canvas_json
+    if (canvasJson) {
+        return <CanvasInvitation canvasJson={canvasJson} guestName={guestName || undefined} />;
     }
 
     if (!projectId) {
