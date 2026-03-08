@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // POST /api/likes  body: { slug: string }
 // Increments likes on a project (anonymous, rate-limited per IP)
@@ -10,10 +11,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing slug" }, { status: 400 });
         }
 
-        // Simple IP-based rate limit via header (no Redis needed)
-        const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "anon";
-        const rateLimitKey = `like:${slug}:${ip}`;
-
+        // Rate limit: 10 likes per minute per IP
+        const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        const rl = checkRateLimit(`like:${ip}`, { limit: 10, windowSec: 60 });
+        if (!rl.allowed) {
+            return NextResponse.json(
+                { error: "Too many requests" },
+                { status: 429, headers: { "Retry-After": String(rl.resetIn) } }
+            );
+        }
         // Use supabase to atomically increment likes
         const supabase = await createClient();
 

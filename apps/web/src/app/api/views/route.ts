@@ -1,11 +1,22 @@
 import { createClient as createServerClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
     try {
         const { slug } = await request.json();
         if (!slug) {
             return NextResponse.json({ error: "Missing slug" }, { status: 400 });
+        }
+
+        // Rate limit: 30 views per minute per IP
+        const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        const rl = checkRateLimit(`view:${ip}`, { limit: 30, windowSec: 60 });
+        if (!rl.allowed) {
+            return NextResponse.json(
+                { error: "Too many requests" },
+                { status: 429, headers: { "Retry-After": String(rl.resetIn) } }
+            );
         }
 
         const supabase = createServerClient(

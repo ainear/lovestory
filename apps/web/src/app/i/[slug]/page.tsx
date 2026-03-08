@@ -154,6 +154,20 @@ const THEMES: Record<string, Theme> = {
 };
 const DEFAULT_THEME = THEMES["rose-garden"];
 
+// ── Layout Variants ──
+type LayoutVariant = "classic" | "cinematic" | "minimal";
+
+const LAYOUT_MAP: Record<string, LayoutVariant> = {
+    "midnight-romance": "cinematic",
+    "royal-navy": "cinematic",
+    "minimalist-white": "minimal",
+    "classic-elegance": "minimal",
+};
+
+function getLayout(slug: string): LayoutVariant {
+    return LAYOUT_MAP[slug] || "classic";
+}
+
 // ── Scroll Reveal Component ──
 function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
     const ref = useRef<HTMLDivElement>(null);
@@ -1100,36 +1114,154 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 </div>
             )}
 
-            {/* Hero Section */}
-            <section style={{ textAlign: "center", padding: "60px 24px 40px" }}>
-                <p style={{ fontSize: 12, color: theme.label, letterSpacing: 4, margin: "0 0 24px" }}>
-                    WE ARE GETTING MARRIED
-                </p>
-                <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
-                    {data.groomName}
-                </h1>
-                <p style={{ fontSize: 24, color: theme.accent, margin: "0 0 4px" }}>&amp;</p>
-                <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
-                    {data.brideName}
-                </h1>
+            {/* Hero Section — Layout-specific */}
+            {(() => {
+                const layout = getLayout(templateSlug);
 
-                {/* Parents */}
-                {(data.groomParentNames || data.brideParentNames) && (
-                    <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
-                        {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
-                        {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
-                    </div>
-                )}
-                {guestName && (
-                    <div style={{
-                        marginTop: 20, padding: "10px 20px", borderRadius: 12,
-                        background: "rgba(255,255,255,0.5)", display: "inline-block",
-                        fontSize: 14, color: theme.accent, fontStyle: "italic",
-                    }}>
-                        💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
-                    </div>
-                )}
-            </section>
+                if (layout === "cinematic") {
+                    // ── CINEMATIC: Full-screen hero, dramatic typography ──
+                    return (
+                        <section style={{
+                            minHeight: "100vh", display: "flex", flexDirection: "column",
+                            alignItems: "center", justifyContent: "center",
+                            padding: "40px 24px", textAlign: "center",
+                            position: "relative",
+                        }}>
+                            {data.photos.filter(p => p.trim()).length > 0 && (
+                                <div style={{
+                                    position: "absolute", inset: 0, zIndex: 0,
+                                    backgroundImage: `url(${data.photos[0]})`,
+                                    backgroundSize: "cover", backgroundPosition: "center",
+                                    filter: "brightness(0.35) blur(2px)",
+                                }} />
+                            )}
+                            <div style={{ position: "relative", zIndex: 1 }}>
+                                <p style={{
+                                    fontSize: 11, letterSpacing: 6, margin: "0 0 32px",
+                                    color: "rgba(255,255,255,0.6)",
+                                    textTransform: "uppercase",
+                                }}>The Wedding Of</p>
+                                <h1 style={{
+                                    fontSize: 52, fontWeight: 200, color: "#fff",
+                                    fontStyle: "italic", margin: "0 0 8px", lineHeight: 1.1,
+                                    fontFamily: "'Playfair Display', Georgia, serif",
+                                    textShadow: "0 2px 20px rgba(0,0,0,0.3)",
+                                }}>{data.groomName}</h1>
+                                <p style={{ fontSize: 28, color: theme.accent, margin: "0 0 8px", fontWeight: 200 }}>&amp;</p>
+                                <h1 style={{
+                                    fontSize: 52, fontWeight: 200, color: "#fff",
+                                    fontStyle: "italic", margin: "0 0 40px", lineHeight: 1.1,
+                                    fontFamily: "'Playfair Display', Georgia, serif",
+                                    textShadow: "0 2px 20px rgba(0,0,0,0.3)",
+                                }}>{data.brideName}</h1>
+                                {data.weddingDate && (
+                                    <p style={{
+                                        fontSize: 14, color: "rgba(255,255,255,0.8)",
+                                        letterSpacing: 3, margin: 0,
+                                        borderTop: "1px solid rgba(255,255,255,0.2)",
+                                        paddingTop: 20,
+                                    }}>
+                                        {new Date(data.weddingDate).toLocaleDateString("vi-VN", {
+                                            weekday: "long", day: "numeric", month: "long", year: "numeric",
+                                        })}
+                                    </p>
+                                )}
+                                {guestName && (
+                                    <div style={{
+                                        marginTop: 24, padding: "10px 24px", borderRadius: 30,
+                                        background: "rgba(255,255,255,0.12)",
+                                        backdropFilter: "blur(10px)",
+                                        border: "1px solid rgba(255,255,255,0.15)",
+                                        display: "inline-block",
+                                        fontSize: 14, color: "#fff", fontStyle: "italic",
+                                    }}>
+                                        Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    );
+                }
+
+                if (layout === "minimal") {
+                    // ── MINIMAL: Big typography, lots of whitespace ──
+                    return (
+                        <section style={{
+                            padding: "100px 32px 60px", textAlign: "center",
+                        }}>
+                            <h1 style={{
+                                fontSize: 48, fontWeight: 100, color: theme.heading,
+                                margin: "0 0 0", lineHeight: 1.2,
+                                letterSpacing: -1,
+                            }}>{data.groomName}</h1>
+                            <div style={{
+                                width: 40, height: 1, background: theme.accent,
+                                margin: "20px auto", opacity: 0.5,
+                            }} />
+                            <h1 style={{
+                                fontSize: 48, fontWeight: 100, color: theme.heading,
+                                margin: "0 0 32px", lineHeight: 1.2,
+                                letterSpacing: -1,
+                            }}>{data.brideName}</h1>
+                            {data.weddingDate && (
+                                <p style={{
+                                    fontSize: 13, color: theme.accent, letterSpacing: 4,
+                                    margin: "0 0 8px", fontWeight: 500,
+                                }}>
+                                    {new Date(data.weddingDate).toLocaleDateString("vi-VN", {
+                                        day: "numeric", month: "long", year: "numeric",
+                                    })}
+                                </p>
+                            )}
+                            {(data.groomParentNames || data.brideParentNames) && (
+                                <div style={{ fontSize: 12, color: theme.text, opacity: 0.5, marginTop: 16, lineHeight: 1.8 }}>
+                                    {data.groomParentNames && <p style={{ margin: 0 }}>Con trai: {data.groomParentNames}</p>}
+                                    {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
+                                </div>
+                            )}
+                            {guestName && (
+                                <p style={{
+                                    marginTop: 28, fontSize: 15, color: theme.text,
+                                    fontStyle: "italic", opacity: 0.7,
+                                }}>
+                                    Kính gởi: <strong style={{ color: theme.heading }}>{decodeURIComponent(guestName)}</strong>
+                                </p>
+                            )}
+                        </section>
+                    );
+                }
+
+                // ── CLASSIC (default): Current design ──
+                return (
+                    <section style={{ textAlign: "center", padding: "60px 24px 40px" }}>
+                        <p style={{ fontSize: 12, color: theme.label, letterSpacing: 4, margin: "0 0 24px" }}>
+                            WE ARE GETTING MARRIED
+                        </p>
+                        <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 4px", lineHeight: 1.3 }}>
+                            {data.groomName}
+                        </h1>
+                        <p style={{ fontSize: 24, color: theme.accent, margin: "0 0 4px" }}>&amp;</p>
+                        <h1 style={{ fontSize: 36, fontWeight: 300, color: theme.heading, fontStyle: "italic", margin: "0 0 24px", lineHeight: 1.3 }}>
+                            {data.brideName}
+                        </h1>
+                        {(data.groomParentNames || data.brideParentNames) && (
+                            <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6 }}>
+                                {data.groomParentNames && <p style={{ margin: "0 0 2px" }}>Con trai: {data.groomParentNames}</p>}
+                                {data.brideParentNames && <p style={{ margin: 0 }}>Con gái: {data.brideParentNames}</p>}
+                            </div>
+                        )}
+                        {guestName && (
+                            <div style={{
+                                marginTop: 20, padding: "10px 20px", borderRadius: 12,
+                                background: "rgba(255,255,255,0.5)", display: "inline-block",
+                                fontSize: 14, color: theme.accent, fontStyle: "italic",
+                            }}>
+                                💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
+                            </div>
+                        )}
+                    </section>
+                );
+            })()}
 
             {/* Calendar */}
             {data.weddingDate && (
