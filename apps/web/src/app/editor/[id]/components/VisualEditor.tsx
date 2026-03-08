@@ -42,6 +42,24 @@ const BG_PRESETS = [
 
 const ZOOM_LEVELS = [50, 75, 100];
 
+// ── Music presets ──
+const MUSIC_PRESETS = [
+    { id: "m1", label: "Beautiful Wedding", emoji: "🎵", url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3" },
+    { id: "m2", label: "Canon in D", emoji: "🎻", url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3" },
+    { id: "m3", label: "Romantic Piano", emoji: "🎹", url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3" },
+    { id: "m4", label: "Wedding March", emoji: "💍", url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3" },
+    { id: "m5", label: "Chill Acoustic", emoji: "🎸", url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3" },
+];
+
+// ── Template presets for in-editor switch ──
+const EDITOR_TEMPLATES = [
+    { slug: "rose-garden", label: "Hoa Hồng", emoji: "🌹", bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)" },
+    { slug: "midnight-romance", label: "Đêm Tím", emoji: "🌙", bg: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)" },
+    { slug: "golden-hour", label: "Hoàng Hôn", emoji: "🌅", bg: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)" },
+    { slug: "cherry-blossom", label: "Anh Đào", emoji: "🌸", bg: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)" },
+    { slug: "ocean-breeze", label: "Biển Xanh", emoji: "🌊", bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)" },
+];
+
 interface VisualEditorProps {
     projectId: string;
     initialCanvasJson?: string | null;
@@ -54,6 +72,12 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // P1: Music state
+    const [musicUrl, setMusicUrl] = useState("");
+    const [musicName, setMusicName] = useState("");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,6 +89,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         if (!initialCanvasJson) return {};
         try {
             const parsed = JSON.parse(initialCanvasJson);
+            // Load music from canvas meta
+            if (parsed.meta?.musicUrl) { setMusicUrl(parsed.meta.musicUrl); setMusicName(parsed.meta.musicName || ""); }
             return {
                 elements: parsed.elements || [],
                 background: parsed.canvas?.bg || "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
@@ -75,33 +101,57 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
     const { state, dispatch, addText, addImage } = useCanvasReducer(initial);
 
-    // Auto-save
+    // Auto-save — include music in canvas meta
     const save = useCallback(async () => {
         setSaveStatus("saving");
         const canvasJson = JSON.stringify({
             version: 1,
             canvas: { width: state.width, height: state.height, bg: state.background },
             elements: state.elements,
+            meta: { musicUrl, musicName },
         });
         try {
             await supabase.from("projects").update({
                 canvas_json: canvasJson,
+                music_url: musicUrl || null,
+                music_name: musicName || null,
                 updated_at: new Date().toISOString(),
             }).eq("id", projectId);
             setSaveStatus("saved");
         } catch {
             setSaveStatus("unsaved");
         }
-    }, [state.elements, state.background, state.width, state.height, projectId, supabase]);
+    }, [state.elements, state.background, state.width, state.height, projectId, supabase, musicUrl, musicName]);
 
-    // Debounced auto-save on elements change
+    // Debounced auto-save on elements/music change
     useEffect(() => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
         setSaveStatus("unsaved");
         saveTimer.current = setTimeout(save, 2000);
         return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.elements, state.background]);
+    }, [state.elements, state.background, musicUrl]);
+
+    // P1: Music play/stop
+    const handlePlayMusic = useCallback(() => {
+        if (!musicUrl) return;
+        if (audioRef.current) {
+            if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+            else { audioRef.current.play().catch(() => { }); setIsPlaying(true); }
+        } else {
+            audioRef.current = new Audio(musicUrl);
+            audioRef.current.loop = true;
+            audioRef.current.play().catch(() => { });
+            setIsPlaying(true);
+        }
+    }, [musicUrl, isPlaying]);
+
+    const handleSetMusic = useCallback((url: string, name: string) => {
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        setIsPlaying(false);
+        setMusicUrl(url);
+        setMusicName(name);
+    }, []);
 
     // Image upload handler
     const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,23 +463,110 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             </div>
                         )}
 
-                        {/* MUSIC TAB */}
+                        {/* MUSIC TAB — P1 */}
                         {activeTab === "music" && (
                             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                                 <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
                                     Nhạc nền
                                 </p>
-                                <input
-                                    placeholder="YouTube URL hoặc link nhạc..."
-                                    style={{
-                                        padding: "10px 12px", borderRadius: 10,
-                                        border: "1px solid #e5e7eb", fontSize: 13,
-                                        outline: "none", width: "100%", boxSizing: "border-box",
-                                    }}
-                                />
-                                <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>
-                                    Dán link YouTube hoặc MP3 để thêm nhạc nền cho thiệp
+
+                                {/* Now playing */}
+                                {musicUrl && (
+                                    <div style={{
+                                        padding: "10px 14px", borderRadius: 12,
+                                        background: isPlaying ? "linear-gradient(135deg, #fdf2f8, #faf5ff)" : "#f9fafb",
+                                        border: "1px solid " + (isPlaying ? "#ff6b9d" : "#e5e7eb"),
+                                        display: "flex", alignItems: "center", gap: 10,
+                                    }}>
+                                        <button onClick={handlePlayMusic} style={{
+                                            width: 36, height: 36, borderRadius: "50%",
+                                            border: "none", cursor: "pointer",
+                                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                            color: "#fff", fontSize: 16, flexShrink: 0,
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                        }}>
+                                            {isPlaying ? "⏸" : "▶"}
+                                        </button>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                {musicName || "Nhạc đã chọn"}
+                                            </p>
+                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
+                                                {isPlaying ? "🎵 Đang phát..." : "Click ▶ để nghe thử"}
+                                            </p>
+                                        </div>
+                                        <button onClick={() => handleSetMusic("", "")} style={{
+                                            background: "none", border: "none", cursor: "pointer",
+                                            color: "#9ca3af", fontSize: 18, padding: 4,
+                                        }}>×</button>
+                                    </div>
+                                )}
+
+                                {/* Presets */}
+                                <p style={{ fontSize: 11, color: "#6b7280", margin: "4px 0 0", fontWeight: 600 }}>Nhạc có sẵn:</p>
+                                {MUSIC_PRESETS.map(m => (
+                                    <button key={m.id} onClick={() => handleSetMusic(m.url, m.label)} style={{
+                                        padding: "10px 14px", borderRadius: 10,
+                                        border: "1px solid " + (musicUrl === m.url ? "#ff6b9d" : "#e5e7eb"),
+                                        background: musicUrl === m.url ? "#fdf2f8" : "#fff",
+                                        cursor: "pointer", textAlign: "left",
+                                        display: "flex", alignItems: "center", gap: 10,
+                                    }}>
+                                        <span style={{ fontSize: 20 }}>{m.emoji}</span>
+                                        <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{m.label}</span>
+                                        {musicUrl === m.url && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 12 }}>✔</span>}
+                                    </button>
+                                ))}
+
+                                {/* Custom URL */}
+                                <div style={{ marginTop: 8 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 6px", fontWeight: 600 }}>Hoặc dán link MP3:</p>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                        <input
+                                            placeholder="https://... .mp3"
+                                            value={musicUrl.startsWith("https://cdn.pixabay") ? "" : musicUrl}
+                                            onChange={e => setMusicUrl(e.target.value)}
+                                            style={{
+                                                flex: 1, padding: "8px 10px", borderRadius: 8,
+                                                border: "1px solid #e5e7eb", fontSize: 12,
+                                                outline: "none",
+                                            }}
+                                        />
+                                        <button onClick={() => setMusicName("Custom")} style={{
+                                            padding: "8px 12px", borderRadius: 8, border: "none",
+                                            background: "#f3f4f6", cursor: "pointer", fontSize: 12,
+                                        }}>OK</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TEMPLATE TAB — P2b */}
+                        {activeTab === "templates" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
+                                    Đổi mẫu thiệp
                                 </p>
+                                <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>Chọn mẫu sẽ thay nền và style phần trang trí.</p>
+                                {EDITOR_TEMPLATES.map(t => (
+                                    <button key={t.slug}
+                                        onClick={() => dispatch({ type: "SET_BACKGROUND", background: t.bg })}
+                                        style={{
+                                            display: "flex", alignItems: "center", gap: 12,
+                                            padding: "10px 12px", borderRadius: 12,
+                                            border: `2px solid ${state.background === t.bg ? "#ff6b9d" : "#e5e7eb"}`,
+                                            background: state.background === t.bg ? "#fdf2f8" : "#fff",
+                                            cursor: "pointer", textAlign: "left",
+                                        }}
+                                    >
+                                        <div style={{ width: 40, height: 56, borderRadius: 6, background: t.bg, flexShrink: 0 }} />
+                                        <div>
+                                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{t.emoji} {t.label}</p>
+                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.slug}</p>
+                                        </div>
+                                        {state.background === t.bg && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 16 }}>✔</span>}
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -550,8 +687,36 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     I
                                 </button>
                             </div>
+                            {/* P2a: Rotation */}
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
+                                    Xoay: {selectedEl.rotation ?? 0}°
+                                </label>
+                                <input type="range" min={-180} max={180}
+                                    value={selectedEl.rotation ?? 0}
+                                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: Number(e.target.value) } })}
+                                    style={{ width: "100%" }}
+                                />
+                                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: 0 } })} style={{
+                                    marginTop: 4, width: "100%", padding: "5px 0", borderRadius: 6,
+                                    border: "1px solid #e5e7eb", background: "#f9fafb",
+                                    cursor: "pointer", fontSize: 11, color: "#6b7280",
+                                }}>Reset 0°</button>
+                            </div>
+                            {/* Opacity */}
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
+                                    Độ mờ: {Math.round((selectedEl.opacity ?? 1) * 100)}%
+                                </label>
+                                <input type="range" min={10} max={100}
+                                    value={Math.round((selectedEl.opacity ?? 1) * 100)}
+                                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
                         </div>
                     )}
+
 
                     {selectedEl?.type === "image" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
