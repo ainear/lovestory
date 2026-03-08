@@ -55,17 +55,17 @@ export default async function DashboardPage() {
             {/* Welcome */}
             <div
                 style={{
-                    background: "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
+                    background: "var(--dash-stat-bg)",
                     borderRadius: 20,
                     padding: 32,
                     marginBottom: 24,
-                    border: "1px solid rgba(192,132,252,0.12)",
+                    border: "1px solid var(--dash-border)",
                 }}
             >
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: "0 0 4px" }}>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--dash-text)", margin: "0 0 4px" }}>
                     Xin chào, {displayName}! 👋
                 </h2>
-                <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+                <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: 0 }}>
                     Quản lý thiệp cưới và theo dõi hoạt động của bạn
                 </p>
             </div>
@@ -82,19 +82,19 @@ export default async function DashboardPage() {
                     <div
                         key={i}
                         style={{
-                            background: "#fff",
+                            background: "var(--dash-card)",
                             borderRadius: 16,
                             padding: 20,
-                            border: "1px solid #e8e8ec",
+                            border: "1px solid var(--dash-border)",
                             textAlign: "center",
                         }}
                     >
                         <p style={{ fontSize: 32, fontWeight: 700, color: stat.color, margin: "0 0 4px" }}>
                             {stat.value}
                         </p>
-                        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+                        <p style={{ fontSize: 13, color: "var(--dash-text-secondary)", margin: 0 }}>
                             {stat.icon} {stat.label}
-                            {stat.max && <span style={{ fontSize: 11, color: "#9ca3af" }}> / {stat.max}</span>}
+                            {stat.max && <span style={{ fontSize: 11, color: "var(--dash-text-muted)" }}> / {stat.max}</span>}
                         </p>
                     </div>
                 ))}
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
             )}
 
             {/* Quick Actions */}
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#374151", margin: "0 0 16px" }}>⚡ Hành động nhanh</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--dash-text)", margin: "0 0 16px" }}>⚡ Hành động nhanh</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
                 <Link
                     href="/templates"
@@ -164,15 +164,15 @@ export default async function DashboardPage() {
                         display: "block",
                         padding: 24,
                         borderRadius: 16,
-                        background: "#fff",
-                        border: "1px solid #e8e8ec",
-                        color: "#374151",
+                        background: "var(--dash-card)",
+                        border: "1px solid var(--dash-border)",
+                        color: "var(--dash-text)",
                         textDecoration: "none",
                     }}
                 >
                     <p style={{ fontSize: 28, margin: "0 0 8px" }}>📋</p>
                     <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>Quản lý thiệp</p>
-                    <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Xem và chỉnh sửa</p>
+                    <p style={{ fontSize: 12, color: "var(--dash-text-secondary)", margin: 0 }}>Xem và chỉnh sửa</p>
                 </Link>
                 <Link
                     href="/dashboard/videos"
@@ -194,12 +194,12 @@ export default async function DashboardPage() {
             {/* Tips for new users */}
             {projectCount === 0 && (
                 <div style={{
-                    background: "#eff6ff",
+                    background: "var(--dash-card)",
                     borderRadius: 16,
                     padding: "24px 28px",
-                    border: "1px solid #bfdbfe",
+                    border: "1px solid var(--dash-border)",
                 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#1e40af", margin: "0 0 12px" }}>💡 Bắt đầu tạo thiệp đầu tiên</h3>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "var(--dash-accent)", margin: "0 0 12px" }}>💡 Bắt đầu tạo thiệp đầu tiên</h3>
                     <ol style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
                         {[
                             "Chọn mẫu thiệp yêu thích từ bộ sưu tập 50+ template",
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
                             "Upload ảnh cưới và tùy chỉnh nội dung",
                             "Xuất bản & chia sẻ link cho khách mời qua Zalo, Facebook",
                         ].map((tip, i) => (
-                            <li key={i} style={{ fontSize: 13, color: "#1e40af", lineHeight: 1.6 }}>{tip}</li>
+                            <li key={i} style={{ fontSize: 13, color: "var(--dash-text-secondary)", lineHeight: 1.6 }}>{tip}</li>
                         ))}
                     </ol>
                 </div>

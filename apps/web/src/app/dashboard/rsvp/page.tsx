@@ -36,8 +36,8 @@ export default async function RsvpPage() {
         <div>
             <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
                 <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: 0 }}>✅ Xác nhận tham dự</h2>
-                    <p style={{ fontSize: 14, color: "#6b7280", margin: "4px 0 0" }}>{rsvps.length} phản hồi</p>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--dash-text)", margin: 0 }}>✅ Xác nhận tham dự</h2>
+                    <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: "4px 0 0" }}>{rsvps.length} phản hồi</p>
                 </div>
                 {rsvps.length > 0 && (
                     <a
@@ -45,8 +45,8 @@ export default async function RsvpPage() {
                         download
                         style={{
                             display: "inline-flex", alignItems: "center", gap: 6,
-                            padding: "8px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
-                            background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500,
+                            padding: "8px 16px", borderRadius: 8, border: "1px solid var(--dash-border)",
+                            background: "var(--dash-card)", color: "var(--dash-text)", fontSize: 12, fontWeight: 500,
                             textDecoration: "none", flexShrink: 0,
                         }}
                     >
@@ -64,45 +64,45 @@ export default async function RsvpPage() {
                     { icon: "👥", label: "Tổng khách", value: totalGuests, color: "#8b5cf6" },
                     { icon: "🤔", label: "Có thể", value: rsvps.filter((r) => r.status === "maybe").length, color: "#d97706" },
                 ].map((s, i) => (
-                    <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #e8e8ec", textAlign: "center" }}>
+                    <div key={i} style={{ background: "var(--dash-card)", borderRadius: 12, padding: 16, border: "1px solid var(--dash-border)", textAlign: "center" }}>
                         <p style={{ fontSize: 28, fontWeight: 700, color: s.color, margin: "0 0 2px" }}>{s.value}</p>
-                        <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>{s.icon} {s.label}</p>
+                        <p style={{ fontSize: 12, color: "var(--dash-text-muted)", margin: 0 }}>{s.icon} {s.label}</p>
                     </div>
                 ))}
             </div>
 
             {/* Table */}
             {rsvps.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 24px", background: "#f9fafb", borderRadius: 16 }}>
+                <div style={{ textAlign: "center", padding: "40px 24px", background: "var(--dash-card-hover)", borderRadius: 16 }}>
                     <p style={{ fontSize: 36, marginBottom: 8 }}>✅</p>
-                    <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Chưa có RSVP nào. Chia sẻ link thiệp để nhận xác nhận!</p>
+                    <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: 0 }}>Chưa có RSVP nào. Chia sẻ link thiệp để nhận xác nhận!</p>
                 </div>
             ) : (
-                <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", overflow: "hidden" }}>
+                <div style={{ background: "var(--dash-card)", borderRadius: 16, border: "1px solid var(--dash-border)", overflow: "hidden" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
                         <thead>
-                            <tr style={{ background: "#f9fafb" }}>
-                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#6b7280" }}>Khách mời</th>
-                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#6b7280" }}>Trạng thái</th>
+                            <tr style={{ background: "var(--dash-card-hover)" }}>
+                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "var(--dash-text-secondary)" }}>Khách mời</th>
+                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "var(--dash-text-secondary)" }}>Trạng thái</th>
                                 <th style={{ padding: "12px 20px", textAlign: "center", fontSize: 12, fontWeight: 600, color: "#6b7280" }}>Số khách</th>
-                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#6b7280" }}>SĐT</th>
-                                <th style={{ padding: "12px 20px", textAlign: "right", fontSize: 12, fontWeight: 600, color: "#6b7280" }}>Ngày</th>
+                                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "var(--dash-text-secondary)" }}>SĐT</th>
+                                <th style={{ padding: "12px 20px", textAlign: "right", fontSize: 12, fontWeight: 600, color: "var(--dash-text-secondary)" }}>Ngày</th>
                             </tr>
                         </thead>
                         <tbody>
                             {rsvps.map((rsvp) => {
                                 const config = STATUS_CONFIG[rsvp.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.confirmed;
                                 return (
-                                    <tr key={rsvp.id} style={{ borderTop: "1px solid #f3f4f6" }}>
-                                        <td style={{ padding: "14px 20px", fontSize: 14, fontWeight: 500, color: "#1f2937" }}>{rsvp.guest_name}</td>
+                                    <tr key={rsvp.id} style={{ borderTop: "1px solid var(--dash-border-light)" }}>
+                                        <td style={{ padding: "14px 20px", fontSize: 14, fontWeight: 500, color: "var(--dash-text)" }}>{rsvp.guest_name}</td>
                                         <td style={{ padding: "14px 20px" }}>
                                             <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 12, fontWeight: 600, color: config.color, background: config.bg }}>
                                                 {config.label}
                                             </span>
                                         </td>
-                                        <td style={{ padding: "14px 20px", textAlign: "center", fontSize: 14, color: "#374151" }}>{rsvp.guest_count}</td>
-                                        <td style={{ padding: "14px 20px", fontSize: 13, color: "#6b7280" }}>{rsvp.phone || "—"}</td>
-                                        <td style={{ padding: "14px 20px", textAlign: "right", fontSize: 12, color: "#9ca3af" }}>
+                                        <td style={{ padding: "14px 20px", textAlign: "center", fontSize: 14, color: "var(--dash-text)" }}>{rsvp.guest_count}</td>
+                                        <td style={{ padding: "14px 20px", fontSize: 13, color: "var(--dash-text-secondary)" }}>{rsvp.phone || "—"}</td>
+                                        <td style={{ padding: "14px 20px", textAlign: "right", fontSize: 12, color: "var(--dash-text-muted)" }}>
                                             {new Date(rsvp.created_at).toLocaleDateString("vi-VN", { day: "numeric", month: "short" })}
                                         </td>
                                     </tr>

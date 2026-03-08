@@ -29,8 +29,8 @@ export default async function WishesPage() {
     return (
         <div>
             <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1f2937", margin: 0 }}>💬 Lời chúc</h2>
-                <p style={{ fontSize: 14, color: "#6b7280", margin: "4px 0 0" }}>{wishes.length} lời chúc từ khách mời</p>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--dash-text)", margin: 0 }}>💬 Lời chúc</h2>
+                <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: "4px 0 0" }}>{wishes.length} lời chúc từ khách mời</p>
             </div>
 
             {/* Stats */}
@@ -41,18 +41,18 @@ export default async function WishesPage() {
                     { icon: "🎉", label: "Chúc mừng", value: wishes.filter((w) => w.emoji === "🎉").length },
                     { icon: "📅", label: "Hôm nay", value: todayCount },
                 ].map((s, i) => (
-                    <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 16, border: "1px solid #e8e8ec", textAlign: "center" }}>
-                        <p style={{ fontSize: 24, fontWeight: 700, color: "#1f2937", margin: "0 0 2px" }}>{s.value}</p>
-                        <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>{s.icon} {s.label}</p>
+                    <div key={i} style={{ background: "var(--dash-card)", borderRadius: 12, padding: 16, border: "1px solid var(--dash-border)", textAlign: "center" }}>
+                        <p style={{ fontSize: 24, fontWeight: 700, color: "var(--dash-text)", margin: "0 0 2px" }}>{s.value}</p>
+                        <p style={{ fontSize: 12, color: "var(--dash-text-muted)", margin: 0 }}>{s.icon} {s.label}</p>
                     </div>
                 ))}
             </div>
 
             {/* Wishes List */}
             {wishes.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 24px", background: "#f9fafb", borderRadius: 16 }}>
+                <div style={{ textAlign: "center", padding: "40px 24px", background: "var(--dash-card-hover)", borderRadius: 16 }}>
                     <p style={{ fontSize: 36, marginBottom: 8 }}>💬</p>
-                    <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Chưa có lời chúc nào. Chia sẻ link thiệp để nhận lời chúc!</p>
+                    <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: 0 }}>Chưa có lời chúc nào. Chia sẻ link thiệp để nhận lời chúc!</p>
                 </div>
             ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -60,9 +60,9 @@ export default async function WishesPage() {
                         <div
                             key={wish.id}
                             style={{
-                                background: "#fff",
+                                background: "var(--dash-card)",
                                 borderRadius: 14,
-                                border: "1px solid #e8e8ec",
+                                border: "1px solid var(--dash-border)",
                                 padding: 20,
                                 display: "flex",
                                 gap: 14,
@@ -85,12 +85,12 @@ export default async function WishesPage() {
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 14, fontWeight: 600, color: "#1f2937" }}>{wish.guest_name}</span>
-                                    <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--dash-text)" }}>{wish.guest_name}</span>
+                                    <span style={{ fontSize: 12, color: "var(--dash-text-muted)" }}>
                                         {new Date(wish.created_at).toLocaleDateString("vi-VN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                                     </span>
                                 </div>
-                                <p style={{ fontSize: 14, color: "#4b5563", margin: 0, lineHeight: 1.6 }}>{wish.message}</p>
+                                <p style={{ fontSize: 14, color: "var(--dash-text-secondary)", margin: 0, lineHeight: 1.6 }}>{wish.message}</p>
                             </div>
                         </div>
                     ))}

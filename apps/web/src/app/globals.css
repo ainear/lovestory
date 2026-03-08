@@ -1,8 +1,58 @@
-@import "tailwindcss";
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ─── Dashboard Theme Tokens ─── */
+  --dash-bg: #f4f5f7;
+  --dash-sidebar: #fff;
+  --dash-card: #fff;
+  --dash-card-hover: #f9fafb;
+  --dash-text: #1f2937;
+  --dash-text-secondary: #6b7280;
+  --dash-text-muted: #9ca3af;
+  --dash-border: #e8e8ec;
+  --dash-border-light: #f3f4f6;
+  --dash-accent: #ff6b9d;
+  --dash-accent-bg: rgba(255,107,157,0.08);
+  --dash-input-bg: #fff;
+  --dash-input-border: #e5e7eb;
+  --dash-badge-bg: #f0fdf4;
+  --dash-badge-text: #166534;
+  --dash-danger-bg: #fff5f5;
+  --dash-danger-text: #ef4444;
+  --dash-danger-border: #fee2e2;
+  --dash-stat-bg: linear-gradient(135deg, rgba(255,107,157,0.06), rgba(192,132,252,0.06));
+  --dash-user-bg: #f9fafb;
+  --dash-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --dash-shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --dash-bg: #0f1117;
+  --dash-sidebar: #161923;
+  --dash-card: #1a1d28;
+  --dash-card-hover: #1e2230;
+  --dash-text: #e5e7eb;
+  --dash-text-secondary: #9ca3af;
+  --dash-text-muted: #6b7280;
+  --dash-border: #2d3348;
+  --dash-border-light: #252836;
+  --dash-accent: #ff6b9d;
+  --dash-accent-bg: rgba(255,107,157,0.12);
+  --dash-input-bg: #1e2230;
+  --dash-input-border: #2d3348;
+  --dash-badge-bg: rgba(16,185,129,0.15);
+  --dash-badge-text: #6ee7b7;
+  --dash-danger-bg: rgba(239,68,68,0.1);
+  --dash-danger-text: #f87171;
+  --dash-danger-border: rgba(239,68,68,0.2);
+  --dash-stat-bg: linear-gradient(135deg, rgba(255,107,157,0.1), rgba(192,132,252,0.1));
+  --dash-user-bg: #1e2230;
+  --dash-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --dash-shadow-lg: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 @theme inline {
@@ -10,13 +60,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

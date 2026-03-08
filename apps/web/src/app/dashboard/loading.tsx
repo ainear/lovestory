@@ -13,7 +13,7 @@ export default function DashboardLoading() {
             {/* Stats skeleton */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", padding: 24 }}>
+                    <div key={i} style={{ background: "var(--dash-card)", borderRadius: 16, border: "1px solid var(--dash-border)", padding: 24 }}>
                         <div style={{ width: 80, height: 12, borderRadius: 6, background: "#f3f4f6", marginBottom: 12, animation: "pulse 1.5s infinite" }} />
                         <div style={{ width: 60, height: 28, borderRadius: 8, background: "#e5e7eb", animation: "pulse 1.5s infinite" }} />
                     </div>
@@ -22,7 +22,7 @@ export default function DashboardLoading() {
 
             {/* Cards skeleton */}
             {[1, 2, 3].map((i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #e8e8ec", padding: 24, marginBottom: 12, display: "flex", gap: 16 }}>
+                <div key={i} style={{ background: "var(--dash-card)", borderRadius: 16, border: "1px solid var(--dash-border)", padding: 24, marginBottom: 12, display: "flex", gap: 16 }}>
                     <div style={{ width: 64, height: 64, borderRadius: 14, background: "#f3f4f6", flexShrink: 0, animation: "pulse 1.5s infinite" }} />
                     <div style={{ flex: 1 }}>
                         <div style={{ width: "60%", height: 16, borderRadius: 6, background: "#e5e7eb", marginBottom: 8, animation: "pulse 1.5s infinite" }} />

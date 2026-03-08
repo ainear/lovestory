@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 function NavGroup({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#b0b0bb", letterSpacing: 1.2, margin: "0 0 6px 12px", textTransform: "uppercase" }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: "var(--dash-text-muted)", letterSpacing: 1.2, margin: "0 0 6px 12px", textTransform: "uppercase" }}>
                 {label}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>{children}</div>
@@ -28,12 +28,12 @@ function NavItem({ href, icon, label, exact }: { href: string; icon: string; lab
                 padding: "9px 12px",
                 borderRadius: 10,
                 fontSize: 14,
-                color: isActive ? "#ff6b9d" : "#4b5563",
+                color: isActive ? "var(--dash-accent)" : "var(--dash-text-secondary)",
                 textDecoration: "none",
-                background: isActive ? "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))" : "transparent",
+                background: isActive ? "var(--dash-accent-bg)" : "transparent",
                 fontWeight: isActive ? 600 : 400,
                 transition: "all 0.15s",
-                borderLeft: isActive ? "3px solid #ff6b9d" : "3px solid transparent",
+                borderLeft: isActive ? "3px solid var(--dash-accent)" : "3px solid transparent",
             }}
         >
             <span style={{ fontSize: 16 }}>{icon}</span>
