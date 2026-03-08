@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
+// Force dynamic rendering — blog posts change over time
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
     title: "Blog — Mẹo thiệp cưới & đám cưới | LoveStory",
     description: "Chia sẻ kinh nghiệm làm thiệp cưới online, mẫu thiệp đẹp, tips tổ chức đám cưới. Cập nhật thường xuyên bởi đội ngũ LoveStory.",
@@ -14,21 +17,25 @@ export const metadata: Metadata = {
 
 async function getPosts() {
     try {
+        // Use anon key — RLS allows public SELECT on published posts
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         );
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from("blog_posts")
             .select("id, slug, title, excerpt, cover_url, tags, created_at, view_count")
             .eq("published", true)
             .order("created_at", { ascending: false })
             .limit(20);
+        if (error) console.error("[Blog] fetch error:", error.message);
         return data || [];
-    } catch {
+    } catch (e) {
+        console.error("[Blog] getPosts exception:", e);
         return [];
     }
 }
+
 
 export default async function BlogPage() {
     const posts = await getPosts();
