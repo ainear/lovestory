@@ -828,6 +828,63 @@ function YouTubeEmbed({ url, accent }: { url: string; accent: string }) {
     );
 }
 
+// ── ShareButtons: Zalo + Facebook + Copy link ──
+function ShareButtons({ slug, groomName, brideName }: { slug: string; groomName: string; brideName: string }) {
+    const [copied, setCopied] = useState(false);
+    const url = typeof window !== "undefined" ? window.location.href : `https://7app.online/i/${slug}`;
+    const text = `${groomName} & ${brideName} trân trọng kính mời bạn`;
+
+    function shareZalo() {
+        window.open(`https://zalo.me/share/link?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, "_blank");
+    }
+    function shareFacebook() {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, "_blank", "width=600,height=400");
+    }
+    function copyLink() {
+        navigator.clipboard.writeText(url).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    }
+
+    return (
+        <div style={{
+            position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)",
+            display: "flex", gap: 8, zIndex: 80, alignItems: "center",
+            background: "rgba(255,255,255,0.92)", backdropFilter: "blur(16px)",
+            borderRadius: 50, padding: "8px 16px",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.6)",
+        }}>
+            <button onClick={shareZalo} title="Chia sẻ Zalo" style={{
+                background: "linear-gradient(135deg, #0068ff, #0099ff)",
+                border: "none", borderRadius: 50, width: 36, height: 36,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", fontSize: 16, color: "#fff",
+                boxShadow: "0 2px 8px rgba(0,104,255,0.35)",
+            }}>Z</button>
+            <button onClick={shareFacebook} title="Chia sẻ Facebook" style={{
+                background: "linear-gradient(135deg, #1877f2, #42a5f5)",
+                border: "none", borderRadius: 50, width: 36, height: 36,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", fontSize: 16, color: "#fff",
+                boxShadow: "0 2px 8px rgba(24,119,242,0.35)",
+            }}>f</button>
+            <button onClick={copyLink} title="Sao chép link" style={{
+                background: copied ? "linear-gradient(135deg, #10b981, #059669)" : "#f3f4f6",
+                border: "none", borderRadius: 50, padding: "0 12px", height: 36,
+                display: "flex", alignItems: "center", gap: 4,
+                cursor: "pointer", fontSize: 11, fontWeight: 600,
+                color: copied ? "#fff" : "#374151",
+                transition: "all 0.3s",
+                whiteSpace: "nowrap",
+            }}>
+                {copied ? "✓ Đã sao chép!" : "🔗 Sao chép"}
+            </button>
+        </div>
+    );
+}
+
 // ── HeartButton: Floating like button with animated count ──
 function HeartButton({ slug }: { slug: string }) {
     const [liked, setLiked] = useState(false);
@@ -1388,6 +1445,11 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 >
                     📞 <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{data.groomPhone}</span>
                 </a>
+            )}
+
+            {/* ── Share Buttons ── */}
+            {pageSlug && (
+                <ShareButtons slug={pageSlug} groomName={data.groomName} brideName={data.brideName} />
             )}
 
             {/* Floating Heart button (bottom-right) */}

@@ -59,6 +59,7 @@ export default async function AdminLayout({
                     <AdminNavItem href="/admin/users" icon="👥" label="Users" />
                     <AdminNavItem href="/admin/orders" icon="💳" label="Đơn hàng" />
                     <AdminNavItem href="/admin/projects" icon="💌" label="Thiệp" />
+                    <AdminNavItem href="/admin/blog" icon="📝" label="Blog Posts" />
                     <AdminNavItem href="/admin/logs" icon="📋" label="Activity Logs" />
 
                     <div style={{ marginTop: "auto", padding: "16px 12px", borderTop: "1px solid #334155" }}>
