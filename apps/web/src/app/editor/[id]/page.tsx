@@ -44,6 +44,78 @@ const TEMPLATE_THEMES: Record<string, {
         font: "'Georgia', serif", pattern: "🌅",
         decorTop: "❋ ✤ ❋", decorBottom: "✤ ❋ ✤",
     },
+    "cherry-blossom": {
+        bg: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)",
+        accent: "#ec4899", textColor: "#9d174d", nameColor: "#831843",
+        font: "'Playfair Display', serif", pattern: "🌸",
+        decorTop: "❀ 🌸 ❀", decorBottom: "🌸 ❀ 🌸",
+    },
+    "ocean-breeze": {
+        bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)",
+        accent: "#0891b2", textColor: "#155e75", nameColor: "#164e63",
+        font: "'Cormorant Garamond', serif", pattern: "🌊",
+        decorTop: "🐚 ✧ 🐚", decorBottom: "✧ 🐚 ✧",
+    },
+    "rustic-charm": {
+        bg: "linear-gradient(180deg, #fefce8 0%, #fef9c3 30%, #fef3c7 100%)",
+        accent: "#a16207", textColor: "#713f12", nameColor: "#854d0e",
+        font: "'Lora', serif", pattern: "🌾",
+        decorTop: "❧ ✿ ❧", decorBottom: "✿ ❧ ✿",
+    },
+    "lavender-dream": {
+        bg: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 30%, #ddd6fe 100%)",
+        accent: "#7c3aed", textColor: "#5b21b6", nameColor: "#4c1d95",
+        font: "'Playfair Display', serif", pattern: "💜",
+        decorTop: "✿ ❋ ✿", decorBottom: "❋ ✿ ❋",
+    },
+    "emerald-forest": {
+        bg: "linear-gradient(180deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 100%)",
+        accent: "#059669", textColor: "#065f46", nameColor: "#064e3b",
+        font: "'Cormorant Garamond', serif", pattern: "🌿",
+        decorTop: "🍃 ✧ 🍃", decorBottom: "✧ 🍃 ✧",
+    },
+    "sunset-glow": {
+        bg: "linear-gradient(180deg, #fff7ed 0%, #ffedd5 30%, #fed7aa 100%)",
+        accent: "#ea580c", textColor: "#9a3412", nameColor: "#7c2d12",
+        font: "'Georgia', serif", pattern: "🌇",
+        decorTop: "✦ ❋ ✦", decorBottom: "❋ ✦ ❋",
+    },
+    "minimalist-white": {
+        bg: "linear-gradient(180deg, #fafafa 0%, #f5f5f5 50%, #ffffff 100%)",
+        accent: "#525252", textColor: "#404040", nameColor: "#262626",
+        font: "'Inter', sans-serif", pattern: "◆",
+        decorTop: "─ ◆ ─", decorBottom: "◆ ─ ◆",
+    },
+    "royal-navy": {
+        bg: "linear-gradient(180deg, #0c1929 0%, #1e293b 30%, #0f172a 100%)",
+        accent: "#fbbf24", textColor: "#e2e8f0", nameColor: "#f8fafc",
+        font: "'Playfair Display', serif", pattern: "👑",
+        decorTop: "✦ ♛ ✦", decorBottom: "♛ ✦ ♛",
+    },
+    "spring-garden": {
+        bg: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 100%)",
+        accent: "#16a34a", textColor: "#166534", nameColor: "#14532d",
+        font: "'Lora', serif", pattern: "🌷",
+        decorTop: "🌷 ✿ 🌷", decorBottom: "✿ 🌷 ✿",
+    },
+    "blush-romance": {
+        bg: "linear-gradient(180deg, #fff1f2 0%, #ffe4e6 30%, #fecdd3 100%)",
+        accent: "#e11d48", textColor: "#9f1239", nameColor: "#881337",
+        font: "'Cormorant Garamond', serif", pattern: "💕",
+        decorTop: "♥ ❋ ♥", decorBottom: "❋ ♥ ❋",
+    },
+    "tropical-paradise": {
+        bg: "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 30%, #99f6e4 100%)",
+        accent: "#0d9488", textColor: "#115e59", nameColor: "#134e4a",
+        font: "'Georgia', serif", pattern: "🌴",
+        decorTop: "🌺 ✧ 🌺", decorBottom: "✧ 🌺 ✧",
+    },
+    "classic-elegance": {
+        bg: "linear-gradient(180deg, #18181b 0%, #27272a 30%, #1c1917 100%)",
+        accent: "#facc15", textColor: "#d4d4d8", nameColor: "#fafafa",
+        font: "'Playfair Display', serif", pattern: "✦",
+        decorTop: "❖ ✦ ❖", decorBottom: "✦ ❖ ✦",
+    },
 };
 
 export default function EditorEditPage() {
@@ -240,7 +312,12 @@ export default function EditorEditPage() {
                 ))}
                 <div style={{ flex: 1 }} />
                 <button
-                    onClick={() => window.open("https://7app.online", "_blank")}
+                    onClick={() => {
+                        const msg = "📞 Hỗ trợ LoveStory\n\n💬 Zalo: 0901 234 567\n📧 Email: support@7app.online\n🌐 Facebook: fb.com/lovestory.vn\n\nGiờ làm việc: 8:00 - 22:00 hàng ngày";
+                        if (typeof window !== "undefined") {
+                            alert(msg);
+                        }
+                    }}
                     style={{
                         width: 52, padding: "10px 0", border: "none", borderRadius: 10,
                         background: "transparent", color: "#6b7280", cursor: "pointer",
