@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     } else {
         // Upsert subscription
         const { error } = await adminClient.from("subscriptions").upsert(
-            { user_id: userId, plan, status: "active" },
+            { user_id: userId, plan },
             { onConflict: "user_id" }
         );
         if (error) {
