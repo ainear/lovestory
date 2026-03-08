@@ -1,0 +1,46 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Every 4 days at 08:00 UTC (15:00 Vietnam time)
+    # ⚠️ DO NOT use */5 — causes 8-day gap in February (Feb 25 → Mar 5)!
+    - cron: '0 8 */4 * *'
+  workflow_dispatch: # Manual trigger from Actions tab for testing
+
+jobs:
+  ping:
+    name: Ping Supabase Endpoints
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase Auth
+        continue-on-error: true
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/auth/v1/settings" \
+            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}")
+          echo "✅ Supabase Auth responded with HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Supabase Auth is not responding (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: Ping Supabase REST API
+        continue-on-error: true
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}")
+          echo "✅ Supabase REST responded with HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Supabase REST API is not responding (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: Summary
+        run: |
+          echo "✅ Supabase keep-alive pings completed!"
+          echo "📅 Next scheduled run: in ~4 days"
+          echo "🔗 Project: https://supabase.com/dashboard/project/ujawiwotekelzgbxiauz"
