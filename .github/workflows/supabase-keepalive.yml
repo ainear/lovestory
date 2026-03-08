@@ -3,9 +3,9 @@ name: Supabase Keep-Alive
 on:
   schedule:
     # Every 4 days at 08:00 UTC (15:00 Vietnam time)
-    # ⚠️ DO NOT use */5 — causes 8-day gap in February (Feb 25 → Mar 5)!
+    # ⚠️ DO NOT use */5 — causes 8-day gap in February!
     - cron: '0 8 */4 * *'
-  workflow_dispatch: # Manual trigger from Actions tab for testing
+  workflow_dispatch: # Manual trigger for testing
 
 jobs:
   ping:
@@ -13,13 +13,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate secrets are set
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "::error::SUPABASE_URL secret is not set! Go to: Repo → Settings → Secrets → Actions → New secret"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::SUPABASE_ANON_KEY secret is not set! Go to: Repo → Settings → Secrets → Actions → New secret"
+            exit 1
+          fi
+          echo "✅ Secrets are configured"
+          echo "🔗 URL: ${{ secrets.SUPABASE_URL }}"
+
       - name: Ping Supabase Auth
         continue-on-error: true
         run: |
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/auth/v1/settings" \
-            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}")
+            "${{ secrets.SUPABASE_URL }}/auth/v1/settings" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
           echo "✅ Supabase Auth responded with HTTP $HTTP_STATUS"
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error::Supabase Auth is not responding (HTTP $HTTP_STATUS)"
@@ -31,8 +44,8 @@ jobs:
         run: |
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}")
+            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
           echo "✅ Supabase REST responded with HTTP $HTTP_STATUS"
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error::Supabase REST API is not responding (HTTP $HTTP_STATUS)"
