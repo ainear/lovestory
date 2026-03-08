@@ -246,7 +246,7 @@ function ConfettiCanvas() {
     return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 100 }} />;
 }
 
-// ── Envelope Animation Component ──
+// ── Envelope Animation Component — Cinematic Premium ──
 function EnvelopeAnimation({
     groomName,
     brideName,
@@ -258,118 +258,181 @@ function EnvelopeAnimation({
     guestName?: string;
     onOpen: () => void;
 }) {
+    const [hovered, setHovered] = useState(false);
+
     return (
         <div
-            onClick={onOpen}
             style={{
-                position: "fixed",
-                inset: 0,
-                background: "linear-gradient(180deg, #fce7f3, #fdf2f8)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 100,
-                cursor: "pointer",
-                animation: "fadeIn 0.5s ease-in",
+                position: "fixed", inset: 0, zIndex: 100,
+                background: "linear-gradient(160deg, #1a0533 0%, #2d0a5f 30%, #0f172a 70%, #1e0a3c 100%)",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                cursor: "pointer", overflow: "hidden",
+                animation: "fadeIn 0.6s ease-in",
             }}
+            onClick={onOpen}
         >
-            {/* Envelope */}
+            {/* Ambient sparkles */}
+            {[...Array(16)].map((_, i) => (
+                <div key={i} style={{
+                    position: "absolute",
+                    width: 2 + (i % 3) * 2,
+                    height: 2 + (i % 3) * 2,
+                    borderRadius: "50%",
+                    background: i % 3 === 0 ? "#ff6b9d" : i % 3 === 1 ? "#c084fc" : "#fbbf24",
+                    top: `${5 + (i * 6.5) % 90}%`,
+                    left: `${(i * 7.3) % 100}%`,
+                    opacity: 0.3 + (i % 4) * 0.1,
+                    animation: `sparkle ${2 + (i % 3)}s ${(i * 0.3) % 2}s ease-in-out infinite`,
+                }} />
+            ))}
+
+            {/* Glowing ring behind envelope */}
+            <div style={{
+                position: "absolute",
+                width: 320, height: 320,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(192,132,252,0.12) 0%, transparent 70%)",
+                animation: "ringPulse 3s ease-in-out infinite",
+            }} />
+
+            {/* Main Envelope */}
             <div
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
                 style={{
-                    width: 280,
-                    height: 200,
-                    background: "linear-gradient(135deg, #fff, #fef3c7)",
-                    borderRadius: 16,
-                    boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                    width: 300, height: 210,
                     position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    animation: "pulse 2s ease-in-out infinite",
+                    transform: hovered ? "scale(1.04) translateY(-6px)" : "scale(1) translateY(0)",
+                    transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+                    filter: "drop-shadow(0 24px 48px rgba(192,132,252,0.4))",
+                    animation: "floatEnv 3s ease-in-out infinite",
                 }}
             >
-                {/* Heart Seal */}
-                <div
-                    style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 24,
-                        boxShadow: "0 4px 12px rgba(255,107,157,0.4)",
-                    }}
-                >
-                    💌
-                </div>
+                {/* Envelope body */}
+                <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(160deg, #fdf2f8 0%, #fce7f3 50%, #fff5f7 100%)",
+                    borderRadius: 18,
+                    border: "1px solid rgba(255,255,255,0.4)",
+                }} />
 
-                {/* Flap */}
-                <div
-                    style={{
-                        position: "absolute",
-                        top: -1,
-                        left: -1,
-                        right: -1,
-                        height: 100,
-                        background: "linear-gradient(180deg, #fef3c7, #fff)",
-                        clipPath: "polygon(0 0, 50% 60%, 100% 0)",
-                        borderRadius: "16px 16px 0 0",
-                    }}
-                />
+                {/* Bottom fold lines */}
+                <div style={{
+                    position: "absolute", bottom: 0, left: -1, right: -1, height: 110,
+                    background: "linear-gradient(180deg, transparent 0%, rgba(255,107,157,0.04) 100%)",
+                    clipPath: "polygon(0 100%, 50% 0%, 100% 100%)",
+                    borderRadius: "0 0 18px 18px",
+                    borderLeft: "1px solid rgba(255,107,157,0.1)",
+                    borderRight: "1px solid rgba(255,107,157,0.1)",
+                }} />
+
+                {/* Left & Right fold lines */}
+                <div style={{
+                    position: "absolute", inset: 0,
+                    background: `linear-gradient(135deg, rgba(255,107,157,0.06) 0%, transparent 50%),
+                                 linear-gradient(225deg, rgba(192,132,252,0.06) 0%, transparent 50%)`,
+                    borderRadius: 18,
+                }} />
+
+                {/* Top flap — animated open on hover */}
+                <div style={{
+                    position: "absolute", top: -1, left: -1, right: -1, height: 110,
+                    background: "linear-gradient(175deg, #fce7f3 0%, #fff5f7 100%)",
+                    clipPath: "polygon(0 0, 50% 65%, 100% 0)",
+                    borderRadius: "18px 18px 0 0",
+                    transformOrigin: "top center",
+                    transform: hovered ? "rotateX(-35deg)" : "rotateX(0deg)",
+                    transition: "transform 0.5s ease",
+                    border: "1px solid rgba(255,107,157,0.12)",
+                    boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.08)" : "none",
+                    zIndex: 2,
+                }} />
+
+                {/* Seal / center content */}
+                <div style={{
+                    position: "absolute", inset: 0, zIndex: 1,
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center", gap: 6,
+                }}>
+                    {/* Wax seal */}
+                    <div style={{
+                        width: 52, height: 52, borderRadius: "50%",
+                        background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 24, boxShadow: "0 4px 16px rgba(255,107,157,0.5)",
+                        border: "2px solid rgba(255,255,255,0.6)",
+                    }}>
+                        💌
+                    </div>
+                    <p style={{
+                        fontSize: 12, fontStyle: "italic", color: "#be185d",
+                        margin: 0, fontFamily: "'Georgia', serif", letterSpacing: 1,
+                        textAlign: "center", lineHeight: 1.4, padding: "0 16px",
+                    }}>
+                        {groomName} &amp; {brideName}
+                    </p>
+                </div>
             </div>
 
-            {/* Names */}
-            <div style={{ textAlign: "center", marginTop: 32 }}>
-                <p style={{ fontSize: 12, color: "#d97706", letterSpacing: 4, margin: "0 0 8px" }}>
-                    THIỆP MỜI
+            {/* Title text under envelope */}
+            <div style={{ textAlign: "center", marginTop: 36, zIndex: 1 }}>
+                <p style={{
+                    fontSize: 10, letterSpacing: 6, color: "rgba(255,255,255,0.4)",
+                    margin: "0 0 12px", textTransform: "uppercase",
+                }}>
+                    Thiệp mời điện tử
                 </p>
-                <h2
-                    style={{
-                        fontSize: 28,
-                        fontWeight: 300,
-                        color: "#831843",
-                        margin: 0,
-                        fontStyle: "italic",
-                    }}
-                >
-                    {groomName} & {brideName}
+                <h2 style={{
+                    fontSize: 30, fontWeight: 300, color: "#fff",
+                    fontStyle: "italic", margin: "0 0 6px",
+                    fontFamily: "'Georgia', serif",
+                    textShadow: "0 2px 20px rgba(192,132,252,0.4)",
+                }}>
+                    {groomName} &amp; {brideName}
                 </h2>
+
+                {/* Guest greeting */}
                 {guestName && (
-                    <p style={{ fontSize: 13, color: "#be185d", margin: "10px 0 0", fontWeight: 500 }}>
-                        💌 Kính gởi: <strong>{decodeURIComponent(guestName)}</strong>
-                    </p>
+                    <div style={{
+                        display: "inline-block", marginTop: 10,
+                        padding: "7px 18px", borderRadius: 24,
+                        background: "rgba(255,107,157,0.15)",
+                        border: "1px solid rgba(255,107,157,0.3)",
+                        backdropFilter: "blur(10px)",
+                    }}>
+                        <p style={{ fontSize: 13, color: "#fda4af", margin: 0 }}>
+                            💌 Kính gởi: <strong style={{ color: "#fff" }}>{decodeURIComponent(guestName)}</strong>
+                        </p>
+                    </div>
                 )}
             </div>
 
-            {/* Tap hint */}
-            <p
+            {/* CTA button */}
+            <button
                 style={{
-                    color: "#9ca3af",
-                    fontSize: 13,
-                    marginTop: 40,
-                    animation: "blink 1.5s ease-in-out infinite",
+                    marginTop: 40, padding: "14px 36px",
+                    borderRadius: 50, border: "none",
+                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                    color: "#fff", fontSize: 15, fontWeight: 700,
+                    cursor: "pointer", zIndex: 1,
+                    boxShadow: "0 8px 30px rgba(255,107,157,0.45)",
+                    animation: "blink 1.8s ease-in-out infinite",
+                    letterSpacing: 0.5,
                 }}
+                onClick={onOpen}
             >
-                Nhấn để mở thiệp 💕
-            </p>
+                Mở thiệp ✨
+            </button>
 
             <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.03); }
-        }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
+                @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+                @keyframes sparkle { 0%,100% { opacity:0.2; transform:scale(1) } 50% { opacity:0.8; transform:scale(1.6) } }
+                @keyframes ringPulse { 0%,100% { transform:scale(1); opacity:0.8 } 50% { transform:scale(1.15); opacity:0.4 } }
+                @keyframes floatEnv { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-8px) } }
+                @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0.7 } }
+                @keyframes pulse { 0%,100% { transform:scale(1) } 50% { transform:scale(1.03) } }
+            `}</style>
         </div>
     );
 }
