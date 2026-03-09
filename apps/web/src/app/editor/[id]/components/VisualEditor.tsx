@@ -70,6 +70,7 @@ interface VisualEditorProps {
 export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPublish }: VisualEditorProps) {
     const [activeTab, setActiveTab] = useState("text");
     const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+    const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     // P1: Music state
@@ -122,6 +123,33 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             setSaveStatus("unsaved");
         }
     }, [state.elements, state.background, state.width, state.height, projectId, supabase, musicUrl, musicName]);
+
+    // P0 FIX: Publish — save canvas_json AND set status='published' before redirect
+    const handlePublish = useCallback(async () => {
+        if (publishStatus === "publishing") return;
+        setPublishStatus("publishing");
+        const canvasJson = JSON.stringify({
+            version: 1,
+            canvas: { width: state.width, height: state.height, bg: state.background },
+            elements: state.elements,
+            meta: { musicUrl, musicName },
+        });
+        try {
+            await supabase.from("projects").update({
+                canvas_json: canvasJson,
+                music_url: musicUrl || null,
+                music_name: musicName || null,
+                status: "published",          // ← THE CRITICAL FIX
+                updated_at: new Date().toISOString(),
+            }).eq("id", projectId);
+            setSaveStatus("saved");
+            setPublishStatus("done");
+            onPublish?.();
+        } catch {
+            setPublishStatus("idle");
+            alert("Xuất bản thất bại. Vui lòng thử lại.");
+        }
+    }, [state.elements, state.background, state.width, state.height, projectId, supabase, musicUrl, musicName, onPublish, publishStatus]);
 
     // Debounced auto-save on elements/music change
     useEffect(() => {
@@ -237,15 +265,24 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     <Eye size={14} /> Xem trước
                 </a>
 
-                {/* Publish */}
-                <button onClick={onPublish} style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "8px 16px", borderRadius: 10, border: "none",
-                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(255,107,157,0.35)",
-                }}>
-                    <Rocket size={14} /> Xuất bản
+                {/* Publish — P0 fix: now saves status='published' before redirect */}
+                <button
+                    onClick={handlePublish}
+                    disabled={publishStatus === "publishing"}
+                    style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "8px 16px", borderRadius: 10, border: "none",
+                        background: publishStatus === "publishing"
+                            ? "#d1d5db"
+                            : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                        color: "#fff", fontSize: 13, fontWeight: 700,
+                        cursor: publishStatus === "publishing" ? "not-allowed" : "pointer",
+                        boxShadow: publishStatus === "publishing" ? "none" : "0 2px 8px rgba(255,107,157,0.35)",
+                        transition: "all 0.2s",
+                    }}
+                >
+                    <Rocket size={14} />
+                    {publishStatus === "publishing" ? "Đang xuất bản..." : "Xuất bản"}
                 </button>
             </div>
 
