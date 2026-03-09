@@ -20,9 +20,32 @@ async function getBlogSlugs(): Promise<{ slug: string; created_at: string }[]> {
     }
 }
 
+// Sprint 13: also include public invitation pages for Google indexing
+async function getPublicInvitations(): Promise<{ slug: string; updated_at: string }[]> {
+    try {
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+        const { data } = await supabase
+            .from("projects")
+            .select("slug, updated_at")
+            .eq("status", "published")
+            .order("updated_at", { ascending: false })
+            .limit(500); // cap for sitemap size
+        return data || [];
+    } catch {
+        return [];
+    }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://7app.online";
-    const blogPosts = await getBlogSlugs();
+
+    const [blogPosts, invitations] = await Promise.all([
+        getBlogSlugs(),
+        getPublicInvitations(),
+    ]);
 
     return [
         { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
@@ -37,6 +60,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(post.created_at),
             changeFrequency: "monthly" as const,
             priority: 0.75,
+        })),
+        // Dynamic public invitation pages — boost sharing + organic traffic
+        ...invitations.map(inv => ({
+            url: `${baseUrl}/i/${inv.slug}`,
+            lastModified: new Date(inv.updated_at),
+            changeFrequency: "monthly" as const,
+            priority: 0.6,
         })),
     ];
 }
