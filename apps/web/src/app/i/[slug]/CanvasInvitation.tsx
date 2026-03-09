@@ -85,6 +85,19 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                 note: rsvpNote.trim() || null,
             });
             setRsvpSent(true);
+
+            // Fire-and-forget email notification to project owner
+            if (projectId) {
+                fetch("/api/rsvp/notify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        projectId,
+                        guestName: rsvpName.trim(),
+                        attending: rsvpAttend === "yes",
+                    }),
+                }).catch(() => { }); // silent — never block user
+            }
         } catch {
             alert("Không thể gửi RSVP. Vui lòng thử lại.");
         }

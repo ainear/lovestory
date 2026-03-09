@@ -40,7 +40,7 @@ export default async function DashboardPage() {
             const projectIds = projects.map((p) => p.id);
 
             const [{ count: rsvpCount }, { count: wishCount }] = await Promise.all([
-                supabase.from("rsvps").select("*", { count: "exact", head: true }).in("project_id", projectIds),
+                supabase.from("rsvp_responses").select("*", { count: "exact", head: true }).in("project_id", projectIds),
                 supabase.from("wishes").select("*", { count: "exact", head: true }).in("project_id", projectIds),
             ]);
             totalRsvps = rsvpCount || 0;
