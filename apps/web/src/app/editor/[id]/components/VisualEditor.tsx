@@ -14,10 +14,13 @@ const TABS = [
     { key: "image", icon: <ImageIcon size={18} />, label: "Hình ảnh" },
     { key: "stock", icon: <LayoutTemplate size={18} />, label: "Stock" },
     { key: "sticker", icon: <Smile size={18} />, label: "Sticker" },
+    { key: "widgets", icon: <Grid size={18} />, label: "Tiện ích" },
     { key: "bg", icon: <Palette size={18} />, label: "Nền" },
     { key: "effects", icon: <Sparkles size={18} />, label: "Hiệu ứng" },
     { key: "music", icon: <Music size={18} />, label: "Âm nhạc" },
+    { key: "templates", icon: <LayoutTemplate size={18} />, label: "Mẫu" },
 ];
+
 
 // Text preset styles
 const TEXT_PRESETS = [
@@ -289,325 +292,334 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             {/* ── Main Area ── */}
             <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
-                {/* ── Left Sidebar ── */}
+                {/* ── Vertical Icon Column (60px) — Canva-style ── */}
                 <div style={{
-                    width: 280, background: "#fff",
-                    borderRight: "1px solid #e5e7eb",
-                    display: "flex", flexDirection: "column",
-                    overflow: "hidden", flexShrink: 0,
+                    width: 64, background: "#fff",
+                    borderRight: "1px solid #f0f0f0",
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    paddingTop: 8, gap: 2, flexShrink: 0, overflowY: "auto",
+                    boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+                    zIndex: 2,
                 }}>
-                    {/* Tab icons */}
-                    <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", flexShrink: 0, overflowX: "auto" }}>
-                        {TABS.map(tab => (
-                            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-                                flex: 1, padding: "10px 4px",
-                                border: "none", background: "none",
-                                borderBottom: activeTab === tab.key ? "2px solid #ff6b9d" : "2px solid transparent",
-                                color: activeTab === tab.key ? "#ff6b9d" : "#9ca3af",
-                                cursor: "pointer", fontSize: 9,
-                                display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-                                transition: "all 0.15s",
-                            }}>
-                                {tab.icon}
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
+                    {TABS.map(tab => (
+                        <button key={tab.key} onClick={() => setActiveTab(activeTab === tab.key ? "" : tab.key)} title={tab.label} style={{
+                            width: 52, padding: "10px 4px",
+                            border: "none",
+                            borderRadius: 10,
+                            background: activeTab === tab.key ? "#fff0f5" : "transparent",
+                            color: activeTab === tab.key ? "#ff6b9d" : "#6b7280",
+                            cursor: "pointer", fontSize: 9, fontWeight: activeTab === tab.key ? 700 : 400,
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                            transition: "all 0.15s",
+                        }}>
+                            {tab.icon}
+                            <span>{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
 
-                    {/* Tab content */}
-                    <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+                {/* ── Expandable Panel (240px) — slides in when tab active ── */}
+                {activeTab !== "" && (
+                    <div style={{
+                        width: 248, background: "#fff",
+                        borderRight: "1px solid #e5e7eb",
+                        display: "flex", flexDirection: "column",
+                        overflow: "hidden", flexShrink: 0,
+                        animation: "slideIn 0.15s ease",
+                    }}>
+                        <style>{`@keyframes slideIn { from { transform: translateX(-10px); opacity:0 } to { transform: translateX(0); opacity:1 } }`}</style>
 
-                        {/* TEXT TAB */}
-                        {activeTab === "text" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Thêm văn bản
-                                </p>
-                                {TEXT_PRESETS.map((preset) => (
-                                    <button key={preset.label}
-                                        onClick={() => {
-                                            dispatch({
-                                                type: "ADD_ELEMENT",
-                                                element: {
-                                                    id: `el-${Date.now()}`,
-                                                    type: "text",
-                                                    x: 20, y: 120 + state.elements.length * 40,
-                                                    width: 350, height: 60,
-                                                    rotation: 0, opacity: 1, zIndex: state.elements.length + 1, locked: false,
-                                                    props: {
-                                                        text: preset.text,
-                                                        fontSize: preset.fontSize,
-                                                        fontFamily: preset.fontFamily,
-                                                        fontWeight: preset.fontWeight,
-                                                        fontStyle: preset.fontStyle,
-                                                        color: "#831843",
-                                                        textAlign: "center",
-                                                        lineHeight: 1.4,
+                        {/* Panel header */}
+                        <div style={{ padding: "12px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: 0, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                                {TABS.find(t => t.key === activeTab)?.label}
+                            </p>
+                            <button onClick={() => setActiveTab("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 16, padding: 2 }}>×</button>
+                        </div>
+
+                        {/* Panel content */}
+                        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+
+                            {/* TEXT TAB */}
+                            {activeTab === "text" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Thêm văn bản</p>
+                                    {TEXT_PRESETS.map((preset) => (
+                                        <button key={preset.label}
+                                            onClick={() => {
+                                                dispatch({
+                                                    type: "ADD_ELEMENT",
+                                                    element: {
+                                                        id: `el-${Date.now()}`,
+                                                        type: "text",
+                                                        x: 20, y: 120 + state.elements.length * 40,
+                                                        width: 350, height: 60,
+                                                        rotation: 0, opacity: 1, zIndex: state.elements.length + 1, locked: false,
+                                                        props: {
+                                                            text: preset.text,
+                                                            fontSize: preset.fontSize,
+                                                            fontFamily: preset.fontFamily,
+                                                            fontWeight: preset.fontWeight,
+                                                            fontStyle: preset.fontStyle,
+                                                            color: "#1f2937",
+                                                            textAlign: "center" as const,
+                                                        },
                                                     },
-                                                },
-                                            });
-                                        }}
-                                        style={{
-                                            border: "1px dashed #e5e7eb",
-                                            borderRadius: 10,
-                                            padding: "12px 14px",
-                                            background: "#fafafa",
-                                            cursor: "pointer",
-                                            textAlign: "left",
-                                            transition: "all 0.15s",
-                                        }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = "#fdf2f8")}
-                                        onMouseLeave={e => (e.currentTarget.style.background = "#fafafa")}
-                                    >
-                                        <p style={{ fontSize: preset.fontSize > 20 ? 16 : 13, fontFamily: preset.fontFamily, fontWeight: preset.fontWeight, fontStyle: preset.fontStyle, color: "#1f2937", margin: "0 0 2px" }}>
+                                                });
+                                            }}
+                                            style={{
+                                                padding: "10px 14px", borderRadius: 10,
+                                                border: "1px solid #e5e7eb", background: "#fff",
+                                                cursor: "pointer", textAlign: "left",
+                                                fontFamily: preset.fontFamily,
+                                                fontSize: Math.min(preset.fontSize * 0.65, 16),
+                                            }}
+                                        >
                                             {preset.label}
-                                        </p>
-                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{preset.text.slice(0, 30)}...</p>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* IMAGE TAB */}
+                            {activeTab === "image" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Thêm hình ảnh</p>
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{
+                                            padding: 16, borderRadius: 12,
+                                            border: "2px dashed #e5e7eb", background: "#fafafa",
+                                            cursor: "pointer", display: "flex",
+                                            flexDirection: "column", alignItems: "center", gap: 8,
+                                        }}
+                                    >
+                                        <ImageIcon size={24} color="#9ca3af" />
+                                        <span style={{ fontSize: 13, color: "#6b7280" }}>Upload ảnh</span>
+                                        <span style={{ fontSize: 11, color: "#9ca3af" }}>PNG, JPG, WebP</span>
                                     </button>
-                                ))}
-                            </div>
-                        )}
+                                    <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            const formData = new FormData();
+                                            formData.append("file", file);
+                                            try {
+                                                const res = await fetch("/api/upload", { method: "POST", body: formData });
+                                                const json = await res.json() as { url?: string };
+                                                if (json.url) addImage(json.url);
+                                            } catch { alert("Upload thất bại, vui lòng thử lại."); }
+                                        }}
+                                    />
+                                </div>
+                            )}
 
-                        {/* IMAGE TAB */}
-                        {activeTab === "image" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Thêm hình ảnh
-                                </p>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    style={{ display: "none" }}
-                                />
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    style={{
-                                        padding: "14px", borderRadius: 12,
-                                        border: "2px dashed #c084fc",
-                                        background: "#faf5ff", cursor: "pointer",
-                                        fontSize: 13, color: "#7c3aed", fontWeight: 600,
-                                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                                    }}
-                                >
-                                    <ImageIcon size={18} /> Tải ảnh lên
-                                </button>
-
-                                {/* Add placeholder slot */}
-                                <button
-                                    onClick={() => dispatch({
+                            {/* STOCK TAB */}
+                            {activeTab === "stock" && (
+                                <StockPanel
+                                    onAddImage={(url) => dispatch({
                                         type: "ADD_ELEMENT",
                                         element: {
                                             id: `el-${Date.now()}`,
                                             type: "image",
-                                            x: 20, y: 200 + state.elements.length * 20,
-                                            width: 350, height: 280,
-                                            rotation: 0, opacity: 1, zIndex: state.elements.length + 1, locked: false,
-                                            props: { src: "", objectFit: "cover", borderRadius: 12, opacity: 1 },
+                                            x: 20, y: 80,
+                                            width: 200, height: 200,
+                                            rotation: 0, opacity: 1,
+                                            zIndex: state.elements.length + 1, locked: false,
+                                            props: { src: url, objectFit: "cover" },
                                         },
                                     })}
-                                    style={{
-                                        padding: "10px", borderRadius: 10,
-                                        border: "1px solid #e5e7eb",
-                                        background: "#fff", cursor: "pointer",
-                                        fontSize: 12, color: "#6b7280",
-                                        display: "flex", alignItems: "center", gap: 8,
-                                    }}
-                                >
-                                    <Grid size={14} /> Thêm ô ảnh trống
-                                </button>
-                            </div>
-                        )}
+                                />
+                            )}
 
-                        {/* BACKGROUND TAB */}
-                        {activeTab === "bg" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Màu nền
-                                </p>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                                    {BG_PRESETS.map(bg => (
-                                        <button
-                                            key={bg.label}
-                                            onClick={() => dispatch({ type: "SET_BACKGROUND", background: bg.value })}
+                            {/* STICKER TAB */}
+                            {activeTab === "sticker" && (
+                                <StickerPanel
+                                    onAddSticker={(el) => dispatch({
+                                        type: "ADD_ELEMENT",
+                                        element: {
+                                            ...el,
+                                            id: `el-${Date.now()}`,
+                                            zIndex: state.elements.length + 1,
+                                        },
+                                    })}
+                                />
+                            )}
+
+                            {/* WIDGETS TAB — Cinelove-style Tiện ích */}
+                            {activeTab === "widgets" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Tiện ích</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 8px" }}>Click để thêm vào thiệp</p>
+
+                                    {([
+                                        {
+                                            type: "countdown", emoji: "⏰", label: "Nhạc đếm ngược", desc: "Hiển thị thời gian đến ngày cưới",
+                                            props: { widgetType: "countdown", label: "Countdown", targetDate: "" }, w: 350, h: 100
+                                        },
+                                        {
+                                            type: "widget", emoji: "🗺️", label: "Bản đồ", desc: "Gắn link Google Maps địa điểm",
+                                            props: { widgetType: "map", mapUrl: "https://maps.google.com", label: "Vị trí tiệc cưới" }, w: 350, h: 200
+                                        },
+                                        {
+                                            type: "widget", emoji: "📱", label: "Mã QR", desc: "QR code link thiệp để chia sẻ",
+                                            props: { widgetType: "qr", label: "Quét để xem thiệp" }, w: 160, h: 180
+                                        },
+                                        {
+                                            type: "widget", emoji: "💰", label: "Phù ngư gựi mừng", desc: "TK ngân hàng nhận phù ngư",
+                                            props: { widgetType: "gift", label: "Phù ngư gựi mừng" }, w: 350, h: 120
+                                        },
+                                    ] as Array<{ type: string; emoji: string; label: string; desc: string; props: Record<string, string>; w: number; h: number }>).map((w) => (
+                                        <button key={w.label}
+                                            onClick={() => dispatch({
+                                                type: "ADD_ELEMENT",
+                                                element: {
+                                                    id: `el-${Date.now()}`,
+                                                    type: w.type as CanvasElement["type"],
+                                                    x: 20, y: 100 + state.elements.length * 30,
+                                                    width: w.w, height: w.h,
+                                                    rotation: 0, opacity: 1,
+                                                    zIndex: state.elements.length + 1, locked: false,
+                                                    props: w.props,
+                                                },
+                                            })}
                                             style={{
-                                                borderRadius: 10,
-                                                border: state.background === bg.value ? "2px solid #ff6b9d" : "2px solid transparent",
-                                                cursor: "pointer", padding: 0, overflow: "hidden",
-                                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                                display: "flex", alignItems: "flex-start", gap: 12,
+                                                padding: "12px 14px", borderRadius: 12,
+                                                border: "1px solid #f3f4f6", background: "#fafafa",
+                                                cursor: "pointer", textAlign: "left",
+                                                transition: "all 0.15s",
                                             }}
                                         >
-                                            <div style={{
-                                                height: 60, width: "100%", background: bg.value,
-                                            }} />
-                                            <p style={{ fontSize: 10, padding: "4px 0 4px", margin: 0, textAlign: "center", color: "#374151", background: "#fff" }}>
-                                                {bg.label}
-                                            </p>
+                                            <span style={{ fontSize: 24, flexShrink: 0 }}>{w.emoji}</span>
+                                            <div>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{w.label}</p>
+                                                <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>{w.desc}</p>
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* STOCK TAB */}
-                        {activeTab === "stock" && (
-                            <StockPanel
-                                onAddImage={(url) => dispatch({
-                                    type: "ADD_ELEMENT",
-                                    element: {
-                                        id: `el-${Date.now()}`,
-                                        type: "image",
-                                        x: 20, y: 200,
-                                        width: 350, height: 280,
-                                        rotation: 0, opacity: 1,
-                                        zIndex: state.elements.length + 1, locked: false,
-                                        props: { src: url, objectFit: "cover", borderRadius: 12, opacity: 1 },
-                                    },
-                                })}
-                            />
-                        )}
-
-                        {/* STICKER TAB */}
-                        {activeTab === "sticker" && (
-                            <StickerPanel
-                                onAddSticker={(el) => dispatch({
-                                    type: "ADD_ELEMENT",
-                                    element: {
-                                        ...el,
-                                        id: `el-${Date.now()}`,
-                                        zIndex: state.elements.length + 1,
-                                    },
-                                })}
-                            />
-                        )}
-
-                        {/* EFFECTS TAB */}
-                        {activeTab === "effects" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Hiệu ứng bay
-                                </p>
-                                {["🌸 Cánh hoa", "💕 Trái tim", "✨ Bokeh", "❄️ Tuyết rơi", "🚫 Tắt hiệu ứng"].map(fx => (
-                                    <div key={fx} style={{
-                                        padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                        cursor: "pointer", fontSize: 13, color: "#374151",
-                                        display: "flex", alignItems: "center", gap: 8,
-                                    }}>
-                                        {fx}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* MUSIC TAB — P1 */}
-                        {activeTab === "music" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Nhạc nền
-                                </p>
-
-                                {/* Now playing */}
-                                {musicUrl && (
-                                    <div style={{
-                                        padding: "10px 14px", borderRadius: 12,
-                                        background: isPlaying ? "linear-gradient(135deg, #fdf2f8, #faf5ff)" : "#f9fafb",
-                                        border: "1px solid " + (isPlaying ? "#ff6b9d" : "#e5e7eb"),
-                                        display: "flex", alignItems: "center", gap: 10,
-                                    }}>
-                                        <button onClick={handlePlayMusic} style={{
-                                            width: 36, height: 36, borderRadius: "50%",
-                                            border: "none", cursor: "pointer",
-                                            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                                            color: "#fff", fontSize: 16, flexShrink: 0,
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                        }}>
-                                            {isPlaying ? "⏸" : "▶"}
-                                        </button>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                                {musicName || "Nhạc đã chọn"}
-                                            </p>
-                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
-                                                {isPlaying ? "🎵 Đang phát..." : "Click ▶ để nghe thử"}
-                                            </p>
-                                        </div>
-                                        <button onClick={() => handleSetMusic("", "")} style={{
-                                            background: "none", border: "none", cursor: "pointer",
-                                            color: "#9ca3af", fontSize: 18, padding: 4,
-                                        }}>×</button>
-                                    </div>
-                                )}
-
-                                {/* Presets */}
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "4px 0 0", fontWeight: 600 }}>Nhạc có sẵn:</p>
-                                {MUSIC_PRESETS.map(m => (
-                                    <button key={m.id} onClick={() => handleSetMusic(m.url, m.label)} style={{
-                                        padding: "10px 14px", borderRadius: 10,
-                                        border: "1px solid " + (musicUrl === m.url ? "#ff6b9d" : "#e5e7eb"),
-                                        background: musicUrl === m.url ? "#fdf2f8" : "#fff",
-                                        cursor: "pointer", textAlign: "left",
-                                        display: "flex", alignItems: "center", gap: 10,
-                                    }}>
-                                        <span style={{ fontSize: 20 }}>{m.emoji}</span>
-                                        <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{m.label}</span>
-                                        {musicUrl === m.url && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 12 }}>✔</span>}
-                                    </button>
-                                ))}
-
-                                {/* Custom URL */}
-                                <div style={{ marginTop: 8 }}>
-                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 6px", fontWeight: 600 }}>Hoặc dán link MP3:</p>
-                                    <div style={{ display: "flex", gap: 6 }}>
-                                        <input
-                                            placeholder="https://... .mp3"
-                                            value={musicUrl.startsWith("https://cdn.pixabay") ? "" : musicUrl}
-                                            onChange={e => setMusicUrl(e.target.value)}
-                                            style={{
-                                                flex: 1, padding: "8px 10px", borderRadius: 8,
-                                                border: "1px solid #e5e7eb", fontSize: 12,
-                                                outline: "none",
-                                            }}
-                                        />
-                                        <button onClick={() => setMusicName("Custom")} style={{
-                                            padding: "8px 12px", borderRadius: 8, border: "none",
-                                            background: "#f3f4f6", cursor: "pointer", fontSize: 12,
-                                        }}>OK</button>
+                            {/* BG TAB */}
+                            {activeTab === "bg" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Màu nền</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                                        {BG_PRESETS.map(bg => (
+                                            <button key={bg.label}
+                                                onClick={() => dispatch({ type: "SET_BACKGROUND", background: bg.value })}
+                                                style={{
+                                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                                                    padding: 8, borderRadius: 10,
+                                                    border: `2px solid ${state.background === bg.value ? "#ff6b9d" : "#e5e7eb"}`,
+                                                    background: "#fff", cursor: "pointer",
+                                                }}
+                                            >
+                                                <div style={{ width: "100%", height: 48, borderRadius: 6, background: bg.value ?? "#f3f4f6" }} />
+                                                <span style={{ fontSize: 10, color: "#6b7280", textAlign: "center" }}>{bg.label}</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* TEMPLATE TAB — P2b */}
-                        {activeTab === "templates" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
-                                    Đổi mẫu thiệp
-                                </p>
-                                <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>Chọn mẫu sẽ thay nền và style phần trang trí.</p>
-                                {EDITOR_TEMPLATES.map(t => (
-                                    <button key={t.slug}
-                                        onClick={() => dispatch({ type: "SET_BACKGROUND", background: t.bg })}
-                                        style={{
-                                            display: "flex", alignItems: "center", gap: 12,
-                                            padding: "10px 12px", borderRadius: 12,
-                                            border: `2px solid ${state.background === t.bg ? "#ff6b9d" : "#e5e7eb"}`,
-                                            background: state.background === t.bg ? "#fdf2f8" : "#fff",
-                                            cursor: "pointer", textAlign: "left",
-                                        }}
-                                    >
-                                        <div style={{ width: 40, height: 56, borderRadius: 6, background: t.bg, flexShrink: 0 }} />
-                                        <div>
-                                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{t.emoji} {t.label}</p>
-                                            <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.slug}</p>
+                            {/* EFFECTS TAB */}
+                            {activeTab === "effects" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Hiệu ứng bay</p>
+                                    {["\uD83C\uDF38 Cánh hoa", "\uD83D\uDC95 Trái tim", "\u2728 Bokeh", "\u2744\uFE0F Tuyết rơi", "\uD83D\uDEAB Tắt hiệu ứng"].map(fx => (
+                                        <div key={fx} style={{
+                                            padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb",
+                                            cursor: "pointer", fontSize: 13, color: "#374151",
+                                            display: "flex", alignItems: "center", gap: 8,
+                                        }}>{fx}</div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* MUSIC TAB */}
+                            {activeTab === "music" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Nhạc nền</p>
+                                    {musicUrl && (
+                                        <div style={{
+                                            padding: "10px 14px", borderRadius: 12,
+                                            background: isPlaying ? "linear-gradient(135deg, #fdf2f8, #faf5ff)" : "#f9fafb",
+                                            border: "1px solid " + (isPlaying ? "#ff6b9d" : "#e5e7eb"),
+                                            display: "flex", alignItems: "center", gap: 10,
+                                        }}>
+                                            <button onClick={handlePlayMusic} style={{
+                                                width: 36, height: 36, borderRadius: "50%",
+                                                border: "none", cursor: "pointer",
+                                                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                                color: "#fff", fontSize: 16, flexShrink: 0,
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                            }}>{isPlaying ? "⏸" : "▶"}</button>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{musicName || "Nhạc đã chọn"}</p>
+                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{isPlaying ? "🎵 Đang phát..." : "Click ► để nghe thử"}</p>
+                                            </div>
+                                            <button onClick={() => handleSetMusic("", "")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 18, padding: 4 }}>×</button>
                                         </div>
-                                        {state.background === t.bg && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 16 }}>✔</span>}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                                    )}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "4px 0 0", fontWeight: 600 }}>Nhạc có sẵn:</p>
+                                    {MUSIC_PRESETS.map(m => (
+                                        <button key={m.id} onClick={() => handleSetMusic(m.url, m.label)} style={{
+                                            padding: "10px 14px", borderRadius: 10,
+                                            border: "1px solid " + (musicUrl === m.url ? "#ff6b9d" : "#e5e7eb"),
+                                            background: musicUrl === m.url ? "#fdf2f8" : "#fff",
+                                            cursor: "pointer", textAlign: "left",
+                                            display: "flex", alignItems: "center", gap: 10,
+                                        }}>
+                                            <span style={{ fontSize: 20 }}>{m.emoji}</span>
+                                            <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{m.label}</span>
+                                            {musicUrl === m.url && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 12 }}>✔</span>}
+                                        </button>
+                                    ))}
+                                    <div style={{ marginTop: 8 }}>
+                                        <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 6px", fontWeight: 600 }}>Hoặc dán link MP3:</p>
+                                        <div style={{ display: "flex", gap: 6 }}>
+                                            <input
+                                                placeholder="https://... .mp3"
+                                                value={musicUrl.startsWith("https://cdn.pixabay") ? "" : musicUrl}
+                                                onChange={e => setMusicUrl(e.target.value)}
+                                                style={{ flex: 1, padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, outline: "none" }}
+                                            />
+                                            <button onClick={() => setMusicName("Custom")} style={{ padding: "8px 12px", borderRadius: 8, border: "none", background: "#f3f4f6", cursor: "pointer", fontSize: 12 }}>OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TEMPLATES TAB */}
+                            {activeTab === "templates" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Đổi mẫu thiệp</p>
+                                    {EDITOR_TEMPLATES.map(t => (
+                                        <button key={t.slug}
+                                            onClick={() => dispatch({ type: "SET_BACKGROUND", background: t.bg })}
+                                            style={{
+                                                display: "flex", alignItems: "center", gap: 12,
+                                                padding: "10px 12px", borderRadius: 12,
+                                                border: `2px solid ${state.background === t.bg ? "#ff6b9d" : "#e5e7eb"}`,
+                                                background: state.background === t.bg ? "#fdf2f8" : "#fff",
+                                                cursor: "pointer", textAlign: "left",
+                                            }}
+                                        >
+                                            <div style={{ width: 40, height: 56, borderRadius: 6, background: t.bg, flexShrink: 0 }} />
+                                            <div>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{t.emoji} {t.label}</p>
+                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.slug}</p>
+                                            </div>
+                                            {state.background === t.bg && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 16 }}>✔</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* ── Canvas Area ── */}
                 <div style={{
@@ -649,7 +661,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                     {selectedEl?.type === "text" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                            {/* Color */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>Màu chữ</label>
                                 <input type="color" value={selectedEl.props.color ?? "#831843"}
@@ -657,7 +668,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     style={{ width: "100%", height: 36, borderRadius: 8, border: "1px solid #e5e7eb", cursor: "pointer", padding: 2 }}
                                 />
                             </div>
-                            {/* Font size */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Cỡ chữ: {selectedEl.props.fontSize}px
@@ -668,7 +678,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     style={{ width: "100%" }}
                                 />
                             </div>
-                            {/* Font family */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>Font chữ</label>
                                 <select
@@ -683,7 +692,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     <option value="'Inter', sans-serif">Inter (Sans-serif)</option>
                                 </select>
                             </div>
-                            {/* Align */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>Căn chỉnh</label>
                                 <div style={{ display: "flex", gap: 6 }}>
@@ -701,7 +709,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     ))}
                                 </div>
                             </div>
-                            {/* Bold / Italic */}
                             <div style={{ display: "flex", gap: 8 }}>
                                 <button
                                     onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...selectedEl.props, fontWeight: selectedEl.props.fontWeight === "bold" ? "normal" : "bold" } } })}
@@ -710,9 +717,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         border: "1px solid " + (selectedEl.props.fontWeight === "bold" ? "#ff6b9d" : "#e5e7eb"),
                                         background: selectedEl.props.fontWeight === "bold" ? "#fdf2f8" : "#fff",
                                         fontWeight: "bold", cursor: "pointer", fontSize: 14,
-                                    }}>
-                                    B
-                                </button>
+                                    }}>B</button>
                                 <button
                                     onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...selectedEl.props, fontStyle: selectedEl.props.fontStyle === "italic" ? "normal" : "italic" } } })}
                                     style={{
@@ -720,11 +725,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         border: "1px solid " + (selectedEl.props.fontStyle === "italic" ? "#ff6b9d" : "#e5e7eb"),
                                         background: selectedEl.props.fontStyle === "italic" ? "#fdf2f8" : "#fff",
                                         fontStyle: "italic", cursor: "pointer", fontSize: 14,
-                                    }}>
-                                    I
-                                </button>
+                                    }}>I</button>
                             </div>
-                            {/* P2a: Rotation */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Xoay: {selectedEl.rotation ?? 0}°
@@ -740,7 +742,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     cursor: "pointer", fontSize: 11, color: "#6b7280",
                                 }}>Reset 0°</button>
                             </div>
-                            {/* Opacity */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Độ mờ: {Math.round((selectedEl.opacity ?? 1) * 100)}%
@@ -754,10 +755,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         </div>
                     )}
 
-
                     {selectedEl?.type === "image" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                            {/* Opacity */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Độ trong suốt: {Math.round((selectedEl.props.opacity ?? 1) * 100)}%
@@ -768,7 +767,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     style={{ width: "100%" }}
                                 />
                             </div>
-                            {/* Border radius */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Bo góc: {selectedEl.props.borderRadius ?? 12}px
@@ -779,7 +777,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     style={{ width: "100%" }}
                                 />
                             </div>
-                            {/* Object fit */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>Kiểu hiển thị</label>
                                 <div style={{ display: "flex", gap: 8 }}>
@@ -797,7 +794,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     ))}
                                 </div>
                             </div>
-                            {/* Rotation — P2a */}
                             <div>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
                                     Xoay: {selectedEl.rotation ?? 0}°
@@ -813,7 +809,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     cursor: "pointer", fontSize: 11, color: "#6b7280",
                                 }}>Reset 0°</button>
                             </div>
-                            {/* Replace image button */}
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 style={{
