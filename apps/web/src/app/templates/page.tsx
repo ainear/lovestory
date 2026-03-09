@@ -1,429 +1,479 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-// Seed template data (sẽ chuyển sang DB sau)
+/* ──────────────────────────────────────────────
+   TEMPLATE DATA (seed — will move to DB later)
+   ────────────────────────────────────────────── */
 const TEMPLATES = [
-    { id: "1", slug: "rose-garden", name: "Rose Garden", category: "wedding", tier: "basic" as const, color: "#ff6b9d", emoji: "🌹", pattern: "petals", usageCount: 1234, desc: "Hoa hồng lãng mạn, tone hồng nhẹ nhàng" },
-    { id: "2", slug: "midnight-romance", name: "Midnight Romance", category: "wedding", tier: "premium" as const, color: "#6366f1", emoji: "🌙", pattern: "stars", usageCount: 897, desc: "Đêm tím huyền bí, sang trọng" },
-    { id: "3", slug: "golden-hour", name: "Golden Hour", category: "wedding", tier: "basic" as const, color: "#f59e0b", emoji: "🌅", pattern: "bokeh", usageCount: 2045, desc: "Ánh vàng hoàng hôn, ấm áp" },
-    { id: "4", slug: "cherry-blossom", name: "Cherry Blossom", category: "wedding", tier: "premium" as const, color: "#ec4899", emoji: "🌸", pattern: "petals", usageCount: 765, desc: "Hoa anh đào, dịu dàng Nhật Bản" },
-    { id: "5", slug: "beach-sunset", name: "Beach Sunset", category: "wedding", tier: "basic" as const, color: "#0ea5e9", emoji: "🏖️", pattern: "waves", usageCount: 1567, desc: "Biển xanh, thoải mái và tươi trẻ" },
-    { id: "6", slug: "vintage-love", name: "Vintage Love", category: "wedding", tier: "basic" as const, color: "#78716c", emoji: "📜", pattern: "lace", usageCount: 934, desc: "Cổ điển, tinh tế kiểu Châu Âu" },
-    { id: "7", slug: "modern-minimalist", name: "Modern Minimalist", category: "wedding", tier: "premium" as const, color: "#1f2937", emoji: "◼️", pattern: "lines", usageCount: 1189, desc: "Tối giản, hiện đại, đẳng cấp" },
-    { id: "8", slug: "tropical-paradise", name: "Tropical Paradise", category: "wedding", tier: "basic" as const, color: "#10b981", emoji: "🌴", pattern: "leaves", usageCount: 678, desc: "Nhiệt đới xanh mướt, tươi vui" },
-    { id: "9", slug: "happy-birthday", name: "Happy Birthday", category: "birthday", tier: "basic" as const, color: "#f43f5e", emoji: "🎂", pattern: "confetti", usageCount: 2345, desc: "Rực rỡ, vui tươi sinh nhật" },
-    { id: "10", slug: "graduation-cap", name: "Graduation Day", category: "graduation", tier: "basic" as const, color: "#8b5cf6", emoji: "🎓", pattern: "stars", usageCount: 456, desc: "Tốt nghiệp trang trọng" },
-    { id: "11", slug: "party-night", name: "Party Night", category: "event", tier: "premium" as const, color: "#a855f7", emoji: "🎉", pattern: "confetti", usageCount: 789, desc: "Party sôi động ánh đèn neon" },
-    { id: "12", slug: "lien-hoan", name: "Liên Hoan Gia Đình", category: "event", tier: "basic" as const, color: "#ef4444", emoji: "👨‍👩‍👧‍👦", pattern: "dots", usageCount: 321, desc: "Ấm áp, vui vẻ phong cách gia đình" },
-    { id: "13", slug: "autumn-leaves", name: "Autumn Leaves", category: "wedding", tier: "basic" as const, color: "#d97706", emoji: "🍂", pattern: "leaves", usageCount: 412, desc: "Mùa thu lá vàng, ấm áp" },
-    { id: "14", slug: "ocean-blue", name: "Ocean Blue", category: "wedding", tier: "premium" as const, color: "#0284c7", emoji: "🌊", pattern: "waves", usageCount: 583, desc: "Đại dương sâu thẳm, thanh lịch" },
-    { id: "15", slug: "lavender-dream", name: "Lavender Dream", category: "wedding", tier: "basic" as const, color: "#9333ea", emoji: "💜", pattern: "petals", usageCount: 739, desc: "Hoa oải hương, mơ màng Pháp" },
-    { id: "16", slug: "do-truyen-thong", name: "Đỏ Truyền Thống", category: "wedding", tier: "basic" as const, color: "#dc2626", emoji: "🏮", pattern: "dots", usageCount: 1102, desc: "Truyền thống Á Đông, đỏ may mắn" },
-    { id: "17", slug: "forest-green", name: "Forest Green", category: "wedding", tier: "premium" as const, color: "#16a34a", emoji: "🌿", pattern: "leaves", usageCount: 298, desc: "Rừng xanh tươi, gần gũi thiên nhiên" },
-    { id: "18", slug: "peach-blossom", name: "Peach Blossom", category: "wedding", tier: "basic" as const, color: "#fb923c", emoji: "🌼", pattern: "petals", usageCount: 867, desc: "Hoa đào mùa xuân nhẹ nhàng" },
-    { id: "19", slug: "royal-navy", name: "Royal Navy", category: "event", tier: "premium" as const, color: "#1e3a5f", emoji: "👑", pattern: "stars", usageCount: 445, desc: "Hoàng gia sang trọng, uy nghiêm" },
-    { id: "20", slug: "dusty-rose", name: "Dusty Rose", category: "wedding", tier: "basic" as const, color: "#be185d", emoji: "🥀", pattern: "lace", usageCount: 623, desc: "Hồng bụi, cổ điển romantique" },
-    { id: "21", slug: "celebration-gold", name: "Celebration Gold", category: "event", tier: "premium" as const, color: "#ca8a04", emoji: "✨", pattern: "bokeh", usageCount: 511, desc: "Vàng rực rỡ, tiệc xa xỉ" },
-    { id: "22", slug: "crystal-white", name: "Crystal White", category: "wedding", tier: "basic" as const, color: "#94a3b8", emoji: "💍", pattern: "lace", usageCount: 734, desc: "Trắng tinh khôi, thuần khiết" },
+    { id: "1", slug: "rose-garden", name: "Rose Garden", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=600&fit=crop", usageCount: 1234, desc: "Hoa hồng lãng mạn, tone hồng nhẹ nhàng" },
+    { id: "2", slug: "midnight-romance", name: "Midnight Romance", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=600&fit=crop", usageCount: 897, desc: "Đêm tím huyền bí, sang trọng" },
+    { id: "3", slug: "golden-hour", name: "Golden Hour", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=600&fit=crop", usageCount: 2045, desc: "Ánh vàng hoàng hôn, ấm áp" },
+    { id: "4", slug: "cherry-blossom", name: "Cherry Blossom", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=600&fit=crop", usageCount: 765, desc: "Hoa anh đào, dịu dàng Nhật Bản" },
+    { id: "5", slug: "beach-sunset", name: "Beach Sunset", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=400&h=600&fit=crop", usageCount: 1567, desc: "Biển xanh, thoải mái và tươi trẻ" },
+    { id: "6", slug: "vintage-love", name: "Vintage Love", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1595407753234-0882f1e77954?w=400&h=600&fit=crop", usageCount: 934, desc: "Cổ điển, tinh tế kiểu Châu Âu" },
+    { id: "7", slug: "modern-minimalist", name: "Modern Minimalist", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=600&fit=crop", usageCount: 1189, desc: "Tối giản, hiện đại, đẳng cấp" },
+    { id: "8", slug: "tropical-paradise", name: "Tropical Paradise", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&h=600&fit=crop", usageCount: 678, desc: "Nhiệt đới xanh mướt, tươi vui" },
+    { id: "9", slug: "happy-birthday", name: "Happy Birthday", category: "birthday", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=600&fit=crop", usageCount: 2345, desc: "Rực rỡ, vui tươi sinh nhật" },
+    { id: "10", slug: "graduation-cap", name: "Graduation Day", category: "graduation", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c476?w=400&h=600&fit=crop", usageCount: 456, desc: "Tốt nghiệp trang trọng" },
+    { id: "11", slug: "party-night", name: "Party Night", category: "event", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1496024840928-4c417adf211d?w=400&h=600&fit=crop", usageCount: 789, desc: "Party sôi động ánh đèn neon" },
+    { id: "12", slug: "lien-hoan", name: "Liên Hoan Gia Đình", category: "event", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=600&fit=crop", usageCount: 321, desc: "Ấm áp, vui vẻ phong cách gia đình" },
+    { id: "13", slug: "autumn-leaves", name: "Autumn Leaves", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=600&fit=crop", usageCount: 412, desc: "Mùa thu lá vàng, ấm áp" },
+    { id: "14", slug: "ocean-blue", name: "Ocean Blue", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=600&fit=crop", usageCount: 583, desc: "Đại dương sâu thẳm, thanh lịch" },
+    { id: "15", slug: "lavender-dream", name: "Lavender Dream", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&h=600&fit=crop", usageCount: 739, desc: "Hoa oải hương, mơ màng Pháp" },
+    { id: "16", slug: "do-truyen-thong", name: "Đỏ Truyền Thống", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1587271407850-8d438ca9fdf2?w=400&h=600&fit=crop", usageCount: 1102, desc: "Truyền thống Á Đông, đỏ may mắn" },
+    { id: "17", slug: "forest-green", name: "Forest Green", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&h=600&fit=crop", usageCount: 298, desc: "Rừng xanh tươi, gần gũi thiên nhiên" },
+    { id: "18", slug: "peach-blossom", name: "Peach Blossom", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&h=600&fit=crop", usageCount: 867, desc: "Hoa đào mùa xuân nhẹ nhàng" },
+    { id: "19", slug: "royal-navy", name: "Royal Navy", category: "event", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=400&h=600&fit=crop", usageCount: 445, desc: "Hoàng gia sang trọng, uy nghiêm" },
+    { id: "20", slug: "dusty-rose", name: "Dusty Rose", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop", usageCount: 623, desc: "Hồng bụi, cổ điển romantique" },
+    { id: "21", slug: "celebration-gold", name: "Celebration Gold", category: "event", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=600&fit=crop", usageCount: 511, desc: "Vàng rực rỡ, tiệc xa xỉ" },
+    { id: "22", slug: "crystal-white", name: "Crystal White", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=600&fit=crop", usageCount: 734, desc: "Trắng tinh khôi, thuần khiết" },
+    { id: "23", slug: "sunset-blush", name: "Sunset Blush", category: "wedding", tier: "basic" as const, thumbnail: "https://images.unsplash.com/photo-1519657337289-077653f724ed?w=400&h=600&fit=crop", usageCount: 892, desc: "Tone cam hồng hoàng hôn" },
+    { id: "24", slug: "noir-elegance", name: "Noir Elegance", category: "wedding", tier: "premium" as const, thumbnail: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=400&h=600&fit=crop", usageCount: 356, desc: "Đen trắng sang trọng, luxury" },
 ];
 
 const CATEGORIES = [
     { key: "all", label: "Tất cả" },
-    { key: "wedding", label: "💒 Đám cưới" },
-    { key: "birthday", label: "🎂 Sinh nhật" },
-    { key: "graduation", label: "🎓 Tốt nghiệp" },
-    { key: "event", label: "🎉 Sự kiện" },
+    { key: "wedding", label: "Thiệp cưới" },
+    { key: "birthday", label: "Thiệp sinh nhật" },
+    { key: "graduation", label: "Thiệp tốt nghiệp" },
+    { key: "event", label: "Sự kiện" },
 ];
 
-// Mini invitation card preview for modal
-function InvitationCardPreview({ template }: { template: typeof TEMPLATES[0] }) {
-    const patterns: Record<string, string> = {
-        petals: "🌸🌺🌸🌺",
-        stars: "✦ ✧ ✦ ✧",
-        bokeh: "✦ • ✦",
-        waves: "〰〰〰",
-        lace: "✿ ❀ ✿",
-        lines: "— — —",
-        leaves: "🍃 🌿 🍃",
-        confetti: "🎊 🎉 🎊",
-        dots: "• • •",
-    };
+/* ──────────────────
+   TEMPLATE CARD
+   ────────────────── */
+function TemplateCard({
+    template,
+    onPreview,
+}: {
+    template: (typeof TEMPLATES)[0];
+    onPreview: () => void;
+}) {
+    const [hovered, setHovered] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
 
-    const isDark = ["midnight-romance", "modern-minimalist", "royal-navy"].includes(template.slug);
-    const bg = isDark
-        ? `linear-gradient(160deg, ${template.color}cc 0%, #0f0c29 100%)`
-        : `linear-gradient(160deg, ${template.color}18 0%, ${template.color}38 50%, ${template.color}15 100%)`;
-    const textColor = isDark ? "#fff" : "#1f2937";
-    const subColor = isDark ? "rgba(255,255,255,0.6)" : template.color;
+    // Intersection Observer fade-in
+    useEffect(() => {
+        const el = cardRef.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { el.classList.add("card-visible"); obs.unobserve(el); } },
+            { threshold: 0.1 },
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
 
     return (
-        <div style={{
-            background: bg,
-            borderRadius: 16,
-            padding: "28px 20px 20px",
-            textAlign: "center",
-            position: "relative",
-            overflow: "hidden",
-            minHeight: 280,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-        }}>
-            {/* Decorative top pattern */}
-            <div style={{
-                position: "absolute", top: 10, left: 0, right: 0,
-                fontSize: 11, opacity: 0.4, letterSpacing: 6,
-                color: isDark ? "#fff" : template.color,
-            }}>
-                {patterns[template.pattern] || "✦ ✧ ✦"}
-            </div>
+        <div
+            ref={cardRef}
+            className="card-animate"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                borderRadius: 12,
+                overflow: "hidden",
+                position: "relative",
+                cursor: "pointer",
+                background: "#fff",
+                transition: "box-shadow 0.3s ease, transform 0.3s ease",
+                boxShadow: hovered ? "0 8px 30px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
+                transform: hovered ? "translateY(-3px)" : "none",
+            }}
+            onClick={onPreview}
+        >
+            {/* Thumbnail */}
+            <div style={{ position: "relative", paddingBottom: "140%", overflow: "hidden" }}>
+                <img
+                    src={template.thumbnail}
+                    alt={template.name}
+                    loading="lazy"
+                    style={{
+                        position: "absolute", inset: 0,
+                        width: "100%", height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.4s ease",
+                        transform: hovered ? "scale(1.05)" : "scale(1)",
+                    }}
+                />
 
-            {/* Big emoji */}
-            <div style={{ fontSize: 44, marginBottom: 12, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))" }}>
-                {template.emoji}
-            </div>
+                {/* BASIC / PREMIUM Badge */}
+                <span style={{
+                    position: "absolute", top: 8, left: 8, zIndex: 2,
+                    padding: "3px 8px", borderRadius: 4,
+                    fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                    background: template.tier === "premium" ? "#9333EA" : "#3B82F6",
+                    color: "#fff",
+                }}>
+                    {template.tier === "premium" ? "PREMIUM" : "BASIC"}
+                </span>
 
-            <p style={{ fontSize: 9, letterSpacing: 5, color: subColor, margin: "0 0 10px", textTransform: "uppercase", opacity: 0.8 }}>
-                {template.category === "wedding" ? "WE ARE GETTING MARRIED" : template.category === "birthday" ? "HAPPY BIRTHDAY" : "YOU ARE INVITED"}
-            </p>
-            <h2 style={{ fontSize: 22, fontWeight: 300, color: textColor, fontStyle: "italic", margin: "0 0 6px", fontFamily: "'Georgia', serif" }}>
-                Nguyễn Văn
-            </h2>
-            <p style={{ fontSize: 16, color: subColor, margin: "0 0 6px" }}>&amp;</p>
-            <h2 style={{ fontSize: 22, fontWeight: 300, color: textColor, fontStyle: "italic", margin: "0 0 16px", fontFamily: "'Georgia', serif" }}>
-                Trần Thị Mai
-            </h2>
+                {/* Hover Overlay — cinelove style */}
+                {hovered && (
+                    <div style={{
+                        position: "absolute", inset: 0, zIndex: 3,
+                        background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%)",
+                        display: "flex", flexDirection: "column",
+                        alignItems: "center", justifyContent: "flex-end",
+                        padding: "16px 12px",
+                        animation: "fadeIn 0.15s ease",
+                    }}>
+                        {/* Top-right: heart + views */}
+                        <div style={{
+                            position: "absolute", top: 8, right: 8,
+                            display: "flex", gap: 8, alignItems: "center",
+                        }}>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); /* TODO: save to favorites */ }}
+                                style={{
+                                    width: 30, height: 30, borderRadius: "50%",
+                                    background: "rgba(255,255,255,0.9)", border: "none",
+                                    cursor: "pointer", display: "flex",
+                                    alignItems: "center", justifyContent: "center",
+                                    fontSize: 14,
+                                }}
+                                title="Yêu thích"
+                            >
+                                ♡
+                            </button>
+                            <span style={{
+                                fontSize: 11, color: "#fff",
+                                background: "rgba(0,0,0,0.45)",
+                                padding: "3px 8px", borderRadius: 10,
+                                fontWeight: 500,
+                            }}>
+                                {template.usageCount.toLocaleString()}
+                            </span>
+                        </div>
 
-            <div style={{
-                borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : template.color + "30"}`,
-                paddingTop: 12,
-                width: "100%",
-            }}>
-                <p style={{ fontSize: 11, color: subColor, margin: "0 0 2px", letterSpacing: 1 }}>15 · 06 · 2026</p>
-                <p style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.5)" : "#6b7280", margin: 0 }}>Diamond Palace, TP.HCM</p>
-            </div>
-
-            {/* Bottom decorative pattern */}
-            <div style={{
-                position: "absolute", bottom: 10, left: 0, right: 0,
-                fontSize: 11, opacity: 0.4, letterSpacing: 6,
-                color: isDark ? "#fff" : template.color,
-            }}>
-                {patterns[template.pattern] || "✦ ✧ ✦"}
+                        {/* Center: "Xem mẫu" button */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                            style={{
+                                padding: "10px 24px", borderRadius: 8,
+                                background: "#fff", border: "none",
+                                fontSize: 13, fontWeight: 600, color: "#1f2937",
+                                cursor: "pointer", marginBottom: 4,
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            }}
+                        >
+                            Xem mẫu
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
-// Animated confetti rain for modal header
-function ConfettiRain({ color }: { color: string }) {
-    const [dots] = useState(() =>
-        Array.from({ length: 12 }, (_, i) => ({
-            left: `${(i * 8.5) % 100}%`,
-            delay: `${(i * 0.15) % 1.5}s`,
-            dur: `${1.8 + (i % 4) * 0.3}s`,
-            size: 4 + (i % 3) * 2,
-        }))
-    );
+/* ──────────────────
+   PREVIEW MODAL
+   ────────────────── */
+function PreviewModal({
+    template,
+    onClose,
+}: {
+    template: (typeof TEMPLATES)[0];
+    onClose: () => void;
+}) {
+    // Keyboard close
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [onClose]);
+
     return (
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-            {dots.map((d, i) => (
-                <div key={i} style={{
-                    position: "absolute",
-                    top: "-10px",
-                    left: d.left,
-                    width: d.size,
-                    height: d.size,
-                    borderRadius: "50%",
-                    background: color,
-                    opacity: 0.5,
-                    animation: `confettiFall ${d.dur} ${d.delay} linear infinite`,
-                }} />
-            ))}
-            <style>{`
-                @keyframes confettiFall {
-                    0% { transform: translateY(-10px) rotate(0deg); opacity: 0.6; }
-                    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-                }
-            `}</style>
+        <div
+            onClick={onClose}
+            style={{
+                position: "fixed", inset: 0,
+                background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
+                zIndex: 50, display: "flex",
+                alignItems: "center", justifyContent: "center",
+                padding: 24,
+                animation: "fadeIn 0.2s ease",
+            }}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    background: "#fff", borderRadius: 20,
+                    width: "100%", maxWidth: 420,
+                    maxHeight: "90vh",
+                    overflow: "hidden",
+                    boxShadow: "0 32px 64px rgba(0,0,0,0.3)",
+                    animation: "slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+                    display: "flex", flexDirection: "column",
+                }}
+            >
+                {/* Preview Image */}
+                <div style={{ position: "relative", width: "100%", paddingBottom: "140%", flexShrink: 0 }}>
+                    <img
+                        src={template.thumbnail}
+                        alt={template.name}
+                        style={{
+                            position: "absolute", inset: 0,
+                            width: "100%", height: "100%",
+                            objectFit: "cover",
+                        }}
+                    />
+                    {/* Close button */}
+                    <button
+                        onClick={onClose}
+                        style={{
+                            position: "absolute", top: 12, right: 12,
+                            width: 32, height: 32, borderRadius: "50%",
+                            background: "rgba(0,0,0,0.5)", border: "none",
+                            color: "#fff", fontSize: 16, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                        }}
+                    >
+                        ✕
+                    </button>
+
+                    {/* Badge */}
+                    <span style={{
+                        position: "absolute", top: 12, left: 12,
+                        padding: "4px 10px", borderRadius: 6,
+                        fontSize: 11, fontWeight: 700,
+                        background: template.tier === "premium" ? "#9333EA" : "#3B82F6",
+                        color: "#fff",
+                    }}>
+                        {template.tier === "premium" ? "PREMIUM" : "BASIC"}
+                    </span>
+                </div>
+
+                {/* Info + Actions */}
+                <div style={{ padding: "16px 20px 20px" }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1f2937", margin: "0 0 4px" }}>
+                        {template.name}
+                    </h2>
+                    <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 16px", lineHeight: 1.4 }}>
+                        {template.desc}
+                    </p>
+
+                    <div style={{ display: "flex", gap: 10 }}>
+                        <Link
+                            href={`/editor/new?template=${template.slug}`}
+                            style={{
+                                flex: 1, padding: "12px 0", borderRadius: 10,
+                                background: "#EF7E90",
+                                color: "#fff", fontSize: 14, fontWeight: 700,
+                                textAlign: "center", textDecoration: "none",
+                                display: "block",
+                            }}
+                        >
+                            Dùng thử
+                        </Link>
+                        <Link
+                            href={`/i/preview/${template.slug}`}
+                            style={{
+                                flex: 1, padding: "12px 0", borderRadius: 10,
+                                border: "1px solid #e5e7eb", background: "#fff",
+                                color: "#374151", fontSize: 14, fontWeight: 600,
+                                textAlign: "center", textDecoration: "none",
+                                display: "block",
+                            }}
+                        >
+                            Xem trực tiếp
+                        </Link>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
 
+/* ──────────────────
+   MAIN PAGE
+   ────────────────── */
 export default function TemplatesPage() {
     const [activeCategory, setActiveCategory] = useState("all");
     const [activeTier, setActiveTier] = useState<"all" | "basic" | "premium">("all");
     const [previewTemplate, setPreviewTemplate] = useState<(typeof TEMPLATES)[0] | null>(null);
-    const [search, setSearch] = useState("");
-    const [hovered, setHovered] = useState<string | null>(null);
-
-    // Keyboard close
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewTemplate(null); };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, []);
 
     const filtered = TEMPLATES.filter((t) => {
         if (activeCategory !== "all" && t.category !== activeCategory) return false;
         if (activeTier !== "all" && t.tier !== activeTier) return false;
-        if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.desc.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f4f5f7", fontFamily: "'Inter', -apple-system, sans-serif" }}>
-            {/* ── Header ── */}
-            <div style={{ background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)", padding: "48px 0 40px" }}>
-                <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-                    <Link href="/dashboard" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-                        ← Về Dashboard
+        <div style={{ minHeight: "100vh", background: "#f8f9fb", fontFamily: "'Inter', -apple-system, sans-serif" }}>
+            {/* ── Navbar ── */}
+            <nav style={{
+                background: "#fff",
+                borderBottom: "1px solid #eee",
+                padding: "12px 24px",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                position: "sticky", top: 0, zIndex: 40,
+            }}>
+                <Link href="/" style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    textDecoration: "none", color: "#EF7E90",
+                    fontSize: 20, fontWeight: 700,
+                }}>
+                    <span style={{ fontSize: 24 }}>💌</span> 7app
+                </Link>
+                <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+                    <Link href="/" style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Trang chủ</Link>
+                    <Link href="/templates" style={{ fontSize: 13, color: "#EF7E90", fontWeight: 600, textDecoration: "none" }}>Mẫu thiệp</Link>
+                    <Link href="/blog" style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Blog</Link>
+                    <Link href="/dashboard" style={{
+                        padding: "8px 18px", borderRadius: 8,
+                        background: "#EF7E90", color: "#fff",
+                        fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    }}>
+                        Tạo thiệp
                     </Link>
-                    <h1 style={{ fontSize: 34, fontWeight: 700, color: "#fff", margin: "0 0 6px" }}>
-                        ✨ Bộ sưu tập mẫu thiệp
-                    </h1>
-                    <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "0 0 24px" }}>
-                        {filtered.length} mẫu đẹp — chọn 1 click để tạo ngay
+                </div>
+            </nav>
+
+            {/* ── Page Header ── */}
+            <div style={{
+                textAlign: "center",
+                padding: "48px 24px 32px",
+                background: "#fff",
+                borderBottom: "1px solid #f0f0f0",
+            }}>
+                <h1 style={{
+                    fontSize: 32, fontWeight: 700, color: "#1f2937",
+                    margin: "0 0 8px",
+                }}>
+                    Mẫu thiệp online đẹp
+                </h1>
+                <p style={{
+                    fontSize: 15, color: "#6b7280",
+                    margin: "0 0 24px", maxWidth: 500, marginInline: "auto",
+                }}>
+                    Khám phá bộ sưu tập mẫu thiệp điện tử đa dạng: cưới, sinh nhật, sự kiện, kỷ niệm từ 7app
+                </p>
+
+                {/* Category Pills + Tier Filter */}
+                <div style={{
+                    display: "flex", gap: 8, justifyContent: "center",
+                    flexWrap: "wrap", marginBottom: 12,
+                }}>
+                    {CATEGORIES.map((cat) => (
+                        <button key={cat.key} onClick={() => setActiveCategory(cat.key)} style={{
+                            padding: "8px 18px", borderRadius: 20,
+                            border: "1px solid " + (activeCategory === cat.key ? "#EF7E90" : "#e5e7eb"),
+                            fontSize: 13, fontWeight: activeCategory === cat.key ? 600 : 400,
+                            cursor: "pointer",
+                            background: activeCategory === cat.key ? "#EF7E90" : "#fff",
+                            color: activeCategory === cat.key ? "#fff" : "#4b5563",
+                            transition: "all 0.2s",
+                        }}>
+                            {cat.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Breadcrumb + Tier filter row */}
+                <div style={{
+                    maxWidth: 1200, margin: "0 auto", padding: "0 24px",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                }}>
+                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
+                        ☆ Trang chủ / Mẫu thiệp
                     </p>
-
-                    {/* Search */}
-                    <div style={{ position: "relative", maxWidth: 380, marginBottom: 20 }}>
-                        <input
-                            placeholder="🔍 Tìm theo tên, phong cách..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            style={{
-                                width: "100%", padding: "10px 16px", borderRadius: 12,
-                                border: "1px solid rgba(255,255,255,0.15)",
-                                background: "rgba(255,255,255,0.1)", color: "#fff",
-                                fontSize: 13, outline: "none", boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
-
-                    {/* Category Tabs */}
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {CATEGORIES.map((cat) => (
-                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} style={{
-                                padding: "8px 18px", borderRadius: 20, border: "none", fontSize: 13, fontWeight: 500,
-                                cursor: "pointer", transition: "all 0.2s",
-                                background: activeCategory === cat.key ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.07)",
-                                color: activeCategory === cat.key ? "#fff" : "rgba(255,255,255,0.6)",
-                                backdropFilter: "blur(10px)",
-                            }}>
-                                {cat.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Tier Filter */}
-                    <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                        {(["all", "basic", "premium"] as const).map((tier) => (
-                            <button key={tier} onClick={() => setActiveTier(tier)} style={{
-                                padding: "6px 14px", borderRadius: 8,
-                                border: activeTier === tier ? "1px solid rgba(192,132,252,0.5)" : "1px solid rgba(255,255,255,0.1)",
-                                fontSize: 12, fontWeight: 500, cursor: "pointer",
-                                background: activeTier === tier ? "rgba(192,132,252,0.15)" : "transparent",
-                                color: activeTier === tier ? "#c084fc" : "rgba(255,255,255,0.5)",
-                            }}>
-                                {tier === "all" ? "Tất cả" : tier === "basic" ? "BASIC" : "⭐ PREMIUM"}
-                            </button>
-                        ))}
-                    </div>
+                    <select
+                        value={activeTier}
+                        onChange={(e) => setActiveTier(e.target.value as "all" | "basic" | "premium")}
+                        style={{
+                            padding: "6px 12px", borderRadius: 8,
+                            border: "1px solid #e5e7eb", fontSize: 12,
+                            color: "#6b7280", background: "#fff",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <option value="all">Tất cả gói</option>
+                        <option value="basic">BASIC</option>
+                        <option value="premium">PREMIUM</option>
+                    </select>
                 </div>
             </div>
 
-            {/* ── Template Grid ── */}
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+            {/* ── Template Grid (6-col desktop) ── */}
+            <div style={{ maxWidth: 1320, margin: "0 auto", padding: "24px 16px 60px" }}>
                 {filtered.length === 0 && (
                     <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af" }}>
                         <p style={{ fontSize: 48, margin: "0 0 12px" }}>🔍</p>
                         <p style={{ fontSize: 16 }}>Không tìm thấy mẫu phù hợp</p>
                     </div>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
-                    {filtered.map((template) => {
-                        const isHov = hovered === template.id;
-                        const isDark = ["midnight-romance", "modern-minimalist", "royal-navy"].includes(template.slug);
-                        return (
-                            <div
-                                key={template.id}
-                                onClick={() => setPreviewTemplate(template)}
-                                onMouseEnter={() => setHovered(template.id)}
-                                onMouseLeave={() => setHovered(null)}
-                                style={{
-                                    background: "#fff", borderRadius: 20,
-                                    overflow: "hidden", border: "1px solid #e8e8ec",
-                                    cursor: "pointer",
-                                    transform: isHov ? "translateY(-4px) scale(1.01)" : "none",
-                                    boxShadow: isHov ? `0 16px 40px ${template.color}30` : "0 1px 3px rgba(0,0,0,0.06)",
-                                    transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
-                                }}
-                            >
-                                {/* Thumbnail */}
-                                <div style={{
-                                    height: 190,
-                                    background: isDark
-                                        ? `linear-gradient(135deg, ${template.color}cc 0%, #0f0c29 100%)`
-                                        : `linear-gradient(135deg, ${template.color}18, ${template.color}45)`,
-                                    display: "flex", flexDirection: "column",
-                                    alignItems: "center", justifyContent: "center",
-                                    position: "relative", gap: 8,
-                                }}>
-                                    <div style={{ fontSize: 52, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))" }}>
-                                        {template.emoji}
-                                    </div>
-                                    <div style={{
-                                        fontSize: 9, letterSpacing: 4, fontWeight: 500,
-                                        color: isDark ? "rgba(255,255,255,0.6)" : template.color,
-                                        textTransform: "uppercase",
-                                    }}>
-                                        {template.category === "wedding" ? "WEDDING" : template.category === "birthday" ? "BIRTHDAY" : template.category.toUpperCase()}
-                                    </div>
-
-                                    {/* Tier Badge */}
-                                    <span style={{
-                                        position: "absolute", top: 12, right: 12,
-                                        padding: "3px 10px", borderRadius: 6,
-                                        fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
-                                        background: template.tier === "premium" ? "linear-gradient(135deg, #f59e0b, #f97316)" : "#e5e7eb",
-                                        color: template.tier === "premium" ? "#fff" : "#6b7280",
-                                    }}>
-                                        {template.tier === "premium" ? "⭐ PREMIUM" : "BASIC"}
-                                    </span>
-
-                                    {/* Hover: preview button */}
-                                    {isHov && (
-                                        <div style={{
-                                            position: "absolute", inset: 0,
-                                            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)",
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                            borderRadius: 0,
-                                            animation: "fadeIn 0.15s ease",
-                                        }}>
-                                            <div style={{
-                                                padding: "10px 20px", borderRadius: 24,
-                                                background: "rgba(255,255,255,0.95)",
-                                                fontSize: 13, fontWeight: 700, color: "#1f2937",
-                                            }}>
-                                                👁 Xem trước
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Info */}
-                                <div style={{ padding: 16 }}>
-                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                                        <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0 }}>
-                                            {template.name}
-                                        </h3>
-                                        <div style={{
-                                            width: 8, height: 8, borderRadius: "50%",
-                                            background: template.color, flexShrink: 0,
-                                        }} />
-                                    </div>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 8px", lineHeight: 1.4 }}>
-                                        {template.desc}
-                                    </p>
-                                    <p style={{ fontSize: 11, color: "#c4b5fd", margin: 0 }}>
-                                        {template.usageCount.toLocaleString()} lượt dùng
-                                    </p>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="templates-grid" style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(6, 1fr)",
+                    gap: 14,
+                }}>
+                    {filtered.map((template) => (
+                        <TemplateCard
+                            key={template.id}
+                            template={template}
+                            onPreview={() => setPreviewTemplate(template)}
+                        />
+                    ))}
                 </div>
             </div>
 
+            {/* ── Footer ── */}
+            <footer style={{
+                borderTop: "1px solid #eee", background: "#fff",
+                padding: "24px", textAlign: "center",
+            }}>
+                <p style={{ fontSize: 13, color: "#9ca3af", margin: 0 }}>
+                    © 2026 7app.online — Thiệp mời trực tuyến đẹp nhất Việt Nam
+                </p>
+            </footer>
+
             {/* ── Preview Modal ── */}
             {previewTemplate && (
-                <div
-                    onClick={() => setPreviewTemplate(null)}
-                    style={{
-                        position: "fixed", inset: 0,
-                        background: "rgba(0,0,0,0.7)", backdropFilter: "blur(10px)",
-                        zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-                        animation: "fadeIn 0.2s ease",
-                    }}
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            background: "#fff", borderRadius: 28,
-                            width: "100%", maxWidth: 500,
-                            overflow: "hidden",
-                            boxShadow: "0 40px 80px rgba(0,0,0,0.35)",
-                            animation: "slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1)",
-                        }}
-                    >
-                        {/* Card Preview */}
-                        <div style={{ position: "relative", padding: "20px 20px 0" }}>
-                            <ConfettiRain color={previewTemplate.color} />
-                            <InvitationCardPreview template={previewTemplate} />
-                        </div>
-
-                        {/* Details */}
-                        <div style={{ padding: "20px 24px 24px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                                <span style={{ fontSize: 28 }}>{previewTemplate.emoji}</span>
-                                <div>
-                                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1f2937", margin: 0 }}>
-                                        {previewTemplate.name}
-                                    </h2>
-                                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>{previewTemplate.desc}</p>
-                                </div>
-                                <span style={{
-                                    marginLeft: "auto", padding: "4px 12px", borderRadius: 8,
-                                    fontSize: 11, fontWeight: 700,
-                                    background: previewTemplate.tier === "premium" ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#f3f4f6",
-                                    color: previewTemplate.tier === "premium" ? "#fff" : "#6b7280",
-                                }}>
-                                    {previewTemplate.tier === "premium" ? "⭐ PREMIUM" : "BASIC"}
-                                </span>
-                            </div>
-
-                            <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 20px" }}>
-                                {previewTemplate.usageCount.toLocaleString()} người đã sử dụng mẫu này
-                            </p>
-
-                            {/* Actions */}
-                            <div style={{ display: "flex", gap: 10 }}>
-                                <Link
-                                    href={`/editor/new?template=${previewTemplate.slug}`}
-                                    style={{
-                                        flex: 1, padding: "14px 20px", borderRadius: 16,
-                                        background: `linear-gradient(135deg, ${previewTemplate.color}, ${previewTemplate.color}cc)`,
-                                        color: "#fff", fontSize: 15, fontWeight: 700,
-                                        textAlign: "center", textDecoration: "none",
-                                        boxShadow: `0 6px 20px ${previewTemplate.color}40`,
-                                        display: "block",
-                                    }}
-                                >
-                                    ✨ Dùng mẫu này
-                                </Link>
-                                <button
-                                    onClick={() => setPreviewTemplate(null)}
-                                    style={{
-                                        padding: "14px 18px", borderRadius: 16,
-                                        border: "1px solid #e5e7eb", background: "#fff",
-                                        color: "#6b7280", fontSize: 13, cursor: "pointer",
-                                    }}
-                                >
-                                    Đóng
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PreviewModal
+                    template={previewTemplate}
+                    onClose={() => setPreviewTemplate(null)}
+                />
             )}
 
+            {/* ── CSS Animations + Responsive ── */}
             <style>{`
                 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-                @keyframes slideUp { from { opacity:0; transform: translateY(20px) scale(0.96) } to { opacity:1; transform: translateY(0) scale(1) } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.97) } to { opacity: 1; transform: translateY(0) scale(1) } }
+
+                .card-animate {
+                    opacity: 0;
+                    transform: translateY(24px);
+                    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
+                }
+                .card-visible {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                }
+
+                /* Responsive grid */
+                @media (max-width: 1200px) {
+                    div[style*="grid-template-columns: repeat(6"] {
+                        /* handled via style override below */
+                    }
+                }
+            `}</style>
+
+            {/* Responsive override via <style> for grid columns */}
+            <style>{`
+                @media (max-width: 480px) {
+                    .templates-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+                    nav { padding: 10px 16px !important; }
+                    nav > div:last-child > a:not(:last-child) { display: none !important; }
+                }
+                @media (min-width: 481px) and (max-width: 768px) {
+                    .templates-grid { grid-template-columns: repeat(3, 1fr) !important; }
+                }
+                @media (min-width: 769px) and (max-width: 1024px) {
+                    .templates-grid { grid-template-columns: repeat(4, 1fr) !important; }
+                }
             `}</style>
         </div>
     );
