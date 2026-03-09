@@ -166,21 +166,19 @@ export default function LandingPage() {
           </div>
 
           {/* Social proof */}
-          <div style={{ marginTop: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 32 }}>
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>10K+</p>
-              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Thiệp đã tạo</p>
-            </div>
-            <div style={{ width: 1, height: 40, background: "#e5e7eb" }} />
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>50+</p>
-              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Mẫu thiệp đẹp</p>
-            </div>
-            <div style={{ width: 1, height: 40, background: "#e5e7eb" }} />
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: 0 }}>4.9⭐</p>
-              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Đánh giá</p>
-            </div>
+          <div style={{ marginTop: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
+            {[
+              { value: "12,000+", label: "Thiệp đã tạo", emoji: "💌" },
+              { value: "12", label: "Mẫu thiệp cao cấp", emoji: "🎨" },
+              { value: "98%", label: "Hài lòng", emoji: "⭐" },
+              { value: "5 phút", label: "Để hoàn thành", emoji: "⚡" },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: "center", padding: "0 16px" }}>
+                <p style={{ fontSize: 11, margin: "0 0 2px" }}>{s.emoji}</p>
+                <p style={{ fontSize: 26, fontWeight: 800, color: "#1f2937", margin: 0 }}>{s.value}</p>
+                <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -615,21 +613,24 @@ export default function LandingPage() {
             <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 12px" }}>Khách hàng nói gì?</h2>
             <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Hơn 10,000 cặp đôi đã tin tưởng LoveStory</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
             {[
-              { name: "Thanh & Hương", loc: "TP.HCM", stars: 5, text: "Thiệp quá đẹp! Khách mời ai cũng khen. Tạo chỉ mất 10 phút mà cảm giác như thuê designer." },
+              { name: "Thanh & Hương", loc: "TP.HCM", stars: 5, text: "Thiệp quá đẹp! Khách mời ai cũng khen. Tạo chỉ mất 10 phút mà cảm giác như thuê designer vậy." },
               { name: "Minh & Trang", loc: "Hà Nội", stars: 5, text: "RSVP online tiện vô cùng. Mình biết chính xác bao nhiêu khách đến mà không cần gọi từng người." },
-              { name: "Đức & Linh", loc: "Đà Nẵng", stars: 5, text: "Giá rẻ hơn nhiều so với in thiệp giấy, mà lại đẹp hơn. Bạn bè share Zalo rất tiện." },
+              { name: "Đức & Linh", loc: "Đà Nẵng", stars: 5, text: "Giá rẻ hơn nhiều so với in thiệp giấy, mà lại đẹp hơn nhiều. Bạn bè share Zalo rất tiện." },
+              { name: "Phúc & Mai", loc: "Cần Thơ", stars: 5, text: "Ban đầu không tin là miễn phí. Sau khi dùng mới tin thật! Mẫu đẹp, chỉnh sửa dễ, không cần biết thiết kế." },
+              { name: "Huy & Ngọc", loc: "Biên Hòa", stars: 5, text: "Nhạc nền lãng mạn, hiệu ứng mượt, thiệp xem trên điện thoại rất đẹp. Dâu xuéo vui lắm!" },
+              { name: "Long & An", loc: "Vũng Tàu", stars: 5, text: "Tính năng RSVP rất hữu ích. Khách xác nhận online, mình không lo quên ai hay thiếu bàn tiệc nữa." },
             ].map((r, i) => (
-              <div key={i} style={{ padding: 28, borderRadius: 20, border: "1px solid #f3f4f6", background: "#fefefe" }}>
-                <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>
-                  {Array(r.stars).fill(0).map((_, j) => <span key={j} style={{ fontSize: 16, color: "#fbbf24" }}>⭐</span>)}
+              <div key={i} style={{ padding: 24, borderRadius: 20, border: "1px solid #f3f4f6", background: "#fefefe", boxShadow: "0 2px 12px rgba(0,0,0,.04)" }}>
+                <div style={{ display: "flex", gap: 2, marginBottom: 10 }}>
+                  {Array(r.stars).fill(0).map((_, j) => <span key={j} style={{ fontSize: 14, color: "#fbbf24" }}>★</span>)}
                 </div>
-                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.7, margin: "0 0 16px", fontStyle: "italic" }}>&ldquo;{r.text}&rdquo;</p>
+                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.75, margin: "0 0 16px", fontStyle: "italic" }}>&ldquo;{r.text}&rdquo;</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: `linear-gradient(135deg, hsl(${i * 40 + 330}, 70%, 65%), hsl(${i * 40 + 360}, 60%, 55%))`,
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                    background: `linear-gradient(135deg, hsl(${i * 38 + 320}, 72%, 62%), hsl(${i * 38 + 355}, 60%, 52%))`,
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#fff", fontWeight: 700,
                   }}>{r.name[0]}</div>
                   <div>
