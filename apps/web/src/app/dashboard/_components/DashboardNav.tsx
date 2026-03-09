@@ -67,6 +67,7 @@ export function DashboardNav() {
 
             <NavGroup label="TÀI KHOẢN">
                 <NavItem href="/dashboard/profile" icon="👤" label="Thông tin cá nhân" />
+                <NavItem href="/dashboard/referral" icon="🎁" label="Giới thiệu bạn bè" />
             </NavGroup>
         </nav>
     );
