@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Dancing_Script, Playfair_Display, Lora } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/client";
@@ -9,6 +9,29 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "vietnamese"],
+});
+
+const dancingScript = Dancing_Script({
+  variable: "--font-dancing",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -61,7 +84,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.variable} antialiased`} style={{ margin: 0 }}>
+      <body className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} antialiased`} style={{ margin: 0 }}>
         <TRPCProvider>{children}</TRPCProvider>
       </body>
     </html>
