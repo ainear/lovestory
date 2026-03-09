@@ -68,6 +68,95 @@ const TEMPLATE_CANVAS_PRESETS: Record<string, {
             { type: "text", text: "🌸 ❀ 🌸", x: 20, y: 365, width: 350, height: 40, fontSize: 22, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#ec4899", textAlign: "center", lineHeight: 1.4 },
         ],
     },
+    // ── Sprint 9: 8 New Templates ──
+    "ocean-breeze": {
+        bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)",
+        elements: [
+            { type: "text" as const, text: "🌊 ～ 🌊", x: 20, y: 60, width: 350, height: 40, fontSize: 22, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#0e7490", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Trân trọng kính mời", x: 20, y: 115, width: 350, height: 36, fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#155e75", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#0c4a6e", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026  ·  10:00 sáng", x: 20, y: 248, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#0e7490", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#374151", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "～ 🌊 ～", x: 20, y: 365, width: 350, height: 40, fontSize: 22, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#0e7490", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "forest-green": {
+        bg: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 100%)",
+        elements: [
+            { type: "text" as const, text: "🌿 ✦ 🌿", x: 20, y: 60, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#15803d", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Trân trọng kính mời", x: 20, y: 115, width: 350, height: 36, fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#166534", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#14532d", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026  ·  10:00 sáng", x: 20, y: 248, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#15803d", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#374151", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "✦ 🌿 ✦", x: 20, y: 365, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#15803d", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "lavender-dream": {
+        bg: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 30%, #e9d5ff 100%)",
+        elements: [
+            { type: "text" as const, text: "✿ 💜 ✿", x: 20, y: 60, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#7c3aed", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Trân trọng kính mời", x: 20, y: 115, width: 350, height: 36, fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#6d28d9", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#4c1d95", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026  ·  10:00 sáng", x: 20, y: 248, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#7c3aed", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#374151", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "💜 ✿ 💜", x: 20, y: 365, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#7c3aed", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "red-passion": {
+        bg: "linear-gradient(180deg, #fff1f2 0%, #ffe4e6 30%, #fecdd3 100%)",
+        elements: [
+            { type: "text" as const, text: "❤ ✦ ❤", x: 20, y: 60, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#dc2626", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Trân trọng kính mời", x: 20, y: 115, width: 350, height: 36, fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#b91c1c", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#7f1d1d", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026  ·  10:00 sáng", x: 20, y: 248, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#b91c1c", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#374151", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "✦ ❤ ✦", x: 20, y: 365, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#dc2626", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "vintage-ivory": {
+        bg: "linear-gradient(180deg, #fefce8 0%, #fef9c3 30%, #fef08a 100%)",
+        elements: [
+            { type: "text" as const, text: "❧ ⁕ ❧", x: 20, y: 60, width: 350, height: 40, fontSize: 22, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#92400e", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "~ Thiệp Mời Cưới ~", x: 20, y: 110, width: 350, height: 36, fontSize: 14, fontFamily: "'Cormorant Garamond', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#78350f", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 158, width: 350, height: 70, fontSize: 34, fontFamily: "'Playfair Display', serif", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#44403c", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "Ngày 28 tháng 05 năm 2026", x: 20, y: 243, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#92400e", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace, Tp. Hồ Chí Minh", x: 20, y: 300, width: 350, height: 40, fontSize: 14, fontFamily: "'Lora', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#57534e", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "⁕ ❧ ⁕", x: 20, y: 360, width: 350, height: 40, fontSize: 22, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#92400e", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "modern-black": {
+        bg: "linear-gradient(180deg, #111827 0%, #1f2937 50%, #111827 100%)",
+        elements: [
+            { type: "text" as const, text: "— ◆ —", x: 20, y: 70, width: 350, height: 40, fontSize: 18, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#f59e0b", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "WEDDING INVITATION", x: 20, y: 118, width: 350, height: 36, fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#d1d5db", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Playfair Display', serif", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#f9fafb", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026", x: 20, y: 248, width: 350, height: 44, fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#f59e0b", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "10:00 AM  |  Diamond Palace, TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 13, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#9ca3af", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "— ◆ —", x: 20, y: 365, width: 350, height: 40, fontSize: 18, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#f59e0b", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "sunset-coral": {
+        bg: "linear-gradient(180deg, #fff7ed 0%, #fed7aa 40%, #fdba74 100%)",
+        elements: [
+            { type: "text" as const, text: "🌅 ~ 🌅", x: 20, y: 60, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#c2410c", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Trân trọng kính mời", x: 20, y: 115, width: 350, height: 36, fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const, color: "#9a3412", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 163, width: 350, height: 70, fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#7c2d12", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "28 · 05 · 2026  ·  10:00 sáng", x: 20, y: 248, width: 350, height: 44, fontSize: 18, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#c2410c", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP.HCM", x: 20, y: 305, width: 350, height: 40, fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#374151", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "~ 🌅 ~", x: 20, y: 365, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#c2410c", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
+    "pearl-white": {
+        bg: "linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)",
+        elements: [
+            { type: "text" as const, text: "◇ ◈ ◇", x: 20, y: 60, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#64748b", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "THIỆP MỜI CƯỚI", x: 20, y: 113, width: 350, height: 36, fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#94a3b8", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Tên Chú Rể & Tên Cô Dâu", x: 20, y: 158, width: 350, height: 70, fontSize: 36, fontFamily: "'Playfair Display', serif", fontWeight: "bold" as const, fontStyle: "italic" as const, color: "#1e293b", textAlign: "center" as const, lineHeight: 1.3 },
+            { type: "text" as const, text: "∙ 28 · 05 · 2026 ∙", x: 20, y: 243, width: 350, height: 44, fontSize: 20, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const, color: "#475569", textAlign: "center" as const, lineHeight: 1.4 },
+            { type: "text" as const, text: "Diamond Palace  •  TP. Hồ Chí Minh", x: 20, y: 300, width: 350, height: 40, fontSize: 13, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#64748b", textAlign: "center" as const, lineHeight: 1.5 },
+            { type: "text" as const, text: "◈ ◇ ◈", x: 20, y: 360, width: 350, height: 40, fontSize: 20, fontFamily: "'Georgia', serif", fontWeight: "normal" as const, fontStyle: "normal" as const, color: "#64748b", textAlign: "center" as const, lineHeight: 1.4 },
+        ],
+    },
 };
 
 // Default template for any unknown slug

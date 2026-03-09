@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
 // GET /api/guests/export?projectId=xxx
-// Downloads RSVPs + guests as CSV
+// Downloads RSVP responses as CSV — Sprint 8: updated to rsvp_responses table
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
@@ -21,50 +21,57 @@ export async function GET(request: NextRequest) {
     // Verify ownership
     const { data: project } = await supabase
         .from("projects")
-        .select("id, groom_name, bride_name, slug")
+        .select("id, title, slug")
         .eq("id", projectId)
         .eq("user_id", user.id)
         .maybeSingle();
 
     if (!project) {
-        return new Response("Not found", { status: 404 });
+        return new Response("Not found or unauthorized", { status: 404 });
     }
 
-    // Fetch RSVPs
+    // Fetch RSVP responses (new table schema: Sprint 8)
     const { data: rsvps } = await supabase
-        .from("rsvps")
-        .select("guest_name, status, guest_count, phone, created_at")
+        .from("rsvp_responses")
+        .select("guest_name, attending, guest_count, note, created_at")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
 
-    // Fetch guest list
+    // Fetch traditional guest list if table exists
     const { data: guests } = await supabase
         .from("guests")
         .select("name, email, phone, status, created_at")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
 
-    // Build CSV
+    // Build CSV with BOM for Vietnamese text in Excel
+    const BOM = "\uFEFF";
     const rows: string[] = [
-        "Loại,Tên khách,Email,Điện thoại,Trạng thái,Số người,Ngày",
+        "Loại,Tên khách,Email,Điện thoại,Tham dự,Số người,Lời nhắn,Ngày",
     ];
 
-    // Add RSVP rows
+    // RSVP rows
     for (const r of rsvps || []) {
-        const statusLabel = r.status === "confirmed" ? "Tham dự" : r.status === "declined" ? "Vắng mặt" : "Có thể";
+        const attending = r.attending ? "Tham dự" : "Không đến";
+        const count = r.attending ? (r.guest_count || 1) : 0;
         const date = new Date(r.created_at).toLocaleDateString("vi-VN");
-        rows.push(`RSVP,"${r.guest_name}",,${r.phone || ""},${statusLabel},${r.guest_count || 1},${date}`);
+        const note = (r.note || "").replace(/"/g, '""');
+        rows.push(`RSVP,"${r.guest_name}",,,"${attending}",${count},"${note}",${date}`);
     }
 
-    // Add guest list rows
+    // Old guest list rows (if any)
     for (const g of guests || []) {
         const statusLabel = g.status === "confirmed" ? "Tham dự" : g.status === "declined" ? "Vắng mặt" : "Mời";
         const date = new Date(g.created_at).toLocaleDateString("vi-VN");
-        rows.push(`Danh sách mời,"${g.name}",${g.email || ""},${g.phone || ""},${statusLabel},,${date}`);
+        rows.push(`Danh sách mời,"${g.name}",${g.email || ""},${g.phone || ""},"${statusLabel}",,, ${date}`);
     }
 
-    const csv = rows.join("\n");
-    const filename = `danh-sach-khach-${project.slug || projectId}.csv`;
+    if (rows.length === 1) {
+        rows.push("(Chưa có dữ liệu)");
+    }
+
+    const csv = BOM + rows.join("\n");
+    const filename = `rsvp-${project.slug || projectId}.csv`;
 
     return new Response(csv, {
         headers: {
