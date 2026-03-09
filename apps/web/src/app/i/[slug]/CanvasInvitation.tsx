@@ -1,39 +1,25 @@
 "use client";
 
 /**
- * CanvasInvitation — renders a canvas_json blob as a scrollable, public invitation.
- * This is the output view from the Visual Canvas Editor.
- * Elements are rendered with position:absolute inside a 390px-wide card, full-height.
+ * CanvasInvitation — renders canvas_json as a public invitation.
+ * Sprint 8: + music autoplay float button, + RSVP form below canvas card.
  */
 
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 export interface CanvasElementData {
     id: string;
     type: "text" | "image" | "sticker" | "shape";
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    rotation: number;
-    opacity: number;
-    zIndex: number;
-    locked: boolean;
+    x: number; y: number;
+    width: number; height: number;
+    rotation: number; opacity: number;
+    zIndex: number; locked: boolean;
     props: {
-        // text
-        text?: string;
-        fontSize?: number;
-        fontFamily?: string;
-        color?: string;
-        textAlign?: "left" | "center" | "right";
-        fontWeight?: "normal" | "bold";
-        fontStyle?: "normal" | "italic";
-        lineHeight?: number;
-        // image
-        src?: string;
-        objectFit?: "cover" | "contain";
-        borderRadius?: number;
-        opacity?: number;
+        text?: string; fontSize?: number; fontFamily?: string;
+        color?: string; textAlign?: "left" | "center" | "right";
+        fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; lineHeight?: number;
+        src?: string; objectFit?: "cover" | "contain"; borderRadius?: number; opacity?: number;
     };
 }
 
@@ -41,23 +27,75 @@ export interface CanvasData {
     version: number;
     canvas: { width: number; height: number; bg: string };
     elements: CanvasElementData[];
+    meta?: { musicUrl?: string; musicName?: string };
 }
 
 interface CanvasInvitationProps {
     canvasJson: string;
     guestName?: string;
+    projectId?: string;
 }
 
 function parseCanvasJson(raw: string): CanvasData | null {
-    try {
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
+    try { return JSON.parse(raw); } catch { return null; }
 }
 
-export function CanvasInvitation({ canvasJson, guestName }: CanvasInvitationProps) {
+export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInvitationProps) {
     const data = useMemo(() => parseCanvasJson(canvasJson), [canvasJson]);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [rsvpName, setRsvpName] = useState(guestName || "");
+    const [rsvpAttend, setRsvpAttend] = useState<"yes" | "no" | null>(null);
+    const [rsvpGuests, setRsvpGuests] = useState("1");
+    const [rsvpNote, setRsvpNote] = useState("");
+    const [rsvpSent, setRsvpSent] = useState(false);
+    const [rsvpSending, setRsvpSending] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+
+    const musicUrl = data?.meta?.musicUrl || "";
+    const musicName = data?.meta?.musicName || "";
+
+    const toggleMusic = useCallback(() => {
+        if (!musicUrl) return;
+        if (audioRef.current) {
+            if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+            else { audioRef.current.play().catch(() => { }); setIsPlaying(true); }
+        } else {
+            audioRef.current = new Audio(musicUrl);
+            audioRef.current.loop = true;
+            audioRef.current.play().catch(() => { });
+            setIsPlaying(true);
+        }
+    }, [musicUrl, isPlaying]);
+
+    const handleRSVP = useCallback(async () => {
+        if (!rsvpName.trim() || !rsvpAttend) return;
+        setRsvpSending(true);
+        try {
+            await supabase.from("rsvp_responses").insert({
+                project_id: projectId,
+                guest_name: rsvpName.trim(),
+                attending: rsvpAttend === "yes",
+                guest_count: parseInt(rsvpGuests) || 1,
+                note: rsvpNote.trim() || null,
+            });
+            setRsvpSent(true);
+        } catch {
+            alert("Không thể gửi RSVP. Vui lòng thử lại.");
+        }
+        setRsvpSending(false);
+    }, [rsvpName, rsvpAttend, rsvpGuests, rsvpNote, projectId, supabase]);
+
+    const copyLink = useCallback(() => {
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }, []);
 
     if (!data) return null;
 
@@ -67,30 +105,25 @@ export function CanvasInvitation({ canvasJson, guestName }: CanvasInvitationProp
 
     return (
         <div style={{
-            minHeight: "100vh",
-            background: "#f3f4f6",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "24px 0 48px",
+            minHeight: "100vh", background: "#f3f4f6",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            padding: "24px 16px 64px",
         }}>
-            {/* Google Fonts preload */}
+            {/* Google Fonts */}
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@400;600;700&display=swap');
+                @keyframes spin { to { transform: rotate(360deg) } }
+                @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .6 } }
+                @keyframes bounce { 0%,100% { transform: scale(1) } 50% { transform: scale(1.1) } }
             `}</style>
 
             {/* Guest name banner */}
             {guestName && (
                 <div style={{
-                    marginBottom: 16,
-                    background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                    color: "#fff",
-                    padding: "8px 24px",
-                    borderRadius: 24,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif",
-                    boxShadow: "0 4px 12px rgba(255,107,157,0.35)",
+                    marginBottom: 16, background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                    color: "#fff", padding: "8px 24px", borderRadius: 24,
+                    fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                    boxShadow: "0 4px 12px rgba(255,107,157,.35)",
                 }}>
                     💌 Kính gửi: {guestName}
                 </div>
@@ -98,91 +131,67 @@ export function CanvasInvitation({ canvasJson, guestName }: CanvasInvitationProp
 
             {/* Canvas card */}
             <div style={{
-                position: "relative",
-                width: CARD_WIDTH,
-                minHeight: canvas.height,
-                background: canvas.bg,
-                boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
-                borderRadius: 8,
-                overflow: "visible",
+                position: "relative", width: "min(390px, 100%)", minHeight: canvas.height,
+                background: canvas.bg, boxShadow: "0 8px 40px rgba(0,0,0,.15)",
+                borderRadius: 8, overflow: "visible",
             }}>
                 {sorted.map((el) => {
                     if (el.type === "text") {
                         const p = el.props;
                         return (
-                            <div
-                                key={el.id}
-                                style={{
-                                    position: "absolute",
-                                    left: el.x,
-                                    top: el.y,
-                                    width: el.width,
-                                    minHeight: el.height,
-                                    zIndex: el.zIndex,
-                                    opacity: el.opacity,
-                                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-                                    fontSize: p.fontSize ?? 24,
-                                    fontFamily: p.fontFamily ?? "serif",
-                                    color: p.color ?? "#1f2937",
-                                    textAlign: p.textAlign ?? "center",
-                                    fontWeight: p.fontWeight ?? "normal",
-                                    fontStyle: p.fontStyle ?? "normal",
-                                    lineHeight: p.lineHeight ?? 1.4,
-                                    padding: "2px 4px",
-                                    whiteSpace: "pre-wrap",
-                                    wordBreak: "break-word",
-                                    boxSizing: "border-box",
-                                    pointerEvents: "none",
-                                    userSelect: "none",
-                                }}
-                            >
+                            <div key={el.id} style={{
+                                position: "absolute", left: el.x, top: el.y,
+                                width: el.width, minHeight: el.height,
+                                zIndex: el.zIndex, opacity: el.opacity,
+                                transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                                fontSize: p.fontSize ?? 24, fontFamily: p.fontFamily ?? "serif",
+                                color: p.color ?? "#1f2937", textAlign: p.textAlign ?? "center",
+                                fontWeight: p.fontWeight ?? "normal", fontStyle: p.fontStyle ?? "normal",
+                                lineHeight: p.lineHeight ?? 1.4, padding: "2px 4px",
+                                whiteSpace: "pre-wrap", wordBreak: "break-word",
+                                boxSizing: "border-box", pointerEvents: "none", userSelect: "none",
+                            }}>
                                 {p.text ?? ""}
                             </div>
                         );
                     }
-
                     if (el.type === "image") {
                         const p = el.props;
                         if (!p.src) return null;
                         return (
-                            <div
-                                key={el.id}
-                                style={{
-                                    position: "absolute",
-                                    left: el.x,
-                                    top: el.y,
-                                    width: el.width,
-                                    height: el.height,
-                                    zIndex: el.zIndex,
-                                    borderRadius: p.borderRadius ?? 12,
-                                    overflow: "hidden",
-                                    opacity: p.opacity ?? el.opacity,
-                                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-                                }}
-                            >
+                            <div key={el.id} style={{
+                                position: "absolute", left: el.x, top: el.y,
+                                width: el.width, height: el.height, zIndex: el.zIndex,
+                                borderRadius: p.borderRadius ?? 12, overflow: "hidden",
+                                opacity: p.opacity ?? el.opacity,
+                                transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                            }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={p.src}
-                                    alt=""
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: p.objectFit ?? "cover",
-                                        display: "block",
-                                    }}
-                                />
+                                <img src={p.src} alt="" style={{ width: "100%", height: "100%", objectFit: p.objectFit ?? "cover", display: "block" }} />
                             </div>
                         );
                     }
-
                     return null;
                 })}
+
+                {/* Floating music button on card */}
+                {musicUrl && (
+                    <button onClick={toggleMusic} title={musicName} style={{
+                        position: "absolute", bottom: 16, right: 16, zIndex: 999,
+                        width: 44, height: 44, borderRadius: "50%", border: "none",
+                        background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                        color: "#fff", fontSize: 20, cursor: "pointer",
+                        boxShadow: "0 4px 16px rgba(255,107,157,.45)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        animation: isPlaying ? "pulse 1.5s ease-in-out infinite" : undefined,
+                    }}>
+                        {isPlaying ? "⏸" : "🎵"}
+                    </button>
+                )}
             </div>
 
-            {/* Bottom share bar */}
-            <div style={{
-                marginTop: 24, display: "flex", gap: 12, alignItems: "center",
-            }}>
+            {/* Share bar */}
+            <div style={{ marginTop: 24, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
                 <button
                     onClick={() => navigator.share?.({ url: window.location.href })}
                     style={{
@@ -191,23 +200,132 @@ export function CanvasInvitation({ canvasJson, guestName }: CanvasInvitationProp
                         border: "none", color: "#fff", fontSize: 14,
                         fontWeight: 600, cursor: "pointer",
                         display: "flex", alignItems: "center", gap: 8,
-                        fontFamily: "'Inter', sans-serif",
-                        boxShadow: "0 4px 12px rgba(255,107,157,0.3)",
+                        fontFamily: "'Inter', sans-serif", boxShadow: "0 4px 12px rgba(255,107,157,.3)",
                     }}
                 >
                     💌 Chia sẻ thiệp
                 </button>
-                <button
-                    onClick={() => { navigator.clipboard.writeText(window.location.href); }}
-                    style={{
-                        padding: "10px 16px", borderRadius: 12,
-                        background: "#fff", border: "1px solid #e5e7eb",
-                        color: "#374151", fontSize: 14, cursor: "pointer",
-                        fontFamily: "'Inter', sans-serif",
-                    }}
-                >
-                    🔗 Sao chép link
+                <button onClick={copyLink} style={{
+                    padding: "10px 16px", borderRadius: 12,
+                    background: copied ? "#ecfdf5" : "#fff",
+                    border: "1px solid " + (copied ? "#6ee7b7" : "#e5e7eb"),
+                    color: copied ? "#059669" : "#374151", fontSize: 14, cursor: "pointer",
+                    fontFamily: "'Inter', sans-serif", fontWeight: copied ? 600 : 400,
+                }}>
+                    {copied ? "✅ Đã copy!" : "🔗 Sao chép link"}
                 </button>
+            </div>
+
+            {/* RSVP Section */}
+            <div style={{
+                width: "min(390px, 100%)", marginTop: 32,
+                background: "#fff", borderRadius: 16,
+                boxShadow: "0 4px 20px rgba(0,0,0,.07)",
+                padding: 24, fontFamily: "'Inter', sans-serif",
+            }}>
+                {rsvpSent ? (
+                    <div style={{ textAlign: "center", padding: "24px 0" }}>
+                        <p style={{ fontSize: 40, margin: "0 0 12px" }}>🎉</p>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: "#1f2937" }}>Cảm ơn bạn!</p>
+                        <p style={{ fontSize: 14, color: "#6b7280", margin: "8px 0 0" }}>
+                            Chúng tôi rất mong được gặp{" "}
+                            <strong>{rsvpAttend === "yes" ? "bạn" : "nhưng hiểu vì bạn bận"}</strong> 💕
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: "#1f2937", margin: "0 0 4px" }}>
+                            📝 Xác nhận tham dự (RSVP)
+                        </p>
+                        <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 20px" }}>
+                            Vui lòng xác nhận để chúng tôi chuẩn bị tốt nhất cho tiệc cưới.
+                        </p>
+
+                        {/* Name */}
+                        <div style={{ marginBottom: 14 }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                                Họ và tên *
+                            </label>
+                            <input
+                                value={rsvpName} onChange={e => setRsvpName(e.target.value)}
+                                placeholder="Ví dụ: Nguyễn Văn A"
+                                style={{
+                                    width: "100%", padding: "10px 12px", borderRadius: 10,
+                                    border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
+                                    boxSizing: "border-box",
+                                }}
+                            />
+                        </div>
+
+                        {/* Attend */}
+                        <div style={{ marginBottom: 14 }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 8 }}>
+                                Bạn có tham dự không? *
+                            </label>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                {(["yes", "no"] as const).map(a => (
+                                    <button key={a} onClick={() => setRsvpAttend(a)} style={{
+                                        flex: 1, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600,
+                                        border: "2px solid " + (rsvpAttend === a ? (a === "yes" ? "#ff6b9d" : "#9ca3af") : "#e5e7eb"),
+                                        background: rsvpAttend === a ? (a === "yes" ? "#fdf2f8" : "#f9fafb") : "#fff",
+                                        color: rsvpAttend === a ? (a === "yes" ? "#be185d" : "#374151") : "#6b7280",
+                                        cursor: "pointer",
+                                    }}>
+                                        {a === "yes" ? "💕 Sẽ tham dự" : "😔 Không thể đến"}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Guest count */}
+                        {rsvpAttend === "yes" && (
+                            <div style={{ marginBottom: 14 }}>
+                                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                                    Số người tham dự (bao gồm bạn)
+                                </label>
+                                <select
+                                    value={rsvpGuests} onChange={e => setRsvpGuests(e.target.value)}
+                                    style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 14 }}
+                                >
+                                    {["1", "2", "3", "4", "5+"].map(n => <option key={n}>{n}</option>)}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Note */}
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                                Lời nhắn (tuỳ chọn)
+                            </label>
+                            <textarea
+                                value={rsvpNote} onChange={e => setRsvpNote(e.target.value)}
+                                placeholder="Gửi lời chúc mừng đến cặp đôi..."
+                                rows={3}
+                                style={{
+                                    width: "100%", padding: "10px 12px", borderRadius: 10,
+                                    border: "1px solid #e5e7eb", fontSize: 14, resize: "vertical",
+                                    outline: "none", fontFamily: "'Inter', sans-serif", boxSizing: "border-box",
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleRSVP} disabled={rsvpSending || !rsvpName.trim() || !rsvpAttend}
+                            style={{
+                                width: "100%", padding: "14px 0", borderRadius: 12,
+                                background: (!rsvpName.trim() || !rsvpAttend)
+                                    ? "#e5e7eb"
+                                    : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                border: "none", color: (!rsvpName.trim() || !rsvpAttend) ? "#9ca3af" : "#fff",
+                                fontSize: 15, fontWeight: 700, cursor: (!rsvpName.trim() || !rsvpAttend) ? "not-allowed" : "pointer",
+                                fontFamily: "'Inter', sans-serif",
+                                boxShadow: (!rsvpName.trim() || !rsvpAttend) ? "none" : "0 4px 16px rgba(255,107,157,.35)",
+                            }}
+                        >
+                            {rsvpSending ? "⏳ Đang gửi..." : "💌 Xác nhận tham dự"}
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );

@@ -760,6 +760,22 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     ))}
                                 </div>
                             </div>
+                            {/* Rotation — P2a */}
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 6 }}>
+                                    Xoay: {selectedEl.rotation ?? 0}°
+                                </label>
+                                <input type="range" min={-180} max={180}
+                                    value={selectedEl.rotation ?? 0}
+                                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: Number(e.target.value) } })}
+                                    style={{ width: "100%" }}
+                                />
+                                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: 0 } })} style={{
+                                    marginTop: 4, width: "100%", padding: "5px 0", borderRadius: 6,
+                                    border: "1px solid #e5e7eb", background: "#f9fafb",
+                                    cursor: "pointer", fontSize: 11, color: "#6b7280",
+                                }}>Reset 0°</button>
+                            </div>
                             {/* Replace image button */}
                             <button
                                 onClick={() => fileInputRef.current?.click()}

@@ -1260,7 +1260,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
     // Sprint 7: Canvas editor mode — render from canvas_json
     if (canvasJson) {
-        return <CanvasInvitation canvasJson={canvasJson} guestName={guestName || undefined} />;
+        return <CanvasInvitation canvasJson={canvasJson} guestName={guestName || undefined} projectId={projectId || undefined} />;
     }
 
     if (!projectId) {
