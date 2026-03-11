@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CanvasElement, Action } from "./useCanvasReducer";
 import { TextElement } from "./elements/TextElement";
 import { ImageElement } from "./elements/ImageElement";
@@ -21,16 +21,38 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
     const canvasW = width * scale;
     const canvasH = height * scale;
 
+    // editingId: which text element is currently in inline-edit mode
+    const [editingId, setEditingId] = useState<string | null>(null);
+
+    // Stop editing when selection changes to a different element or clears
+    useEffect(() => {
+        if (editingId && editingId !== selectedId) {
+            setEditingId(null);
+        }
+    }, [selectedId, editingId]);
+
     const handleCanvasClick = useCallback(() => {
+        setEditingId(null);
         dispatch({ type: "SELECT", id: null });
     }, [dispatch]);
+
+    const handleDoubleClick = useCallback((id: string, type: string) => {
+        if (type === "text") {
+            setEditingId(id);
+        }
+    }, []);
 
     // Keyboard shortcuts
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            // Catch only if canvas is focused, not inside an input
+            // Don't intercept if inline editing is active
+            if (editingId) return;
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
 
+            if (e.key === "Escape") {
+                setEditingId(null);
+                return;
+            }
             if (e.key === "Delete" || e.key === "Backspace") {
                 if (selectedId) dispatch({ type: "DELETE_ELEMENT", id: selectedId });
             }
@@ -59,7 +81,7 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, [selectedId, elements, dispatch]);
+    }, [selectedId, elements, dispatch, editingId]);
 
     const selectedEl = elements.find(e => e.id === selectedId) ?? null;
 
@@ -93,7 +115,10 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
                             element={el}
                             zoom={zoom}
                             isSelected={el.id === selectedId}
+                            isEditing={el.id === editingId}
                             onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                            onDoubleClick={() => handleDoubleClick(el.id, "text")}
+                            onFinishEditing={() => setEditingId(null)}
                             onUpdateText={(id, text) => dispatch({
                                 type: "UPDATE_ELEMENT", id,
                                 changes: { props: { ...el.props, text } },
@@ -116,8 +141,8 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
                 return null;
             })}
 
-            {/* Selection overlay (rendered on top of all elements) */}
-            {selectedEl && (
+            {/* Selection overlay — hidden while text is being inline-edited */}
+            {selectedEl && !editingId && (
                 <SelectionBox
                     element={selectedEl}
                     zoom={zoom}
@@ -127,6 +152,7 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
                     onDuplicate={(id) => dispatch({ type: "DUPLICATE", id })}
                     onBringForward={(id) => dispatch({ type: "BRING_FORWARD", id })}
                     onSendBackward={(id) => dispatch({ type: "SEND_BACKWARD", id })}
+                    onDoubleClick={() => handleDoubleClick(selectedEl.id, selectedEl.type)}
                 />
             )}
         </div>

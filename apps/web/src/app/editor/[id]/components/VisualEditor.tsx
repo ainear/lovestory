@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, ChevronsUp, ChevronsDown, Copy, Trash2 } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, ChevronsUp, ChevronsDown, Copy, Trash2, ChevronDown } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
+import { FontPickerModal, SYSTEM_FONTS } from "./FontPickerModal";
+import { QuickImageBar } from "./QuickImageBar";
 
 // ── Sidebar tab map ──
 const TABS = [
@@ -116,6 +118,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [musicName, setMusicName] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [showFontPicker, setShowFontPicker] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const supabase = createBrowserClient(
@@ -239,6 +242,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const selectedEl = state.elements.find(e => e.id === state.selectedId) ?? null;
 
     return (
+        <>
         <div style={{
             display: "flex", flexDirection: "column", height: "100vh",
             background: "#f0f0f0", fontFamily: "'Inter', -apple-system, sans-serif",
@@ -682,7 +686,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     overflow: "auto", padding: 32,
                     background: "#e5e7eb",
                 }}>
-                    <div style={{ position: "relative" }}>
+                    <div style={{ position: "relative", paddingBottom: 68 }}>
                         <Canvas
                             width={state.width}
                             height={state.height}
@@ -691,6 +695,18 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             selectedId={state.selectedId}
                             zoom={state.zoom}
                             dispatch={dispatch}
+                        />
+                        <QuickImageBar
+                            elements={state.elements}
+                            selectedId={state.selectedId}
+                            onSelectElement={(id) => dispatch({ type: "SELECT", id })}
+                            onReplaceImage={(id, src) => {
+                                const el = state.elements.find(e => e.id === id);
+                                if (el) dispatch({ type: "UPDATE_ELEMENT", id, changes: { props: { ...el.props, src } } });
+                            }}
+                            onAddImage={(src) => {
+                                addImage(src);
+                            }}
                         />
                     </div>
                 </div>
@@ -826,34 +842,25 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     ))}
                                 </div>
 
-                                {/* ── Font Family ── */}
+                                {/* ── Font Family (Modal Picker) ── */}
                                 <div>
                                     <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Font chữ</label>
-                                    <select
-                                        value={p.fontFamily ?? "'Dancing Script', cursive"}
-                                        onChange={e => upd({ fontFamily: e.target.value })}
-                                        style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, outline: "none", background: "#fff" }}
+                                    <button
+                                        onClick={() => setShowFontPicker(true)}
+                                        style={{
+                                            width: "100%", padding: "9px 12px",
+                                            borderRadius: 8, border: "1px solid #e5e7eb",
+                                            background: "#fff", cursor: "pointer",
+                                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                                            fontFamily: p.fontFamily ?? "'Dancing Script', cursive",
+                                            fontSize: 15, color: "#374151",
+                                        }}
                                     >
-                                        {[
-                                            ["'Dancing Script', cursive", "Dancing Script ✍️"],
-                                            ["'Playfair Display', serif", "Playfair Display 📜"],
-                                            ["'Cormorant Garamond', serif", "Cormorant Garamond"],
-                                            ["'Lora', serif", "Lora"],
-                                            ["'EB Garamond', serif", "EB Garamond"],
-                                            ["'Inter', sans-serif", "Inter 🔤"],
-                                            ["'Roboto', sans-serif", "Roboto"],
-                                            ["'Montserrat', sans-serif", "Montserrat"],
-                                            ["'Nunito', sans-serif", "Nunito"],
-                                            ["'Poppins', sans-serif", "Poppins"],
-                                            ["'Great Vibes', cursive", "Great Vibes ✨"],
-                                            ["'Pacifico', cursive", "Pacifico"],
-                                            ["'Sacramento', cursive", "Sacramento"],
-                                            ["'Satisfy', cursive", "Satisfy"],
-                                            ["Georgia, serif", "Georgia (System)"],
-                                        ].map(([val, label]) => (
-                                            <option key={val} value={val}>{label}</option>
-                                        ))}
-                                    </select>
+                                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            {(p.fontFamily ?? "Dancing Script").replace(/["']/g, "").split(",")[0].trim()}
+                                        </span>
+                                        <ChevronDown size={13} color="#9ca3af" />
+                                    </button>
                                 </div>
 
                                 {/* ── Font Size stepper ── */}
@@ -1234,5 +1241,54 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 </div>
             </div>
         </div>
+
+        {/* Font Picker Modal */}
+        {showFontPicker && selectedEl?.type === "text" && (() => {
+            const fp = selectedEl.props;
+            return (
+                <FontPickerModal
+                    currentFont={fp.fontFamily ?? "'Dancing Script', cursive"}
+                    onSelect={(fontName) => {
+                        const found = SYSTEM_FONTS.find(f => f.name === fontName);
+                        let fontFamily = `'${fontName}', serif`;
+                        if (found?.category === "Script") fontFamily = `'${fontName}', cursive`;
+                        else if (found?.category === "Sans-serif") fontFamily = `'${fontName}', sans-serif`;
+                        dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...fp, fontFamily } } });
+                        setShowFontPicker(false);
+                    }}
+                    onClose={() => setShowFontPicker(false)}
+                />
+            );
+        })()}
+        </>
+    );
+
+    // -- IIFE to render FontPickerModal outside right panel but inside return
+    // (Cannot use fragment easily here, so we render conditionally below)
+}
+
+// Font Picker is rendered as a sibling via the parent page component
+// This helper is exported to be used there
+export function FontPickerPortal({ selectedEl, dispatch, show, onClose }: {
+    selectedEl: CanvasElement | null;
+    dispatch: (a: {type: string; id: string; changes: Partial<CanvasElement>}) => void;
+    show: boolean;
+    onClose: () => void;
+}) {
+    if (!show || selectedEl?.type !== "text") return null;
+    const fp = selectedEl.props;
+    return (
+        <FontPickerModal
+            currentFont={fp.fontFamily ?? "'Dancing Script', cursive"}
+            onSelect={(fontName) => {
+                const found = SYSTEM_FONTS.find(f => f.name === fontName);
+                let fontFamily = `'${fontName}', serif`;
+                if (found?.category === "Script") fontFamily = `'${fontName}', cursive`;
+                else if (found?.category === "Sans-serif") fontFamily = `'${fontName}', sans-serif`;
+                dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...fp, fontFamily } } });
+                onClose();
+            }}
+            onClose={onClose}
+        />
     );
 }
