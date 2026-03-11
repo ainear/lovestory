@@ -10,10 +10,20 @@ export interface TextProps {
     fontSize: number;
     fontFamily: string;
     color: string;
-    textAlign: "left" | "center" | "right";
+    backgroundColor: string; // text background/highlight color
+    textAlign: "left" | "center" | "right" | "justify";
     fontWeight: "normal" | "bold";
     fontStyle: "normal" | "italic";
+    textDecoration: "none" | "underline" | "line-through";
     lineHeight: number;
+    letterSpacing: number; // px
+    textShadow: {
+        active: boolean;
+        color: string;
+        blur: number;
+        x: number;
+        y: number;
+    };
 }
 
 export interface ImageProps {
@@ -21,6 +31,18 @@ export interface ImageProps {
     objectFit: "cover" | "contain";
     borderRadius: number;
     opacity: number;
+    filter?: string; // CSS filter string
+    borderWidth: number;
+    borderColor: string;
+    // image filters
+    brightness: number; // 0-200
+    contrast: number;   // 0-200
+    saturation: number; // 0-200
+}
+
+export interface ElementAnimation {
+    entrance: "none" | "fadeIn" | "slideUp" | "zoomIn" | "bounceIn";
+    loop: "none" | "pulse" | "float" | "shake";
 }
 
 export interface CanvasElement {
@@ -34,8 +56,11 @@ export interface CanvasElement {
     opacity: number;
     zIndex: number;
     locked: boolean;
+    animation?: ElementAnimation;
     props: Partial<TextProps & ImageProps>;
 }
+
+export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
 
 export interface CanvasState {
     width: number;
@@ -46,6 +71,7 @@ export interface CanvasState {
     zoom: number;
     past: CanvasElement[][];
     future: CanvasElement[][];
+    particleEffect: ParticleEffect;
 }
 
 const MAX_HISTORY = 50;
@@ -65,7 +91,8 @@ export type Action =
     | { type: "LOAD"; elements: CanvasElement[]; background: string }
     | { type: "BRING_FORWARD"; id: string }
     | { type: "SEND_BACKWARD"; id: string }
-    | { type: "DUPLICATE"; id: string };
+    | { type: "DUPLICATE"; id: string }
+    | { type: "SET_PARTICLE_EFFECT"; effect: ParticleEffect };
 
 function snapshot(elements: CanvasElement[]): CanvasElement[] {
     return JSON.parse(JSON.stringify(elements));
@@ -111,6 +138,8 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             return { ...withHistory(state, state.elements), background: action.background };
         case "SET_ZOOM":
             return { ...state, zoom: action.zoom };
+        case "SET_PARTICLE_EFFECT":
+            return { ...state, particleEffect: action.effect };
         case "LOAD":
             return { ...state, elements: action.elements, background: action.background, past: [], future: [], selectedId: null };
         case "BRING_FORWARD": {
@@ -164,6 +193,7 @@ export const initialCanvasState: CanvasState = {
     zoom: 75,
     past: [],
     future: [],
+    particleEffect: "none",
 };
 
 // ── Hook ──

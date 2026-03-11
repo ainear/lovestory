@@ -48,6 +48,23 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
         }
     }, []);
 
+    // Build textShadow CSS
+    const shadow = p.textShadow;
+    const textShadowCss = shadow?.active
+        ? `${shadow.x ?? 2}px ${shadow.y ?? 2}px ${shadow.blur ?? 4}px ${shadow.color ?? "rgba(0,0,0,0.4)"}`
+        : undefined;
+
+    // Build animation class
+    const animationStyle: React.CSSProperties = {};
+    const loop = element.animation?.loop;
+    if (loop === "pulse") {
+        animationStyle.animation = "el-pulse 2s ease-in-out infinite";
+    } else if (loop === "float") {
+        animationStyle.animation = "el-float 3s ease-in-out infinite";
+    } else if (loop === "shake") {
+        animationStyle.animation = "el-shake 0.5s ease-in-out infinite";
+    }
+
     return (
         <div
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
@@ -62,6 +79,7 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
                 cursor: editing ? "text" : "pointer",
                 opacity: element.opacity,
                 transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
+                ...animationStyle,
             }}
         >
             <div
@@ -76,17 +94,21 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
                     fontSize: (p.fontSize ?? 24) * scale,
                     fontFamily: p.fontFamily ?? "'Dancing Script', cursive",
                     color: p.color ?? "#831843",
+                    backgroundColor: p.backgroundColor ?? "transparent",
                     textAlign: p.textAlign ?? "center",
                     fontWeight: p.fontWeight ?? "normal",
                     fontStyle: p.fontStyle ?? "normal",
+                    textDecoration: p.textDecoration ?? "none",
                     lineHeight: p.lineHeight ?? 1.4,
+                    letterSpacing: p.letterSpacing !== undefined ? `${p.letterSpacing * scale}px` : undefined,
+                    textShadow: textShadowCss,
                     outline: editing ? "1px dashed #3b82f6" : "none",
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                     padding: "2px 4px",
                     borderRadius: 2,
                     boxSizing: "border-box",
-                    background: "transparent",
+                    background: p.backgroundColor ?? "transparent",
                 }}
             >
                 {p.text ?? "Nhấn để chỉnh sửa"}

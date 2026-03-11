@@ -11,11 +11,11 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(req: NextRequest) {
     try {
-        // Verify SePay webhook (optional: check API key header)
+        // H1 fix: secret is REQUIRED — reject if env var is missing
         const apiKey = req.headers.get("Authorization");
         const expectedKey = process.env.SEPAY_WEBHOOK_SECRET;
 
-        if (expectedKey && apiKey !== `Bearer ${expectedKey}`) {
+        if (!expectedKey || apiKey !== `Bearer ${expectedKey}`) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

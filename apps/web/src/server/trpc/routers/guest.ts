@@ -66,7 +66,7 @@ export const guestRouter = router({
             if (!rl.allowed) throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
 
             const { data, error } = await ctx.supabase
-                .from("rsvps")
+                .from("rsvp_responses")
                 .insert({
                     project_id: input.projectId,
                     guest_name: sanitize(input.guestName, 100),
@@ -96,7 +96,7 @@ export const guestRouter = router({
             if (!project) throw new Error("Project not found");
 
             const { data } = await ctx.supabase
-                .from("rsvps")
+                .from("rsvp_responses")
                 .select("*")
                 .eq("project_id", input.projectId)
                 .order("created_at", { ascending: false });

@@ -25,7 +25,7 @@ export default function ProjectAnalyticsPage() {
 
             const [projectRes, rsvpRes, wishRes] = await Promise.all([
                 supabase.from("projects").select("*").eq("id", projectId).eq("user_id", user.id).single(),
-                supabase.from("rsvps").select("*").eq("project_id", projectId).order("created_at", { ascending: false }),
+                supabase.from("rsvp_responses").select("*").eq("project_id", projectId).order("created_at", { ascending: false }),
                 supabase.from("wishes").select("*").eq("project_id", projectId).order("created_at", { ascending: false }),
             ]);
 
@@ -45,11 +45,17 @@ export default function ProjectAnalyticsPage() {
         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 18, color: "#6b7280" }}>❌ Không tìm thấy thiệp</div>;
     }
 
-    const attendingCount = rsvps.filter(r => r.status === "attending").length;
-    const maybeCount = rsvps.filter(r => r.status === "maybe").length;
-    const declinedCount = rsvps.filter(r => r.status === "declined").length;
-    const totalGuests = rsvps.filter(r => r.status === "attending").reduce((sum, r) => sum + (r.guest_count || 1), 0);
-    const title = `${project.groom_name || "Chú rể"} & ${project.bride_name || "Cô dâu"}`;
+    const attendingCount = rsvps.filter(r => r.attending === true).length;
+    const maybeCount = rsvps.filter(r => r.attending !== false && r.attending !== true).length;
+    const declinedCount = rsvps.filter(r => r.attending === false).length;
+    const totalGuests = rsvps.filter(r => r.attending === true).reduce((sum, r) => sum + (r.guest_count || 1), 0);
+    const title = project.title || `${project.groom_name || "Chú rể"} & ${project.bride_name || "Cô dâu"}`;
+
+    // Bar chart percentages (CSS-only, no lib)
+    const totalRsvps = rsvps.length || 1;
+    const confirmedPct = Math.round((attendingCount / totalRsvps) * 100);
+    const maybePct = Math.round((maybeCount / totalRsvps) * 100);
+    const declinedPct = Math.round((declinedCount / totalRsvps) * 100);
 
     const stats = [
         { label: "Lượt xem", value: project.view_count || 0, icon: "👁️", color: "#3b82f6", bg: "#eff6ff" },
@@ -106,6 +112,46 @@ export default function ProjectAnalyticsPage() {
                     ))}
                 </div>
 
+
+                {/* RSVP Visual Bar Chart */}
+                {rsvps.length > 0 && (
+                    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f3f4f6', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', padding: '20px 24px', marginBottom: 24 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#1f2937', margin: 0 }}>📊 Phân bổ RSVP</h3>
+                            <span style={{ fontSize: 13, color: '#6b7280' }}>{rsvps.length} phản hồi</span>
+                        </div>
+                        {/* Stacked bar */}
+                        <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', gap: 2, marginBottom: 16 }}>
+                            {confirmedPct > 0 && <div style={{ width: confirmedPct + '%', background: '#10b981', transition: 'width 0.8s ease', borderRadius: '4px 0 0 4px' }} title={'Tham dự: ' + confirmedPct + '%'} />}
+                            {maybePct > 0 && <div style={{ width: maybePct + '%', background: '#f59e0b', transition: 'width 0.8s ease' }} title={'Có thể: ' + maybePct + '%'} />}
+                            {declinedPct > 0 && <div style={{ width: declinedPct + '%', background: '#ef4444', transition: 'width 0.8s ease', borderRadius: '0 4px 4px 0' }} title={'Không: ' + declinedPct + '%'} />}
+                        </div>
+                        {/* Legend */}
+                        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                            {[
+                                { color: '#10b981', label: 'Tham dự', count: attendingCount, pct: confirmedPct },
+                                { color: '#f59e0b', label: 'Có thể', count: maybeCount, pct: maybePct },
+                                { color: '#ef4444', label: 'Không đến', count: declinedCount, pct: declinedPct },
+                            ].filter(l => l.count > 0).map(l => (
+                                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <div style={{ width: 10, height: 10, borderRadius: 2, background: l.color, flexShrink: 0 }} />
+                                    <span style={{ fontSize: 12, color: '#4b5563' }}>{l.label}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: l.color }}>{l.count}</span>
+                                    <span style={{ fontSize: 11, color: '#9ca3af' }}>({l.pct}%)</span>
+                                </div>
+                            ))}
+                        </div>
+                        {/* Conversion rate */}
+                        <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: '#f0fdf4', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 13 }}>🎯</span>
+                            <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>
+                                Tỷ lệ xác nhận: {rsvps.length > 0 ? Math.round((attendingCount / rsvps.length) * 100) : 0}%
+                                {project.view_count > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}> · RSVP/View: {Math.round((rsvps.length / project.view_count) * 100)}%</span>}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 {/* RSVP Table */}
                 <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #f3f4f6", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", marginBottom: 24, overflow: "hidden" }}>
                     <div style={{ padding: "16px 20px", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -126,10 +172,10 @@ export default function ProjectAnalyticsPage() {
                                     <td style={{ padding: "12px 16px" }}>
                                         <span style={{
                                             padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                                            color: r.status === "attending" ? "#10b981" : r.status === "maybe" ? "#f59e0b" : "#ef4444",
-                                            background: r.status === "attending" ? "#ecfdf5" : r.status === "maybe" ? "#fffbeb" : "#fef2f2",
+                                            color: r.attending === true ? "#10b981" : r.attending === false ? "#ef4444" : "#f59e0b",
+                                            background: r.attending === true ? "#ecfdf5" : r.attending === false ? "#fef2f2" : "#fffbeb",
                                         }}>
-                                            {r.status === "attending" ? "✅ Tham dự" : r.status === "maybe" ? "🤔 Có thể" : "❌ Không"}
+                                            {r.attending === true ? "✅ Tham dự" : "❌ Không đến"}
                                         </span>
                                     </td>
                                     <td style={{ padding: "12px 16px", fontSize: 14, color: "#6b7280" }}>{r.guest_count || 1}</td>

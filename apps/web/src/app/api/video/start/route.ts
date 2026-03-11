@@ -73,7 +73,13 @@ export async function POST(req: NextRequest) {
 
         fetch(`${baseUrl}/api/video/generate`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                // B2 fix: S2S auth so C3 guard in /api/video/generate passes
+                ...(process.env.INTERNAL_API_SECRET
+                    ? { "Authorization": `Bearer ${process.env.INTERNAL_API_SECRET}` }
+                    : {}),
+            },
             body: JSON.stringify({
                 videoId: video.id,
                 photoUrls,

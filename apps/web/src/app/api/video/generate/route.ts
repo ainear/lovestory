@@ -40,6 +40,24 @@ interface GenerateRequest {
  * Called by the video tRPC router in fire-and-forget mode.
  */
 export async function POST(req: NextRequest) {
+    // C3 fix: require authentication
+    const authHeader = req.headers.get("Authorization");
+    const internalSecret = process.env.INTERNAL_API_SECRET;
+
+    // Allow internal server-to-server calls (tRPC fire-and-forget) via secret,
+    // OR require a valid Supabase session from the client
+    const isInternal = internalSecret && authHeader === `Bearer ${internalSecret}`;
+
+    if (!isInternal) {
+        // Validate as authenticated browser request
+        const { createClient: createServerClient2 } = await import("@/lib/supabase/server");
+        const supabaseAuth = await createServerClient2();
+        const { data: { user } } = await supabaseAuth.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    }
+
     const body: GenerateRequest = await req.json();
     const { videoId } = body;
 

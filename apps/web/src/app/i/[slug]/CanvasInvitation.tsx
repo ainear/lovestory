@@ -6,7 +6,6 @@
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 
 export interface CanvasElementData {
     id: string;
@@ -20,6 +19,7 @@ export interface CanvasElementData {
         color?: string; textAlign?: "left" | "center" | "right";
         fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; lineHeight?: number;
         src?: string; objectFit?: "cover" | "contain"; borderRadius?: number; opacity?: number;
+        filter?: string; // CSS filter for image presets (M4)
     };
 }
 
@@ -52,11 +52,6 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
     const [rsvpSending, setRsvpSending] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-
     const musicUrl = data?.meta?.musicUrl || "";
     const musicName = data?.meta?.musicName || "";
 
@@ -73,17 +68,27 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
         }
     }, [musicUrl, isPlaying]);
 
+    // C1 fix: route through rate-limited /api/rsvp (not direct DB insert)
     const handleRSVP = useCallback(async () => {
         if (!rsvpName.trim() || !rsvpAttend) return;
         setRsvpSending(true);
         try {
-            await supabase.from("rsvp_responses").insert({
-                project_id: projectId,
-                guest_name: rsvpName.trim(),
-                attending: rsvpAttend === "yes",
-                guest_count: parseInt(rsvpGuests) || 1,
-                note: rsvpNote.trim() || null,
+            const res = await fetch("/api/rsvp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    projectId,
+                    guestName: rsvpName.trim(),
+                    status: rsvpAttend === "yes" ? "confirmed" : "declined",
+                    guestCount: parseInt(rsvpGuests) || 1,
+                }),
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: "Lỗi gửi RSVP" })) as { error?: string };
+                alert(err.error || "Gửi RSVP thất bại, vui lòng thử lại.");
+                setRsvpSending(false);
+                return;
+            }
             setRsvpSent(true);
 
             // Fire-and-forget email notification to project owner
@@ -102,7 +107,7 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
             alert("Không thể gửi RSVP. Vui lòng thử lại.");
         }
         setRsvpSending(false);
-    }, [rsvpName, rsvpAttend, rsvpGuests, rsvpNote, projectId, supabase]);
+    }, [rsvpName, rsvpAttend, rsvpGuests, projectId]);
 
     const copyLink = useCallback(() => {
         navigator.clipboard.writeText(window.location.href);
@@ -176,11 +181,15 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                                 position: "absolute", left: el.x, top: el.y,
                                 width: el.width, height: el.height, zIndex: el.zIndex,
                                 borderRadius: p.borderRadius ?? 12, overflow: "hidden",
-                                opacity: p.opacity ?? el.opacity,
+                                opacity: el.opacity, // M1 fix: use el.opacity (not p.opacity)
                                 transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
                             }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={p.src} alt="" style={{ width: "100%", height: "100%", objectFit: p.objectFit ?? "cover", display: "block" }} />
+                                <img src={p.src} alt="" style={{
+                                    width: "100%", height: "100%",
+                                    objectFit: p.objectFit ?? "cover", display: "block",
+                                    filter: p.filter || undefined, // M4 fix: apply CSS filter preset
+                                }} />
                             </div>
                         );
                     }

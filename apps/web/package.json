@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:security": "playwright test tests/e2e/api-security.spec.ts --reporter=list",
+    "test:auth": "playwright test tests/e2e/auth.spec.ts --reporter=list"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1002.0",
@@ -30,6 +34,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

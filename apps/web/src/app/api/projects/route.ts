@@ -30,7 +30,7 @@ export async function DELETE(request: NextRequest) {
 
         // Delete related data first (RLS handles ownership)
         await supabase.from("wishes").delete().eq("project_id", projectId);
-        await supabase.from("rsvps").delete().eq("project_id", projectId);
+        await supabase.from("rsvp_responses").delete().eq("project_id", projectId);
 
         // Delete project
         const { error } = await supabase.from("projects").delete().eq("id", projectId);

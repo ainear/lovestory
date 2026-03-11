@@ -30,10 +30,20 @@ export default function EditorPage() {
                 router.push("/templates");
                 return;
             }
+
+            // C2 fix: check authentication before fetching
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push("/login");
+                return;
+            }
+
+            // C2 fix: filter by user_id to prevent unauthorized project access
             const { data, error } = await supabase
                 .from("projects")
                 .select("id, slug, canvas_json, title")
                 .eq("id", params.id)
+                .eq("user_id", user.id)  // ← ownership guard
                 .single();
 
             if (error || !data) {

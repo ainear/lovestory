@@ -1312,35 +1312,25 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {/* Confetti */}
             {showConfetti && <ConfettiCanvas />}
 
-            {/* Floating Music Player */}
+            {/* Floating Music Player — Cinelove spinning vinyl style */}
             {data.musicUrl && (
-                <div style={{
-                    position: "fixed", bottom: 24, right: 16, zIndex: 50,
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "rgba(0,0,0,0.75)", backdropFilter: "blur(10px)",
-                    borderRadius: 40, padding: "8px 14px 8px 10px",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-                    maxWidth: 200,
-                }}>
-                    <button
-                        onClick={toggleMusic}
-                        style={{
-                            width: 32, height: 32, borderRadius: "50%", border: "none",
-                            background: theme.buttonGrad, color: "#fff", fontSize: 14,
-                            cursor: "pointer", flexShrink: 0, display: "flex",
-                            alignItems: "center", justifyContent: "center",
-                            animation: isPlaying ? "spin 3s linear infinite" : "none",
-                        }}
-                    >
-                        {isPlaying ? "🎵" : "🔇"}
-                    </button>
-                    <div style={{ overflow: "hidden", flex: 1 }}>
-                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", margin: 0 }}>Nhạc nền</p>
-                        <p style={{ fontSize: 11, color: "#fff", margin: 0, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {data.musicName || "Nhạc cưới"}
-                        </p>
-                    </div>
-                </div>
+                <button
+                    onClick={toggleMusic}
+                    style={{
+                        position: "fixed", top: 20, right: 16, zIndex: 50,
+                        width: 44, height: 44, borderRadius: "50%",
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
+                        color: "#fff", fontSize: 20,
+                        cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        animation: isPlaying ? "spin 3s linear infinite" : "none",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+                    }}
+                    title={isPlaying ? "Tắt nhạc" : "Bật nhạc"}
+                >
+                    {isPlaying ? "🎵" : "🔇"}
+                </button>
             )}
 
             {/* Hero Section — Layout-specific */}
@@ -1600,14 +1590,14 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             {/* RSVP */}
             <ScrollReveal delay={0.1}>
-                <section style={{ padding: "0 24px 24px" }}>
+                <section data-section="rsvp" style={{ padding: "0 24px 24px" }}>
                     <RsvpWidget projectId={projectId} />
                 </section>
             </ScrollReveal>
 
             {/* Wish Wall */}
             <ScrollReveal delay={0.15}>
-                <section style={{ padding: "0 24px 24px" }}>
+                <section data-section="wishes" style={{ padding: "0 24px 24px" }}>
                     <WishWallWidget projectId={projectId} />
                 </section>
             </ScrollReveal>
@@ -1672,6 +1662,47 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {/* Floating Heart button (bottom-right) */}
             {pageSlug && <HeartButton slug={pageSlug} />}
 
+            {/* Sticky Bottom RSVP CTA — Cinelove style */}
+            <div style={{
+                position: "fixed", bottom: 0, left: 0, right: 0,
+                zIndex: 45, maxWidth: 480, margin: "0 auto",
+                padding: "10px 16px",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(12px)",
+                borderTop: "1px solid rgba(0,0,0,0.08)",
+                display: "flex", alignItems: "center", gap: 10,
+            }}>
+                <button
+                    onClick={() => {
+                        const rsvpEl = document.querySelector('[data-section="rsvp"]');
+                        if (rsvpEl) rsvpEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    style={{
+                        flex: 1, padding: "12px 0", borderRadius: 10,
+                        background: theme.buttonGrad,
+                        color: "#fff", fontSize: 14, fontWeight: 700,
+                        border: "none", cursor: "pointer",
+                        boxShadow: `0 4px 16px ${theme.accent}40`,
+                    }}
+                >
+                    Xác nhận tham dự
+                </button>
+                <button
+                    onClick={() => {
+                        const wishEl = document.querySelector('[data-section="wishes"]');
+                        if (wishEl) wishEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    style={{
+                        padding: "12px 16px", borderRadius: 10,
+                        border: "1px solid #e5e7eb", background: "#fff",
+                        color: "#374151", fontSize: 13, fontWeight: 600,
+                        cursor: "pointer",
+                    }}
+                >
+                    Gửi lời chúc
+                </button>
+            </div>
+
 
 
 
@@ -1683,6 +1714,10 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
         }
       `}</style>
         </div>

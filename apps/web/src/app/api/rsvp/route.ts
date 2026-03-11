@@ -29,13 +29,13 @@ export async function POST(req: NextRequest) {
         const supabase = await createClient();
 
         const { data, error } = await supabase
-            .from("rsvps")
+            .from("rsvp_responses")
             .insert({
                 project_id: projectId,
                 guest_name: sanitize(guestName, 100),
-                status: status || "confirmed",
+                attending: status !== "declined", // attending=true for confirmed/maybe, false only for declined
                 guest_count: Math.min(Math.max(1, Number(guestCount) || 1), 50),
-                phone: sanitize(phone || "", 20),
+                note: sanitize(phone || "", 20),
             })
             .select()
             .single();

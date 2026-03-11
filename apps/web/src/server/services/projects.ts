@@ -104,7 +104,7 @@ export async function publishProject(projectId: string, userId: string, groomNam
 export async function getProjectRsvps(projectId: string) {
     const supabase = await createClient();
     const { data } = await supabase
-        .from("rsvps")
+        .from("rsvp_responses")
         .select("*")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
@@ -134,7 +134,7 @@ export async function getProjectGifts(projectId: string) {
 export async function addRsvp(projectId: string, guestName: string, status: string, guestCount: number, phone?: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
-        .from("rsvps")
+        .from("rsvp_responses")
         .insert({ project_id: projectId, guest_name: guestName, status, guest_count: guestCount, phone: phone || "" })
         .select()
         .single();
