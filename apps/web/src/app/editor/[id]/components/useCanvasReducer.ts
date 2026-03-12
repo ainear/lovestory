@@ -24,6 +24,7 @@ export interface TextProps {
         x: number;
         y: number;
     };
+    textTransform: "none" | "uppercase" | "capitalize" | "lowercase";
 }
 
 export interface ImageProps {
@@ -38,6 +39,15 @@ export interface ImageProps {
     brightness: number; // 0-200
     contrast: number;   // 0-200
     saturation: number; // 0-200
+    // border style
+    borderStyle: "solid" | "dashed" | "dotted";
+    // box shadow
+    boxShadow: string;
+    // padding
+    paddingTop: number;
+    paddingRight: number;
+    paddingBottom: number;
+    paddingLeft: number;
 }
 
 export interface ElementAnimation {

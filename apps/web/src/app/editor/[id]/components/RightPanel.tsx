@@ -1,0 +1,631 @@
+"use client";
+
+import { useRef } from "react";
+import {
+    Scissors, ImageIcon, Sparkles, Trash2,
+    ChevronsUp, ChevronsDown, Copy,
+    AlignLeft, AlignCenter, AlignRight, AlignJustify,
+    ChevronDown,
+} from "lucide-react";
+import type { CanvasElement, Action, ParticleEffect } from "./useCanvasReducer";
+import { AccordionSection } from "./AccordionSection";
+import { FontPickerModal, SYSTEM_FONTS } from "./FontPickerModal";
+import { useState } from "react";
+
+// ── Color swatch presets ──
+const COLOR_SWATCHES = [
+    "#831843", "#C2185B", "#E91E63", "#F06292",
+    "#7B1FA2", "#9C27B0", "#3949AB", "#1565C0",
+    "#00695C", "#2E7D32", "#F57F17", "#E65100",
+    "#4E342E", "#37474F", "#fff", "#000",
+];
+
+const SHADOW_PRESETS = [
+    { label: "Nhẹ", value: "0 2px 8px rgba(0,0,0,0.15)" },
+    { label: "Vừa", value: "0 4px 16px rgba(0,0,0,0.25)" },
+    { label: "Đậm", value: "0 8px 32px rgba(0,0,0,0.4)" },
+    { label: "Trong", value: "inset 0 0 20px rgba(0,0,0,0.2)" },
+];
+
+interface RightPanelProps {
+    selectedEl: CanvasElement | null;
+    dispatch: (action: Action) => void;
+    background: string;
+    particleEffect: string;
+    onReplaceImage: () => void;
+    onShowFontPicker: () => void;
+    showFontPicker: boolean;
+    onCloseFontPicker: () => void;
+}
+
+// ── Reusable row label ──
+function Label({ children }: { children: React.ReactNode }) {
+    return (
+        <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5, letterSpacing: 0.3 }}>
+            {children}
+        </label>
+    );
+}
+
+// ── Color picker row ──
+function ColorRow({ value, onChange }: { value: string; onChange: (c: string) => void }) {
+    return (
+        <div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 4, marginBottom: 6 }}>
+                {COLOR_SWATCHES.map(c => (
+                    <button key={c} onClick={() => onChange(c)} style={{
+                        width: "100%", aspectRatio: "1", borderRadius: 4,
+                        background: c, padding: 0, cursor: "pointer",
+                        border: value === c ? "2.5px solid #ff6b9d" : "1.5px solid rgba(0,0,0,0.08)",
+                        boxSizing: "border-box",
+                    }} />
+                ))}
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input type="color" value={value.startsWith("#") ? value : "#ffffff"} onChange={e => onChange(e.target.value)}
+                    style={{ width: 32, height: 28, borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer", padding: 1 }} />
+                <input type="text" value={value} onChange={e => onChange(e.target.value)}
+                    style={{ flex: 1, padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 11, fontFamily: "monospace", outline: "none" }} />
+            </div>
+        </div>
+    );
+}
+
+// ── Action button row (Lên / Xuống / Nhân đôi) ──
+function LayerActions({ el, dispatch }: { el: CanvasElement; dispatch: (a: Action) => void }) {
+    return (
+        <div style={{ display: "flex", gap: 5, marginBottom: 4 }}>
+            {[
+                { icon: <ChevronsUp size={12} />, action: () => dispatch({ type: "BRING_FORWARD", id: el.id }), title: "Lên trên" },
+                { icon: <ChevronsDown size={12} />, action: () => dispatch({ type: "SEND_BACKWARD", id: el.id }), title: "Xuống dưới" },
+                { icon: <Copy size={12} />, action: () => dispatch({ type: "DUPLICATE", id: el.id }), title: "Nhân đôi" },
+                { icon: <Trash2 size={12} />, action: () => dispatch({ type: "DELETE_ELEMENT", id: el.id }), title: "Xóa", danger: true },
+            ].map((btn, i) => (
+                <button key={i} title={btn.title} onClick={btn.action} style={{
+                    flex: 1, padding: "6px 2px", borderRadius: 7, cursor: "pointer", fontSize: 10,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    border: "1px solid " + ((btn as { danger?: boolean }).danger ? "#fecdd3" : "#e5e7eb"),
+                    background: (btn as { danger?: boolean }).danger ? "#fff1f2" : "#fff",
+                    color: (btn as { danger?: boolean }).danger ? "#e11d48" : "#374151",
+                }}>
+                    {btn.icon}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+// ══════════════════════════════════════════
+// IMAGE PANEL
+// ══════════════════════════════════════════
+function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispatch: (a: Action) => void; onReplaceImage: () => void }) {
+    const p = el.props;
+    const upd = (changes: Record<string, unknown>) =>
+        dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { props: { ...p, ...changes } } });
+
+    return (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            {/* Element thumbnail */}
+            {p.src && (
+                <div style={{ margin: "12px 16px 8px", display: "flex", justifyContent: "center" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.src} alt=""
+                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 10, border: "2px solid #f3f4f6", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
+                </div>
+            )}
+
+            {/* Primary action buttons — Cinelove style */}
+            <div style={{ padding: "4px 12px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => {}} style={{
+                        flex: 1, padding: "9px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
+                        background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#374151",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                    }}>
+                        <Scissors size={13} /> Cắt ảnh
+                    </button>
+                    <button onClick={onReplaceImage} style={{
+                        flex: 1, padding: "9px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
+                        background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#374151",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                    }}>
+                        <ImageIcon size={13} /> Đổi ảnh
+                    </button>
+                </div>
+                <button onClick={() => alert("Tính năng đang phát triển")} style={{
+                    width: "100%", padding: "9px 0", borderRadius: 8, border: "none",
+                    background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                    cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#fff",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                }}>
+                    <Sparkles size={13} /> Xóa nền (AI)
+                </button>
+            </div>
+
+            {/* Layer actions */}
+            <div style={{ padding: "0 12px 8px" }}>
+                <LayerActions el={el} dispatch={dispatch} />
+            </div>
+
+            <div style={{ height: 1, background: "#f3f4f6" }} />
+
+            {/* ── Màu sắc (tint/overlay) ── */}
+            <AccordionSection title="Màu sắc" icon="🎨" defaultOpen={false}>
+                <Label>Bộ lọc màu</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, marginBottom: 8 }}>
+                    {[
+                        { label: "Gốc", filter: "" },
+                        { label: "B&W", filter: "grayscale(100%)" },
+                        { label: "Sepia", filter: "sepia(80%)" },
+                        { label: "Ấm", filter: "saturate(150%) hue-rotate(-15deg)" },
+                        { label: "Mát", filter: "saturate(80%) hue-rotate(15deg) brightness(1.05)" },
+                        { label: "Fade", filter: "opacity(70%) brightness(1.1)" },
+                    ].map(f => (
+                        <button key={f.label} onClick={() => upd({ filter: f.filter })} style={{
+                            padding: "6px 4px", borderRadius: 7, fontSize: 11, cursor: "pointer",
+                            border: `1px solid ${p.filter === f.filter ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: p.filter === f.filter ? "#fdf2f8" : "#fafafa",
+                            color: "#374151", fontWeight: p.filter === f.filter ? 700 : 400,
+                        }}>{f.label}</button>
+                    ))}
+                </div>
+                <Label>Độ sáng: {p.brightness ?? 100}%</Label>
+                <input type="range" min={0} max={200} value={p.brightness ?? 100}
+                    onChange={e => upd({ brightness: Number(e.target.value) })} style={{ width: "100%", marginBottom: 6 }} />
+                <Label>Tương phản: {p.contrast ?? 100}%</Label>
+                <input type="range" min={0} max={200} value={p.contrast ?? 100}
+                    onChange={e => upd({ contrast: Number(e.target.value) })} style={{ width: "100%", marginBottom: 6 }} />
+                <Label>Bão hòa: {p.saturation ?? 100}%</Label>
+                <input type="range" min={0} max={200} value={p.saturation ?? 100}
+                    onChange={e => upd({ saturation: Number(e.target.value) })} style={{ width: "100%", marginBottom: 6 }} />
+                <button onClick={() => upd({ brightness: 100, contrast: 100, saturation: 100, filter: "" })} style={{
+                    width: "100%", padding: "5px 0", borderRadius: 6, border: "1px solid #e5e7eb",
+                    background: "#f9fafb", cursor: "pointer", fontSize: 11, color: "#9ca3af",
+                }}>Reset mặc định</button>
+            </AccordionSection>
+
+            {/* ── Khoảng đệm ── */}
+            <AccordionSection title="Khoảng đệm" icon="📐" defaultOpen={false}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    {[
+                        { label: "Trên", key: "paddingTop" },
+                        { label: "Phải", key: "paddingRight" },
+                        { label: "Dưới", key: "paddingBottom" },
+                        { label: "Trái", key: "paddingLeft" },
+                    ].map(({ label, key }) => (
+                        <div key={key}>
+                            <Label>{label}</Label>
+                            <input type="number" min={0} max={100}
+                                value={(p as Record<string, unknown>)[key] as number ?? 0}
+                                onChange={e => upd({ [key]: Number(e.target.value) })}
+                                style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </AccordionSection>
+
+            {/* ── Đường viền ── */}
+            <AccordionSection title="Đường viền" icon="🔲" defaultOpen={false}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <div style={{ flex: 1 }}>
+                        <Label>Độ dày</Label>
+                        <input type="number" min={0} max={20}
+                            value={p.borderWidth ?? 0}
+                            onChange={e => upd({ borderWidth: Number(e.target.value) })}
+                            style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                        />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <Label>Bo góc</Label>
+                        <input type="number" min={0} max={200}
+                            value={p.borderRadius ?? 0}
+                            onChange={e => upd({ borderRadius: Number(e.target.value) })}
+                            style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                        />
+                    </div>
+                </div>
+                <Label>Kiểu viền</Label>
+                <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                    {(["solid", "dashed", "dotted"] as const).map(style => (
+                        <button key={style} onClick={() => upd({ borderStyle: style })} style={{
+                            flex: 1, padding: "5px 0", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                            border: `1.5px solid ${p.borderStyle === style ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: p.borderStyle === style ? "#fdf2f8" : "#fff",
+                            color: p.borderStyle === style ? "#ff6b9d" : "#374151",
+                        }}>{style === "solid" ? "Liền" : style === "dashed" ? "Đứt" : "Chấm"}</button>
+                    ))}
+                </div>
+                <Label>Màu viền</Label>
+                <ColorRow value={p.borderColor ?? "#000000"} onChange={c => upd({ borderColor: c })} />
+            </AccordionSection>
+
+            {/* ── Đổ bóng ── */}
+            <AccordionSection title="Đổ bóng" icon="🌑" defaultOpen={false}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 8 }}>
+                    {SHADOW_PRESETS.map(s => (
+                        <button key={s.label} onClick={() => upd({ boxShadow: p.boxShadow === s.value ? "" : s.value })} style={{
+                            padding: "8px 4px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+                            border: `1.5px solid ${p.boxShadow === s.value ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: p.boxShadow === s.value ? "#fdf2f8" : "#fff",
+                            color: p.boxShadow === s.value ? "#ff6b9d" : "#374151",
+                            boxShadow: s.value,
+                        }}>{s.label}</button>
+                    ))}
+                </div>
+                <button onClick={() => upd({ boxShadow: "" })} style={{
+                    width: "100%", padding: "5px 0", borderRadius: 6, border: "1px solid #e5e7eb",
+                    background: "#f9fafb", cursor: "pointer", fontSize: 11, color: "#9ca3af",
+                }}>Tắt bóng</button>
+            </AccordionSection>
+
+            {/* ── Hiệu ứng chuyển động ── */}
+            <AccordionSection title="Hiệu ứng chuyển động" icon="🎬" defaultOpen={false}>
+                <Label>Xuất hiện</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 10 }}>
+                    {(["none", "fadeIn", "slideUp", "zoomIn"] as const).map(val => (
+                        <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { ...el.animation, entrance: val, loop: el.animation?.loop ?? "none" } } })} style={{
+                            padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
+                            border: `1.5px solid ${(el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: (el.animation?.entrance ?? "none") === val ? "#fdf2f8" : "#fff",
+                            color: (el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#374151",
+                        }}>{val === "none" ? "Không" : val === "fadeIn" ? "Fade" : val === "slideUp" ? "Slide Up" : "Zoom"}</button>
+                    ))}
+                </div>
+            </AccordionSection>
+
+            {/* ── Chuyển động liên tục ── */}
+            <AccordionSection title="Chuyển động liên tục" icon="🔄" defaultOpen={false}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                    {(["none", "pulse", "float", "shake"] as const).map(val => (
+                        <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { entrance: el.animation?.entrance ?? "none", loop: val } } })} style={{
+                            padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
+                            border: `1.5px solid ${(el.animation?.loop ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: (el.animation?.loop ?? "none") === val ? "#fdf2f8" : "#fff",
+                            color: (el.animation?.loop ?? "none") === val ? "#ff6b9d" : "#374151",
+                        }}>{val === "none" ? "Không" : val === "pulse" ? "Nhịp tim" : val === "float" ? "Lơ lửng" : "Rung"}</button>
+                    ))}
+                </div>
+            </AccordionSection>
+
+            {/* ── Độ mờ + Xoay ── */}
+            <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={true}>
+                <Label>Độ trong suốt: {Math.round((el.opacity ?? 1) * 100)}%</Label>
+                <input type="range" min={10} max={100}
+                    value={Math.round((el.opacity ?? 1) * 100)}
+                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                    style={{ width: "100%", marginBottom: 10 }} />
+                <Label>Xoay: {el.rotation ?? 0}°</Label>
+                <input type="range" min={-180} max={180}
+                    value={el.rotation ?? 0}
+                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: Number(e.target.value) } })}
+                    style={{ width: "100%", marginBottom: 4 }} />
+                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: 0 } })} style={{
+                    width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
+                    background: "#f9fafb", cursor: "pointer", fontSize: 10, color: "#9ca3af",
+                }}>Reset 0°</button>
+            </AccordionSection>
+        </div>
+    );
+}
+
+// ══════════════════════════════════════════
+// TEXT PANEL
+// ══════════════════════════════════════════
+function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; dispatch: (a: Action) => void; onShowFontPicker: () => void }) {
+    const p = el.props;
+    const upd = (changes: Record<string, unknown>) =>
+        dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { props: { ...p, ...changes } } });
+    const shadow = p.textShadow ?? { active: false, color: "rgba(0,0,0,0.4)", blur: 4, x: 2, y: 2 };
+
+    return (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            {/* Layer actions */}
+            <div style={{ padding: "10px 12px 4px" }}>
+                <LayerActions el={el} dispatch={dispatch} />
+            </div>
+
+            <div style={{ height: 1, background: "#f3f4f6" }} />
+
+            {/* ── Typography ── */}
+            <AccordionSection title="Phông chữ" icon="🔤" defaultOpen={true}>
+                {/* Font Picker button */}
+                <div style={{ marginBottom: 10 }}>
+                    <Label>Font chữ</Label>
+                    <button onClick={onShowFontPicker} style={{
+                        width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e5e7eb",
+                        background: "#fff", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        fontFamily: p.fontFamily ?? "'Dancing Script', cursive", fontSize: 15, color: "#374151",
+                    }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {(p.fontFamily ?? "Dancing Script").replace(/['"]/g, "").split(",")[0].trim()}
+                        </span>
+                        <ChevronDown size={13} color="#9ca3af" />
+                    </button>
+                </div>
+
+                {/* Font size */}
+                <div style={{ marginBottom: 10 }}>
+                    <Label>Cỡ chữ</Label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <button onClick={() => upd({ fontSize: Math.max(8, (p.fontSize ?? 24) - 1) })}
+                            style={{ width: 30, height: 30, borderRadius: 7, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#374151" }}>−</button>
+                        <input type="number" min={8} max={120} value={p.fontSize ?? 24}
+                            onChange={e => upd({ fontSize: Number(e.target.value) })}
+                            style={{ flex: 1, textAlign: "center", padding: "6px 4px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 13, outline: "none" }} />
+                        <button onClick={() => upd({ fontSize: Math.min(120, (p.fontSize ?? 24) + 1) })}
+                            style={{ width: 30, height: 30, borderRadius: 7, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#374151" }}>+</button>
+                    </div>
+                </div>
+
+                {/* B / I / U / S / Aa */}
+                <div style={{ marginBottom: 10 }}>
+                    <Label>Kiểu chữ</Label>
+                    <div style={{ display: "flex", gap: 4 }}>
+                        {[
+                            { label: "B", key: "fontWeight", active: p.fontWeight === "bold", action: () => upd({ fontWeight: p.fontWeight === "bold" ? "normal" : "bold" }), bold: true },
+                            { label: "I", key: "fontStyle", active: p.fontStyle === "italic", action: () => upd({ fontStyle: p.fontStyle === "italic" ? "normal" : "italic" }), italic: true },
+                            { label: "U", key: "decoration", active: (p.textDecoration ?? "").includes("underline"), action: () => upd({ textDecoration: (p.textDecoration ?? "").includes("underline") ? "none" : "underline" }) },
+                            { label: "S", key: "strike", active: (p.textDecoration ?? "").includes("line-through"), action: () => upd({ textDecoration: (p.textDecoration ?? "").includes("line-through") ? "none" : "line-through" }) },
+                            { label: "Aa", key: "case", active: false, action: () => {
+                                const cur = p.textTransform ?? "none";
+                                upd({ textTransform: cur === "none" ? "uppercase" : cur === "uppercase" ? "capitalize" : "none" });
+                            }},
+                        ].map(btn => (
+                            <button key={btn.label} onClick={btn.action} style={{
+                                flex: 1, height: 30, borderRadius: 7, border: `1.5px solid ${btn.active ? "#ff6b9d" : "#e5e7eb"}`,
+                                background: btn.active ? "#fdf2f8" : "#fff", cursor: "pointer",
+                                fontSize: 12, fontWeight: btn.bold ? 800 : 400,
+                                fontStyle: btn.italic ? "italic" : "normal",
+                                color: btn.active ? "#ff6b9d" : "#374151",
+                                textDecoration: btn.label === "U" ? "underline" : btn.label === "S" ? "line-through" : "none",
+                            }}>{btn.label}</button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Alignment */}
+                <div style={{ marginBottom: 10 }}>
+                    <Label>Căn lề</Label>
+                    <div style={{ display: "flex", gap: 4 }}>
+                        {([
+                            { icon: <AlignLeft size={13} />, value: "left" },
+                            { icon: <AlignCenter size={13} />, value: "center" },
+                            { icon: <AlignRight size={13} />, value: "right" },
+                            { icon: <AlignJustify size={13} />, value: "justify" },
+                        ] as const).map(btn => (
+                            <button key={btn.value} onClick={() => upd({ textAlign: btn.value })} style={{
+                                flex: 1, height: 30, borderRadius: 7, cursor: "pointer",
+                                border: `1.5px solid ${(p.textAlign ?? "center") === btn.value ? "#ff6b9d" : "#e5e7eb"}`,
+                                background: (p.textAlign ?? "center") === btn.value ? "#fdf2f8" : "#fff",
+                                color: (p.textAlign ?? "center") === btn.value ? "#ff6b9d" : "#374151",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                            }}>{btn.icon}</button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Line height + Letter spacing side by side */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                    <div style={{ flex: 1 }}>
+                        <Label>Dòng: {p.lineHeight ?? 1.4}</Label>
+                        <input type="range" min={0.8} max={3} step={0.1} value={p.lineHeight ?? 1.4}
+                            onChange={e => upd({ lineHeight: Number(e.target.value) })} style={{ width: "100%" }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <Label>Cách: {p.letterSpacing ?? 0}px</Label>
+                        <input type="range" min={-2} max={20} step={0.5} value={p.letterSpacing ?? 0}
+                            onChange={e => upd({ letterSpacing: Number(e.target.value) })} style={{ width: "100%" }} />
+                    </div>
+                </div>
+            </AccordionSection>
+
+            {/* ── Màu chữ ── */}
+            <AccordionSection title="Màu sắc" icon="🎨" defaultOpen={false}>
+                <Label>Màu chữ</Label>
+                <ColorRow value={p.color ?? "#831843"} onChange={c => upd({ color: c })} />
+                <div style={{ marginTop: 10 }}>
+                    <Label>Màu nền chữ</Label>
+                    <ColorRow value={p.backgroundColor ?? "transparent"} onChange={c => upd({ backgroundColor: c })} />
+                </div>
+            </AccordionSection>
+
+            {/* ── Đổ bóng ── */}
+            <AccordionSection title="Đổ bóng chữ" icon="🌑" defaultOpen={false}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <input type="checkbox" checked={shadow.active ?? false} onChange={e => upd({ textShadow: { ...shadow, active: e.target.checked } })} style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 12, color: "#374151" }}>Bật bóng chữ</span>
+                </div>
+                {shadow.active && (
+                    <>
+                        <Label>Màu bóng</Label>
+                        <ColorRow value={shadow.color ?? "rgba(0,0,0,0.4)"} onChange={c => upd({ textShadow: { ...shadow, color: c } })} />
+                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                            <div style={{ flex: 1 }}>
+                                <Label>X: {shadow.x ?? 2}px</Label>
+                                <input type="range" min={-20} max={20} value={shadow.x ?? 2}
+                                    onChange={e => upd({ textShadow: { ...shadow, x: Number(e.target.value) } })} style={{ width: "100%" }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <Label>Y: {shadow.y ?? 2}px</Label>
+                                <input type="range" min={-20} max={20} value={shadow.y ?? 2}
+                                    onChange={e => upd({ textShadow: { ...shadow, y: Number(e.target.value) } })} style={{ width: "100%" }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <Label>Blur: {shadow.blur ?? 4}px</Label>
+                                <input type="range" min={0} max={40} value={shadow.blur ?? 4}
+                                    onChange={e => upd({ textShadow: { ...shadow, blur: Number(e.target.value) } })} style={{ width: "100%" }} />
+                            </div>
+                        </div>
+                    </>
+                )}
+            </AccordionSection>
+
+            {/* ── Hiệu ứng ── */}
+            <AccordionSection title="Hiệu ứng chuyển động" icon="🎬" defaultOpen={false}>
+                <Label>Xuất hiện</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 10 }}>
+                    {(["none", "fadeIn", "slideUp", "zoomIn"] as const).map(val => (
+                        <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { ...el.animation, entrance: val, loop: el.animation?.loop ?? "none" } } })} style={{
+                            padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
+                            border: `1.5px solid ${(el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: (el.animation?.entrance ?? "none") === val ? "#fdf2f8" : "#fff",
+                            color: (el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#374151",
+                        }}>{val === "none" ? "Không" : val === "fadeIn" ? "Fade" : val === "slideUp" ? "Slide Up" : "Zoom"}</button>
+                    ))}
+                </div>
+                <Label>Liên tục</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                    {(["none", "pulse", "float", "shake"] as const).map(val => (
+                        <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { entrance: el.animation?.entrance ?? "none", loop: val } } })} style={{
+                            padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
+                            border: `1.5px solid ${(el.animation?.loop ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: (el.animation?.loop ?? "none") === val ? "#fdf2f8" : "#fff",
+                            color: (el.animation?.loop ?? "none") === val ? "#ff6b9d" : "#374151",
+                        }}>{val === "none" ? "Không" : val === "pulse" ? "Nhịp tim" : val === "float" ? "Lơ lửng" : "Rung"}</button>
+                    ))}
+                </div>
+            </AccordionSection>
+
+            {/* ── Cơ bản ── */}
+            <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={false}>
+                <Label>Độ trong suốt: {Math.round((el.opacity ?? 1) * 100)}%</Label>
+                <input type="range" min={10} max={100}
+                    value={Math.round((el.opacity ?? 1) * 100)}
+                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                    style={{ width: "100%", marginBottom: 10 }} />
+                <Label>Xoay: {el.rotation ?? 0}°</Label>
+                <input type="range" min={-180} max={180}
+                    value={el.rotation ?? 0}
+                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: Number(e.target.value) } })}
+                    style={{ width: "100%", marginBottom: 4 }} />
+                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: 0 } })} style={{
+                    width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
+                    background: "#f9fafb", cursor: "pointer", fontSize: 10, color: "#9ca3af",
+                }}>Reset 0°</button>
+            </AccordionSection>
+        </div>
+    );
+}
+
+// ══════════════════════════════════════════
+// MAIN RIGHT PANEL
+// ══════════════════════════════════════════
+export function RightPanel({ selectedEl, dispatch, background, particleEffect, onReplaceImage, onShowFontPicker, showFontPicker, onCloseFontPicker }: RightPanelProps) {
+    const BG_PRESETS = [
+        { label: "Hồng nhạt", value: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)" },
+        { label: "Be sang", value: "linear-gradient(135deg, #fefde8 0%, #fef3c7 100%)" },
+        { label: "Xanh mint", value: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)" },
+        { label: "Tím nhạt", value: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" },
+        { label: "Trắng", value: "#ffffff" },
+        { label: "Kem", value: "#fdf8f0" },
+        { label: "Champagne", value: "linear-gradient(135deg, #f9f3e3, #f0e6c4)" },
+        { label: "Đen", value: "#111111" },
+    ];
+
+    return (
+        <div style={{
+            width: 320, background: "#fff",
+            borderLeft: "1px solid #e5e7eb",
+            flexShrink: 0, overflowY: "auto",
+            display: "flex", flexDirection: "column",
+        }}>
+            {/* Header */}
+            <div style={{ padding: "12px 16px 10px", borderBottom: "1px solid #f3f4f6", flexShrink: 0 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: 0, letterSpacing: 0.5 }}>
+                    ✏️ Tuỳ chỉnh
+                </p>
+            </div>
+
+            {/* No element selected — global panel */}
+            {!selectedEl && (
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                    <div style={{ padding: "12px 16px" }}>
+                        <div style={{ padding: "10px 14px", borderRadius: 10, background: "#f9fafb", border: "1px solid #f3f4f6", marginBottom: 16 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: 0.8 }}>Thiệp</p>
+                            <p style={{ fontSize: 13, color: "#374151", margin: 0 }}>390 × 844px</p>
+                        </div>
+                        <div style={{ textAlign: "center", padding: "20px 0", color: "#d1d5db" }}>
+                            <p style={{ fontSize: 32, margin: 0 }}>👆</p>
+                            <p style={{ fontSize: 12, marginTop: 6, color: "#9ca3af" }}>Chọn phần tử để chỉnh sửa</p>
+                        </div>
+                    </div>
+
+                    <AccordionSection title="Nền nhanh" icon="🖼️" defaultOpen={true}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                            {BG_PRESETS.map(bg => (
+                                <button key={bg.label} title={bg.label}
+                                    onClick={() => dispatch({ type: "SET_BACKGROUND", background: bg.value })}
+                                    style={{
+                                        width: "100%", aspectRatio: "1", borderRadius: 8, background: bg.value,
+                                        border: `2px solid ${background === bg.value ? "#ff6b9d" : "transparent"}`,
+                                        cursor: "pointer", padding: 0,
+                                        boxShadow: "0 1px 4px rgba(0,0,0,.1)", transition: "border-color 0.15s",
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </AccordionSection>
+
+                    <AccordionSection title="Hiệu ứng hạt" icon="✨" defaultOpen={false}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                            {([
+                                { label: "🌸 Hoa", effect: "petals" as ParticleEffect },
+                                { label: "💕 Tim", effect: "hearts" as ParticleEffect },
+                                { label: "✨ Bokeh", effect: "bokeh" as ParticleEffect },
+                                { label: "❄️ Tuyết", effect: "snow" as ParticleEffect },
+                            ]).map(fx => (
+                                <button key={fx.effect}
+                                    onClick={() => dispatch({ type: "SET_PARTICLE_EFFECT", effect: fx.effect === particleEffect ? "none" : fx.effect })}
+                                    style={{
+                                        padding: "8px 6px", borderRadius: 8, fontSize: 12,
+                                        border: `1.5px solid ${particleEffect === fx.effect ? "#ff6b9d" : "#e5e7eb"}`,
+                                        background: particleEffect === fx.effect ? "#fdf2f8" : "#fafafa",
+                                        cursor: "pointer", color: "#374151",
+                                        fontWeight: particleEffect === fx.effect ? 700 : 400,
+                                    }}>{fx.label}</button>
+                            ))}
+                        </div>
+                        {particleEffect !== "none" && (
+                            <button onClick={() => dispatch({ type: "SET_PARTICLE_EFFECT", effect: "none" })} style={{
+                                marginTop: 6, width: "100%", padding: "5px 0", borderRadius: 6,
+                                border: "1px solid #e5e7eb", background: "#f9fafb",
+                                cursor: "pointer", fontSize: 11, color: "#9ca3af",
+                            }}>🚫 Tắt hiệu ứng</button>
+                        )}
+                    </AccordionSection>
+                </div>
+            )}
+
+            {/* Image panel */}
+            {selectedEl?.type === "image" && (
+                <ImagePanel el={selectedEl} dispatch={dispatch} onReplaceImage={onReplaceImage} />
+            )}
+
+            {/* Text panel */}
+            {selectedEl?.type === "text" && (
+                <TextPanel el={selectedEl} dispatch={dispatch} onShowFontPicker={onShowFontPicker} />
+            )}
+
+            {/* Font Picker Modal rendered as portal sibling */}
+            {showFontPicker && selectedEl?.type === "text" && (() => {
+                const fp = selectedEl.props;
+                return (
+                    <FontPickerModal
+                        currentFont={fp.fontFamily ?? "'Dancing Script', cursive"}
+                        onSelect={(fontName) => {
+                            const found = SYSTEM_FONTS.find(f => f.name === fontName);
+                            let fontFamily = `'${fontName}', serif`;
+                            if (found?.category === "Script") fontFamily = `'${fontName}', cursive`;
+                            else if (found?.category === "Sans-serif") fontFamily = `'${fontName}', sans-serif`;
+                            dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...fp, fontFamily } } });
+                            onCloseFontPicker();
+                        }}
+                        onClose={onCloseFontPicker}
+                    />
+                );
+            })()}
+        </div>
+    );
+}
