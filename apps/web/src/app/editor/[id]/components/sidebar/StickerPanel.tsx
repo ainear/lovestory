@@ -53,7 +53,7 @@ import { useState } from "react";
 import type { CanvasElement } from "../useCanvasReducer";
 
 interface StickerPanelProps {
-    onAddSticker: (element: Omit<CanvasElement, "id" | "zIndex">) => void;
+    onAddSticker: (element: Omit<CanvasElement, "id" | "zIndex" | "sectionId">) => void;
 }
 
 export function StickerPanel({ onAddSticker }: StickerPanelProps) {

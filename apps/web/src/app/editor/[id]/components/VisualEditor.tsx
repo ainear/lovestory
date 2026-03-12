@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -389,6 +389,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                                     type: "ADD_ELEMENT",
                                                     element: {
                                                         id: `el-${Date.now()}`,
+                                                        sectionId: state.sections[0]?.id || "section-1",
                                                         type: "text",
                                                         x: 20, y: 120 + state.elements.length * 40,
                                                         width: 350, height: 60,
@@ -459,6 +460,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         type: "ADD_ELEMENT",
                                         element: {
                                             id: `el-${Date.now()}`,
+                                            sectionId: state.sections[0]?.id || "section-1",
                                             type: "image",
                                             x: 20, y: 80,
                                             width: 200, height: 200,
@@ -478,6 +480,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         element: {
                                             ...el,
                                             id: `el-${Date.now()}`,
+                                            sectionId: state.sections[0]?.id || "section-1",
                                             zIndex: state.elements.length + 1,
                                         },
                                     })}
@@ -513,6 +516,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                                 type: "ADD_ELEMENT",
                                                 element: {
                                                     id: `el-${Date.now()}`,
+                                                    sectionId: state.sections[0]?.id || "section-1",
                                                     type: w.type as CanvasElement["type"],
                                                     x: 20, y: 100 + state.elements.length * 30,
                                                     width: w.w, height: w.h,
@@ -690,11 +694,32 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             width={state.width}
                             height={state.height}
                             background={state.background}
+                            sections={state.sections}
                             elements={state.elements}
                             selectedId={state.selectedId}
                             zoom={state.zoom}
                             dispatch={dispatch}
                         />
+                        <div style={{ display: "flex", justifyContent: "center", marginTop: 24, paddingBottom: 68 }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    dispatch({ type: "ADD_SECTION" });
+                                }}
+                                style={{
+                                    display: "flex", alignItems: "center", gap: 6,
+                                    padding: "10px 20px", borderRadius: 20,
+                                    background: "#fff", border: "1px solid #e5e7eb",
+                                    color: "#4b5563", fontSize: 13, fontWeight: 600,
+                                    cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                    transition: "all 0.2s"
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#4b5563"; }}
+                            >
+                                <Plus size={16} /> Thêm Trang Mới
+                            </button>
+                        </div>
                         <QuickImageBar
                             elements={state.elements}
                             selectedId={state.selectedId}
