@@ -8,6 +8,10 @@ const STOCK_CATEGORIES = [
     { key: "flowers", label: "🌸 Hoa" },
     { key: "couple", label: "💕 Couple" },
     { key: "bokeh", label: "✨ Bokeh" },
+    { key: "heart", label: "❤️ Trái tim" },
+    { key: "frame", label: "🖼️ Khung viền" },
+    { key: "character", label: "👫 Nhân vật" },
+    { key: "decor", label: "🎀 Trang trí" },
 ];
 
 // Curated free Unsplash photos by category (using public Unsplash source URLs)
@@ -43,6 +47,30 @@ const STOCK_PHOTOS: Record<string, { id: string; url: string; thumb: string; cre
         { id: "b2", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800", thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", credit: "Photos by Unsplash" },
         { id: "b3", url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800", thumb: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200", credit: "Photos by Unsplash" },
         { id: "b4", url: "https://images.unsplash.com/photo-1531147646552-1b2d8b0a2a9b?w=800", thumb: "https://images.unsplash.com/photo-1531147646552-1b2d8b0a2a9b?w=200", credit: "Photos by Unsplash" },
+    ],
+    heart: [
+        { id: "h1", url: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800", thumb: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=200", credit: "Photos by Unsplash" },
+        { id: "h2", url: "https://images.unsplash.com/photo-1516589091380-5d8e87df6999?w=800", thumb: "https://images.unsplash.com/photo-1516589091380-5d8e87df6999?w=200", credit: "Photos by Unsplash" },
+        { id: "h3", url: "https://images.unsplash.com/photo-1520637836993-a071674a32e2?w=800", thumb: "https://images.unsplash.com/photo-1520637836993-a071674a32e2?w=200", credit: "Photos by Unsplash" },
+        { id: "h4", url: "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=800", thumb: "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=200", credit: "Photos by Unsplash" },
+    ],
+    frame: [
+        { id: "fr1", url: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800", thumb: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=200", credit: "Photos by Unsplash" },
+        { id: "fr2", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800", thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", credit: "Photos by Unsplash" },
+        { id: "fr3", url: "https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=800", thumb: "https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=200", credit: "Photos by Unsplash" },
+        { id: "fr4", url: "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=800", thumb: "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=200", credit: "Photos by Unsplash" },
+    ],
+    character: [
+        { id: "ch1", url: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=800", thumb: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=200", credit: "Photos by Unsplash" },
+        { id: "ch2", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", thumb: "https://images.unsplash.com/photo-1519741497674-611481863552?w=200", credit: "Photos by Unsplash" },
+        { id: "ch3", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", thumb: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=200", credit: "Photos by Unsplash" },
+        { id: "ch4", url: "https://images.unsplash.com/photo-1459501462159-97d5bded1416?w=800", thumb: "https://images.unsplash.com/photo-1459501462159-97d5bded1416?w=200", credit: "Photos by Unsplash" },
+    ],
+    decor: [
+        { id: "d1", url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800", thumb: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200", credit: "Photos by Unsplash" },
+        { id: "d2", url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800", thumb: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=200", credit: "Photos by Unsplash" },
+        { id: "d3", url: "https://images.unsplash.com/photo-1522566220397-7127240a0b67?w=800", thumb: "https://images.unsplash.com/photo-1522566220397-7127240a0b67?w=200", credit: "Photos by Unsplash" },
+        { id: "d4", url: "https://images.unsplash.com/photo-1470290378698-263fa7ca60ab?w=800", thumb: "https://images.unsplash.com/photo-1470290378698-263fa7ca60ab?w=200", credit: "Photos by Unsplash" },
     ],
 };
 

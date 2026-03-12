@@ -48,16 +48,25 @@ const BG_PRESETS = [
 
 const ZOOM_LEVELS = [50, 75, 100];
 
-// ── Music presets (8 wedding songs, royalty-free via Pixabay) ──
+// ── Music presets (16 wedding songs, royalty-free via Pixabay) ──
+const MUSIC_GENRES = ["Tất cả", "Cổ điển", "Piano", "Acoustic", "Jazz", "Cinematic", "Pop", "Lofi"];
 const MUSIC_PRESETS = [
-    { id: "m1", label: "Beautiful Wedding", emoji: "🎵", genre: "Pop nhẹ nhàng", url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3" },
+    { id: "m1", label: "Beautiful Wedding", emoji: "🎵", genre: "Pop", url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3" },
     { id: "m2", label: "Canon in D", emoji: "🎻", genre: "Cổ điển", url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3" },
-    { id: "m3", label: "Romantic Piano", emoji: "🎹", genre: "Piano lãng mạn", url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3" },
-    { id: "m4", label: "Wedding March", emoji: "💍", genre: "Hành khúc", url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3" },
+    { id: "m3", label: "Romantic Piano", emoji: "🎹", genre: "Piano", url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3" },
+    { id: "m4", label: "Wedding March", emoji: "💍", genre: "Cổ điển", url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3" },
     { id: "m5", label: "Chill Acoustic", emoji: "🎸", genre: "Acoustic", url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3" },
-    { id: "m6", label: "Love Strings", emoji: "🎼", genre: "Dàn dây", url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3" },
+    { id: "m6", label: "Love Strings", emoji: "🎼", genre: "Cổ điển", url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3" },
     { id: "m7", label: "Cinematic Romance", emoji: "🎬", genre: "Cinematic", url: "https://cdn.pixabay.com/audio/2024/02/15/audio_8b56c8c4fb.mp3" },
-    { id: "m8", label: "Sweet Jazz", emoji: "🎷", genre: "Jazz nhẹ", url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" },
+    { id: "m8", label: "Sweet Jazz", emoji: "🎷", genre: "Jazz", url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" },
+    { id: "m9", label: "Lofi Wedding", emoji: "☁️", genre: "Lofi", url: "https://cdn.pixabay.com/audio/2024/05/16/audio_166b80e398.mp3" },
+    { id: "m10", label: "Acoustic Love", emoji: "🎸", genre: "Acoustic", url: "https://cdn.pixabay.com/audio/2024/01/08/audio_58cbc3aa64.mp3" },
+    { id: "m11", label: "Piano Ballad", emoji: "🎹", genre: "Piano", url: "https://cdn.pixabay.com/audio/2023/05/13/audio_3f3e6e34cd.mp3" },
+    { id: "m12", label: "Jazz Café", emoji: "☕", genre: "Jazz", url: "https://cdn.pixabay.com/audio/2023/09/04/audio_60bf8ded52.mp3" },
+    { id: "m13", label: "Cinematic Emotion", emoji: "🎥", genre: "Cinematic", url: "https://cdn.pixabay.com/audio/2023/07/07/audio_3a53a4ea90.mp3" },
+    { id: "m14", label: "Soft Pop Love", emoji: "💖", genre: "Pop", url: "https://cdn.pixabay.com/audio/2023/10/18/audio_69f8b44fa3.mp3" },
+    { id: "m15", label: "Classical Waltz", emoji: "💃", genre: "Cổ điển", url: "https://cdn.pixabay.com/audio/2023/03/15/audio_c94e0a0d37.mp3" },
+    { id: "m16", label: "Lofi Sunset", emoji: "🌇", genre: "Lofi", url: "https://cdn.pixabay.com/audio/2024/03/20/audio_9c7a3e6bfa.mp3" },
 ];
 
 // ── Template presets for in-editor switch ──
@@ -141,6 +150,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [musicUrl, setMusicUrl] = useState("");
     const [musicName, setMusicName] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
+    const [musicGenre, setMusicGenre] = useState("Tất cả");
+    const [musicSearch, setMusicSearch] = useState("");
     const [templateCat, setTemplateCat] = useState("all");
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [showFontPicker, setShowFontPicker] = useState(false);
@@ -900,8 +911,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                             {/* MUSIC TAB */}
                             {activeTab === "music" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Nhạc nền</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 2px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Nhạc nền ({MUSIC_PRESETS.length} bài)</p>
                                     {musicUrl && (
                                         <div style={{
                                             padding: "10px 14px", borderRadius: 12,
@@ -923,8 +934,32 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             <button onClick={() => handleSetMusic("", "")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 18, padding: 4 }}>×</button>
                                         </div>
                                     )}
-                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "4px 0 0", fontWeight: 600 }}>Nhạc có sẵn ({MUSIC_PRESETS.length} bài):</p>
-                                    {MUSIC_PRESETS.map(m => (
+                                    {/* Sprint 34: Search bar */}
+                                    <input
+                                        placeholder="🔍 Tìm bài nhạc..."
+                                        value={musicSearch}
+                                        onChange={e => setMusicSearch(e.target.value)}
+                                        style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, outline: "none", width: "100%", boxSizing: "border-box" }}
+                                    />
+                                    {/* Sprint 34: Genre filter pills */}
+                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                        {MUSIC_GENRES.map(g => (
+                                            <button key={g} onClick={() => setMusicGenre(g)} style={{
+                                                padding: "4px 10px", borderRadius: 99, border: "none",
+                                                fontSize: 10, cursor: "pointer", fontWeight: 600,
+                                                background: musicGenre === g ? "#fdf2f8" : "#f3f4f6",
+                                                color: musicGenre === g ? "#be185d" : "#6b7280",
+                                            }}>
+                                                {g}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {/* Filtered song list */}
+                                    <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+                                    {MUSIC_PRESETS
+                                        .filter(m => musicGenre === "Tất cả" || m.genre === musicGenre)
+                                        .filter(m => !musicSearch || m.label.toLowerCase().includes(musicSearch.toLowerCase()) || m.genre.toLowerCase().includes(musicSearch.toLowerCase()))
+                                        .map(m => (
                                         <div key={m.id} style={{
                                             padding: "8px 12px", borderRadius: 10,
                                             border: "1px solid " + (musicUrl === m.url ? "#ff6b9d" : "#e5e7eb"),
@@ -943,6 +978,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             {musicUrl === m.url && <span style={{ color: "#ff6b9d", fontSize: 14, flexShrink: 0 }}>✔</span>}
                                         </div>
                                     ))}
+                                    </div>
                                     <div style={{ marginTop: 8 }}>
                                         <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 6px", fontWeight: 600 }}>Hoặc dán link MP3:</p>
                                         <div style={{ display: "flex", gap: 6 }}>
