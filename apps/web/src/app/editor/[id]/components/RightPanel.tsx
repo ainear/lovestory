@@ -29,6 +29,7 @@ const SHADOW_PRESETS = [
 
 interface RightPanelProps {
     selectedEl: CanvasElement | null;
+    allElements: CanvasElement[];
     dispatch: (action: Action) => void;
     background: string;
     particleEffect: string;
@@ -36,6 +37,7 @@ interface RightPanelProps {
     onShowFontPicker: () => void;
     showFontPicker: boolean;
     onCloseFontPicker: () => void;
+    onSelectElement: (id: string) => void;
 }
 
 // ── Reusable row label ──
@@ -263,13 +265,13 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
             <AccordionSection title="Hiệu ứng chuyển động" icon="🎬" defaultOpen={false}>
                 <Label>Xuất hiện</Label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 10 }}>
-                    {(["none", "fadeIn", "slideUp", "zoomIn"] as const).map(val => (
+                    {(["none", "fadeIn", "slideUp", "slideDown", "slideLeft", "slideRight", "zoomIn", "bounceIn"] as const).map(val => (
                         <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { ...el.animation, entrance: val, loop: el.animation?.loop ?? "none" } } })} style={{
                             padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
                             border: `1.5px solid ${(el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
                             background: (el.animation?.entrance ?? "none") === val ? "#fdf2f8" : "#fff",
                             color: (el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#374151",
-                        }}>{val === "none" ? "Không" : val === "fadeIn" ? "Fade" : val === "slideUp" ? "Slide Up" : "Zoom"}</button>
+                        }}>{({none:"Không",fadeIn:"Fade In",slideUp:"Slide Up",slideDown:"Slide ↓",slideLeft:"Slide ←",slideRight:"Slide →",zoomIn:"Zoom In",bounceIn:"Bounce"})[val]}</button>
                     ))}
                 </div>
             </AccordionSection>
@@ -505,6 +507,21 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
                             }}>Reset</button>
                         )}
                     </div>
+                    {/* Gradient angle slider */}
+                    {typeof p.color === "string" && p.color.startsWith("linear-gradient") && (
+                        <div style={{ marginTop: 6 }}>
+                            <Label>Góc gradient: {(() => { const m = p.color.match(/linear-gradient\((\d+)deg/); return m ? m[1] : "135"; })()}°</Label>
+                            <input type="range" min={0} max={360} step={15}
+                                value={(() => { const m = (p.color as string).match(/linear-gradient\((\d+)deg/); return m ? Number(m[1]) : 135; })()}
+                                onChange={e => {
+                                    const angle = e.target.value;
+                                    const newColor = (p.color as string).replace(/linear-gradient\(\d+deg/, `linear-gradient(${angle}deg`);
+                                    upd({ color: newColor });
+                                }}
+                                style={{ width: "100%" }}
+                            />
+                        </div>
+                    )}
                 </div>
                 <div style={{ marginTop: 10 }}>
                     <Label>Màu nền chữ</Label>
@@ -614,13 +631,13 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
             <AccordionSection title="Hiệu ứng chuyển động" icon="🎬" defaultOpen={false}>
                 <Label>Xuất hiện</Label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 10 }}>
-                    {(["none", "fadeIn", "slideUp", "zoomIn"] as const).map(val => (
+                    {(["none", "fadeIn", "slideUp", "slideDown", "slideLeft", "slideRight", "zoomIn", "bounceIn"] as const).map(val => (
                         <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { animation: { ...el.animation, entrance: val, loop: el.animation?.loop ?? "none" } } })} style={{
                             padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
                             border: `1.5px solid ${(el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
                             background: (el.animation?.entrance ?? "none") === val ? "#fdf2f8" : "#fff",
                             color: (el.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#374151",
-                        }}>{val === "none" ? "Không" : val === "fadeIn" ? "Fade" : val === "slideUp" ? "Slide Up" : "Zoom"}</button>
+                        }}>{({none:"Không",fadeIn:"Fade In",slideUp:"Slide Up",slideDown:"Slide ↓",slideLeft:"Slide ←",slideRight:"Slide →",zoomIn:"Zoom In",bounceIn:"Bounce"})[val]}</button>
                     ))}
                 </div>
                 <Label>Liên tục</Label>
@@ -712,7 +729,7 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
 // ══════════════════════════════════════════
 // MAIN RIGHT PANEL
 // ══════════════════════════════════════════
-export function RightPanel({ selectedEl, dispatch, background, particleEffect, onReplaceImage, onShowFontPicker, showFontPicker, onCloseFontPicker }: RightPanelProps) {
+export function RightPanel({ selectedEl, allElements, dispatch, background, particleEffect, onReplaceImage, onShowFontPicker, showFontPicker, onCloseFontPicker, onSelectElement }: RightPanelProps) {
     const BG_PRESETS = [
         { label: "Hồng nhạt", value: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)" },
         { label: "Be sang", value: "linear-gradient(135deg, #fefde8 0%, #fef3c7 100%)" },
@@ -829,6 +846,30 @@ export function RightPanel({ selectedEl, dispatch, background, particleEffect, o
                     </AccordionSection>
                 </div>
             )}
+
+            {/* ── Layers Panel (always visible) ── */}
+            <AccordionSection title="Lớp phần tử" icon="📋" defaultOpen={false}>
+                <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                    {[...allElements].sort((a, b) => (b.zIndex ?? 0) - (a.zIndex ?? 0)).map(layerEl => (
+                        <button key={layerEl.id} onClick={() => onSelectElement(layerEl.id)} style={{
+                            width: "100%", display: "flex", alignItems: "center", gap: 8,
+                            padding: "6px 8px", marginBottom: 2, borderRadius: 7, cursor: "pointer",
+                            border: selectedEl?.id === layerEl.id ? "1.5px solid #ff6b9d" : "1px solid #e5e7eb",
+                            background: selectedEl?.id === layerEl.id ? "#fdf2f8" : "#fff",
+                            transition: "all 0.1s", textAlign: "left",
+                        }}>
+                            <span style={{ fontSize: 12, width: 18, textAlign: "center" }}>
+                                {layerEl.type === "text" ? "T" : layerEl.type === "image" ? "🖼" : "⚙"}
+                            </span>
+                            <span style={{ flex: 1, fontSize: 11, color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {layerEl.type === "text" ? (layerEl.props?.text ?? "Text").slice(0, 20) : layerEl.type === "image" ? "Ảnh" : layerEl.props?.widgetType ?? "Widget"}
+                            </span>
+                            <span style={{ fontSize: 9, color: "#9ca3af" }}>z{layerEl.zIndex}</span>
+                            {layerEl.locked && <span style={{ fontSize: 10 }}>🔒</span>}
+                        </button>
+                    ))}
+                </div>
+            </AccordionSection>
 
             {/* Image panel */}
             {selectedEl?.type === "image" && (

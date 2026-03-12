@@ -68,7 +68,7 @@ export interface WidgetProps {
 }
 
 export interface ElementAnimation {
-    entrance: "none" | "fadeIn" | "slideUp" | "zoomIn" | "bounceIn";
+    entrance: "none" | "fadeIn" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "zoomIn" | "bounceIn";
     loop: "none" | "pulse" | "float" | "shake";
 }
 

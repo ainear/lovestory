@@ -1008,6 +1008,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                 <RightPanel
                     selectedEl={selectedEl}
+                    allElements={state.elements}
                     dispatch={dispatch}
                     background={state.background}
                     particleEffect={state.particleEffect ?? "none"}
@@ -1015,6 +1016,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     onShowFontPicker={() => setShowFontPicker(true)}
                     showFontPicker={showFontPicker}
                     onCloseFontPicker={() => setShowFontPicker(false)}
+                    onSelectElement={(id) => dispatch({ type: "SELECT", id })}
                 />
             </div>
         </div>
