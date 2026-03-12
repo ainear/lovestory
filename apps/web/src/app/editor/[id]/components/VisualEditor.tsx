@@ -127,6 +127,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [dupToast, setDupToast] = useState(false);
     // Sprint 28: Grid pattern + position indicator
     const [gridPattern, setGridPattern] = useState<"dots" | "lines" | "cross">("dots");
+    // Sprint 29: Minimap toggle
+    const [showMinimap, setShowMinimap] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1004,10 +1006,19 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                 padding: "6px 10px", display: "flex", gap: 4,
                                 border: "1px solid #e5e7eb",
                             }}>
+                                {/* Sprint 29: Lock badge */}
+                                {sel.locked && (
+                                    <span style={{ padding: "6px 8px", fontSize: 11, color: "#f59e0b", fontWeight: 700, display: "flex", alignItems: "center", gap: 2 }}>
+                                        🔒 Khóa
+                                    </span>
+                                )}
                                 {[
                                     { icon: <Copy size={14} />, label: "Nhân bản", shortcut: "⌘D", action: () => dispatch({ type: "DUPLICATE", id: sel.id }) },
                                     { icon: <ArrowUp size={14} />, label: "Lên", shortcut: "", action: () => dispatch({ type: "BRING_FORWARD", id: sel.id }) },
                                     { icon: <ArrowDown size={14} />, label: "Xuống", shortcut: "", action: () => dispatch({ type: "SEND_BACKWARD", id: sel.id }) },
+                                    // Sprint 29: Auto-align center buttons
+                                    { icon: <span style={{ fontSize: 12 }}>⫿</span>, label: "Giữa H", shortcut: "", action: () => dispatch({ type: "UPDATE_ELEMENT", id: sel.id, changes: { x: Math.round((state.width - sel.width) / 2) } }) },
+                                    { icon: <span style={{ fontSize: 12 }}>⫾</span>, label: "Giữa V", shortcut: "", action: () => dispatch({ type: "UPDATE_ELEMENT", id: sel.id, changes: { y: Math.round((state.height - sel.height) / 2) } }) },
                                     { icon: <Trash2 size={14} />, label: "Xóa", shortcut: "Del", action: () => dispatch({ type: "DELETE_ELEMENT", id: sel.id }), danger: true },
                                 ].map(btn => (
                                     <button key={btn.label} title={`${btn.label}${btn.shortcut ? ` (${btn.shortcut})` : ""}`} onClick={btn.action} style={{
@@ -1163,6 +1174,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         >
                             🧲
                         </button>
+                        {/* Sprint 29: Minimap toggle */}
+                        <button
+                            title={showMinimap ? "Ẩn minimap" : "Hiện minimap"}
+                            onClick={() => setShowMinimap(m => !m)}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: showMinimap ? "#8b5cf6" : "#6b7280", padding: 0, display: "flex", transition: "color 0.2s", fontSize: 11, fontWeight: 700 }}
+                        >
+                            🗺️
+                        </button>
                         {/* Sprint 26: Canvas dimension badge */}
                         <div style={{ width: 1, height: 16, background: "#e5e7eb" }} />
                         <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
@@ -1195,6 +1214,37 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             </select>
                         )}
                     </div>
+
+                    {/* Sprint 29: Minimap preview */}
+                    {showMinimap && (
+                        <div style={{
+                            position: "absolute", bottom: 70, right: 70, zIndex: 150,
+                            width: 160, height: Math.round(160 * (state.height / state.width)),
+                            background: "#fff", borderRadius: 10,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                            border: "1px solid #e5e7eb", overflow: "hidden",
+                        }}>
+                            <div style={{ position: "relative", width: "100%", height: "100%", background: state.background || "#fff" }}>
+                                {state.elements.map(el => {
+                                    const scaleX = 160 / state.width;
+                                    const scaleY = (160 * (state.height / state.width)) / state.height;
+                                    return (
+                                        <div key={el.id} style={{
+                                            position: "absolute",
+                                            left: el.x * scaleX, top: el.y * scaleY,
+                                            width: el.width * scaleX, height: el.height * scaleY,
+                                            background: el.type === "text" ? "#3b82f6" : el.type === "image" ? "#10b981" : "#f59e0b",
+                                            opacity: el.id === state.selectedId ? 1 : 0.4,
+                                            borderRadius: 1, border: el.id === state.selectedId ? "1px solid #fff" : "none",
+                                        }} />
+                                    );
+                                })}
+                            </div>
+                            <div style={{ position: "absolute", bottom: 2, left: 0, right: 0, textAlign: "center", fontSize: 8, color: "#9ca3af" }}>
+                                Minimap
+                            </div>
+                        </div>
+                    )}
 
                     {/* ── Floating Music Vinyl Icon ── */}
                     <button
