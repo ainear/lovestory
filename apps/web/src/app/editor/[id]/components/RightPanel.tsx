@@ -405,10 +405,13 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                     value={el.rotation ?? 0}
                     onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: Number(e.target.value) } })}
                     style={{ width: "100%", marginBottom: 4 }} />
-                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: 0 } })} style={{
-                    width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
-                    background: "#f9fafb", cursor: "pointer", fontSize: 10, color: "#9ca3af",
-                }}>Reset 0°</button>
+                {/* Sprint 23: Rotation quick presets */}
+                <div style={{ display: "flex", gap: 3, marginBottom: 4 }}>
+                    {[0, 45, 90, 180, 270].map(v => (
+                        <button key={v} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: v } })}
+                            style={{ flex: 1, padding: "3px 0", fontSize: 10, borderRadius: 4, border: "1px solid #e5e7eb", background: (el.rotation ?? 0) === v ? "#3b82f6" : "#fff", color: (el.rotation ?? 0) === v ? "#fff" : "#6b7280", cursor: "pointer", fontWeight: 600 }}>{v}°</button>
+                    ))}
+                </div>
             </AccordionSection>
         </div>
     );

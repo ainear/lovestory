@@ -25,6 +25,8 @@ export function Canvas({ width, height, background, sections, elements, selected
     const canvasW = width * scale;
 
     const [editingId, setEditingId] = useState<string | null>(null);
+    // Sprint 23: Hover highlight
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
 
     useEffect(() => {
         if (editingId && editingId !== selectedId) {
@@ -95,6 +97,11 @@ export function Canvas({ width, height, background, sections, elements, selected
     return (
         <div
             onClick={handleCanvasClick}
+            onMouseMove={(e) => {
+                const target = (e.target as HTMLElement).closest("[data-element-id]");
+                setHoveredId(target ? target.getAttribute("data-element-id") : null);
+            }}
+            onMouseLeave={() => setHoveredId(null)}
             style={{
                 position: "relative",
                 width: canvasW,
@@ -118,48 +125,57 @@ export function Canvas({ width, height, background, sections, elements, selected
             )}
             {/* All elements rendered at absolute position — NO section boundaries */}
             {sorted.map(el => {
-                if (el.type === "text") {
-                    return (
-                        <TextElement
-                            key={el.id}
-                            element={el}
-                            zoom={zoom}
-                            isSelected={el.id === selectedId}
-                            isEditing={el.id === editingId}
-                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
-                            onDoubleClick={() => handleDoubleClick(el.id, "text")}
-                            onFinishEditing={() => setEditingId(null)}
-                            onUpdateText={(id, text) => dispatch({
-                                type: "UPDATE_ELEMENT", id,
-                                changes: { props: { ...el.props, text } },
-                            })}
-                            onUpdateProps={(id, changes) => dispatch({ type: "UPDATE_ELEMENT", id, changes })}
-                        />
-                    );
-                }
-                if (el.type === "image") {
-                    return (
-                        <ImageElement
-                            key={el.id}
-                            element={el}
-                            zoom={zoom}
-                            isSelected={el.id === selectedId}
-                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
-                        />
-                    );
-                }
-                if (el.type === "widget") {
-                    return (
-                        <WidgetElement
-                            key={el.id}
-                            element={el}
-                            zoom={zoom}
-                            isSelected={el.id === selectedId}
-                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
-                        />
-                    );
-                }
-                return null;
+                const isHovered = el.id === hoveredId && el.id !== selectedId;
+                return (
+                    <div key={el.id} style={{ position: "contents" as never }}>
+                        {isHovered && (
+                            <div style={{
+                                position: "absolute",
+                                left: el.x * scale - 1, top: el.y * scale - 1,
+                                width: el.width * scale + 2, height: el.height * scale + 2,
+                                border: "1.5px dashed #3b82f6",
+                                borderRadius: 4, pointerEvents: "none", zIndex: 9970,
+                                transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                                transformOrigin: "center center",
+                            }} />
+                        )}
+                        {el.type === "text" && (
+                            <TextElement
+                                key={el.id}
+                                element={el}
+                                zoom={zoom}
+                                isSelected={el.id === selectedId}
+                                isEditing={el.id === editingId}
+                                onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                                onDoubleClick={() => handleDoubleClick(el.id, "text")}
+                                onFinishEditing={() => setEditingId(null)}
+                                onUpdateText={(id, text) => dispatch({
+                                    type: "UPDATE_ELEMENT", id,
+                                    changes: { props: { ...el.props, text } },
+                                })}
+                                onUpdateProps={(id, changes) => dispatch({ type: "UPDATE_ELEMENT", id, changes })}
+                            />
+                        )}
+                        {el.type === "image" && (
+                            <ImageElement
+                                key={el.id}
+                                element={el}
+                                zoom={zoom}
+                                isSelected={el.id === selectedId}
+                                onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                            />
+                        )}
+                        {el.type === "widget" && (
+                            <WidgetElement
+                                key={el.id}
+                                element={el}
+                                zoom={zoom}
+                                isSelected={el.id === selectedId}
+                                onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                            />
+                        )}
+                    </div>
+                );
             })}
             {/* Sprint 20: Center alignment guides */}
             {selectedEl && (() => {
