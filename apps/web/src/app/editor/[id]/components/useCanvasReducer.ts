@@ -98,6 +98,7 @@ export interface CanvasElement {
 }
 
 export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
+export type IntroEffect = "none" | "envelope" | "fade" | "slide";
 
 export interface CanvasState {
     width: number;
@@ -110,6 +111,7 @@ export interface CanvasState {
     past: { elements: CanvasElement[], sections: CanvasSection[] }[];
     future: { elements: CanvasElement[], sections: CanvasSection[] }[];
     particleEffect: ParticleEffect;
+    introEffect: IntroEffect;
 }
 
 const MAX_HISTORY = 50;
@@ -131,6 +133,7 @@ export type Action =
     | { type: "SEND_BACKWARD"; id: string }
     | { type: "DUPLICATE"; id: string }
     | { type: "SET_PARTICLE_EFFECT"; effect: ParticleEffect }
+    | { type: "SET_INTRO_EFFECT"; effect: IntroEffect }
     | { type: "ADD_SECTION" }
     | { type: "UPDATE_SECTION"; id: string; changes: Partial<CanvasSection> }
     | { type: "DELETE_SECTION"; id: string }
@@ -187,6 +190,8 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             return { ...state, zoom: action.zoom };
         case "SET_PARTICLE_EFFECT":
             return { ...state, particleEffect: action.effect };
+        case "SET_INTRO_EFFECT":
+            return { ...state, introEffect: action.effect };
         case "LOAD": {
             // Backward compatibility
             const loadedSections = action.sections && action.sections.length > 0 
@@ -308,6 +313,7 @@ export const initialCanvasState: CanvasState = {
     past: [],
     future: [],
     particleEffect: "none",
+    introEffect: "none",
 };
 
 // ── Hook ──

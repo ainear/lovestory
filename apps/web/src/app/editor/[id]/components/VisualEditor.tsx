@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home, Share2, Layers } from "lucide-react";
 import { Canvas } from "./Canvas";
-import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
+import { useCanvasReducer, type CanvasElement, type ParticleEffect, type IntroEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
@@ -979,6 +979,25 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         ))}
                                     </div>
                                     <p style={{ fontSize: 8, color: "#9ca3af", margin: "2px 0 0", textAlign: "center" }}>📷 Ảnh từ Unsplash — miễn phí thương mại</p>
+                                    {/* Sprint 37: Custom Background Upload */}
+                                    <div style={{ marginTop: 10, padding: "10px 12px", background: "#f0fdf4", borderRadius: 10, border: "1px dashed #86efac" }}>
+                                        <p style={{ fontSize: 11, color: "#15803d", margin: "0 0 6px", fontWeight: 600 }}>📤 Ảnh nền riêng</p>
+                                        <label style={{
+                                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                            padding: "10px", borderRadius: 8, border: "1px dashed #4ade80",
+                                            background: "#fff", cursor: "pointer", fontSize: 12, color: "#15803d", fontWeight: 600,
+                                        }}>
+                                            📁 Tải ảnh nền lên
+                                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const url = URL.createObjectURL(file);
+                                                    dispatch({ type: "SET_BACKGROUND", background: `url(${url}) center/cover` });
+                                                }
+                                            }} />
+                                        </label>
+                                        <p style={{ fontSize: 9, color: "#86efac", margin: "4px 0 0", textAlign: "center" }}>JPG, PNG, WEBP — tối đa 5MB</p>
+                                    </div>
                                 </div>
                             )}
 
@@ -1004,6 +1023,28 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             }}>
                                             {fx.label}
                                             {state.particleEffect === fx.effect && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 12 }}>✔</span>}
+                                        </button>
+                                    ))}
+                                    {/* Sprint 37: Intro Effect */}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "12px 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>✉️ Hiệu ứng mở đầu</p>
+                                    {([
+                                        { label: "✉️ Phong bì mở", effect: "envelope" as IntroEffect, desc: "Hiệu ứng mở phong bì cưới" },
+                                        { label: "🌅 Fade In", effect: "fade" as IntroEffect, desc: "Mờ dần hiện ra" },
+                                        { label: "📜 Slide Up", effect: "slide" as IntroEffect, desc: "Trượt từ dưới lên" },
+                                        { label: "🚫 Không", effect: "none" as IntroEffect, desc: "Không hiệu ứng mở đầu" },
+                                    ]).map(fx => (
+                                        <button key={fx.effect}
+                                            onClick={() => dispatch({ type: "SET_INTRO_EFFECT", effect: fx.effect })}
+                                            style={{
+                                                padding: "10px 14px", borderRadius: 10,
+                                                border: `1px solid ${state.introEffect === fx.effect ? "#ff6b9d" : "#e5e7eb"}`,
+                                                background: state.introEffect === fx.effect ? "#fdf2f8" : "#fff",
+                                                cursor: "pointer", fontSize: 13, color: "#374151",
+                                                display: "flex", alignItems: "center", gap: 8, textAlign: "left",
+                                            }}>
+                                            <span>{fx.label}</span>
+                                            <span style={{ fontSize: 9, color: "#9ca3af", flex: 1 }}>{fx.desc}</span>
+                                            {state.introEffect === fx.effect && <span style={{ color: "#ff6b9d", fontSize: 12 }}>✔</span>}
                                         </button>
                                     ))}
                                 </div>
