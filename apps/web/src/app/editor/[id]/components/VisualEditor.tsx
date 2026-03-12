@@ -110,6 +110,8 @@ interface VisualEditorProps {
 export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPublish }: VisualEditorProps) {
     const [activeTab, setActiveTab] = useState("text");
     const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+    // Sprint 21: Clipboard for copy-paste
+    const [clipboard, setClipboard] = useState<CanvasElement | null>(null);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,6 +216,23 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             else if (ctrl && e.key === "d" && state.selectedId) { e.preventDefault(); dispatch({ type: "DUPLICATE", id: state.selectedId }); }
             else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
             else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
+            // Sprint 21: Copy-paste (Ctrl+C / Ctrl+V)
+            else if (ctrl && e.key === "c" && state.selectedId) {
+                e.preventDefault();
+                const copyEl = state.elements.find(el => el.id === state.selectedId);
+                if (copyEl) setClipboard({ ...copyEl });
+            }
+            else if (ctrl && e.key === "v" && clipboard) {
+                e.preventDefault();
+                const newId = Math.random().toString(36).slice(2, 10);
+                const pastedEl: CanvasElement = { ...clipboard, id: newId, x: clipboard.x + 20, y: clipboard.y + 20 };
+                dispatch({ type: "ADD_ELEMENT", element: pastedEl });
+                dispatch({ type: "SELECT", id: newId });
+            }
+            // Sprint 21: Zoom shortcuts (Ctrl+/− and Ctrl+0)
+            else if (ctrl && (e.key === "=" || e.key === "+")) { e.preventDefault(); dispatch({ type: "SET_ZOOM", zoom: Math.min(200, state.zoom + 25) }); }
+            else if (ctrl && e.key === "-") { e.preventDefault(); dispatch({ type: "SET_ZOOM", zoom: Math.max(25, state.zoom - 25) }); }
+            else if (ctrl && e.key === "0") { e.preventDefault(); dispatch({ type: "SET_ZOOM", zoom: 100 }); }
             // Sprint 20: Arrow key nudge (1px, Shift = 10px)
             else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) && state.selectedId) {
                 e.preventDefault();
@@ -228,7 +247,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, [dispatch, state.selectedId, state.elements]);
+    }, [dispatch, state.selectedId, state.elements, state.zoom, clipboard]);
 
     // Sprint 11: Export canvas as PNG
     const handleExportPNG = useCallback(async () => {
@@ -362,16 +381,24 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                 {/* Undo / Redo */}
                 {[
-                    { icon: <Undo2 size={16} />, action: () => dispatch({ type: "UNDO" }), disabled: state.past.length === 0, title: "Hoàn tác (⌘Z)" },
-                    { icon: <Redo2 size={16} />, action: () => dispatch({ type: "REDO" }), disabled: state.future.length === 0, title: "Làm lại (⌘⇧Z)" },
+                    { icon: <Undo2 size={16} />, action: () => dispatch({ type: "UNDO" }), disabled: state.past.length === 0, title: "Hoàn tác (⌘Z)", count: state.past.length },
+                    { icon: <Redo2 size={16} />, action: () => dispatch({ type: "REDO" }), disabled: state.future.length === 0, title: "Làm lại (⌘⇧Z)", count: state.future.length },
                 ].map((btn, i) => (
-                    <button key={i} onClick={btn.action} disabled={btn.disabled} title={btn.title} style={{
-                        width: 32, height: 32, border: "1px solid #e5e7eb",
+                    <button key={i} onClick={btn.action} disabled={btn.disabled} title={`${btn.title} (${btn.count})`} style={{
+                        width: 32, height: 32, border: "1px solid #e5e7eb", position: "relative",
                         borderRadius: 8, background: "#fff", cursor: btn.disabled ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         color: btn.disabled ? "#d1d5db" : "#374151",
                     }}>
                         {btn.icon}
+                        {btn.count > 0 && (
+                            <span style={{
+                                position: "absolute", top: -4, right: -4,
+                                background: "#3b82f6", color: "#fff", fontSize: 9, fontWeight: 700,
+                                borderRadius: 99, minWidth: 14, height: 14, lineHeight: "14px",
+                                textAlign: "center", padding: "0 3px",
+                            }}>{btn.count}</span>
+                        )}
                     </button>
                 ))}
 
