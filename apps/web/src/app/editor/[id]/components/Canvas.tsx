@@ -16,10 +16,11 @@ interface CanvasProps {
     selectedId: string | null;
     zoom: number;
     particleEffect: ParticleEffect;
+    showGrid?: boolean;
     dispatch: (action: Action) => void;
 }
 
-export function Canvas({ width, height, background, sections, elements, selectedId, zoom, particleEffect, dispatch }: CanvasProps) {
+export function Canvas({ width, height, background, sections, elements, selectedId, zoom, particleEffect, showGrid, dispatch }: CanvasProps) {
     const scale = zoom / 100;
     const canvasW = width * scale;
 
@@ -106,6 +107,15 @@ export function Canvas({ width, height, background, sections, elements, selected
                 cursor: "default",
             }}
         >
+            {/* Sprint 22: Grid overlay */}
+            {showGrid && (
+                <div style={{
+                    position: "absolute", inset: 0, zIndex: 9980, pointerEvents: "none",
+                    backgroundImage: "radial-gradient(circle, #cbd5e1 0.8px, transparent 0.8px)",
+                    backgroundSize: `${20 * scale}px ${20 * scale}px`,
+                    opacity: 0.5,
+                }} />
+            )}
             {/* All elements rendered at absolute position — NO section boundaries */}
             {sorted.map(el => {
                 if (el.type === "text") {

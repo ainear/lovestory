@@ -393,6 +393,13 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                         onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Math.max(0, Math.min(1, Number(e.target.value))) } })}
                         style={{ width: 56, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, textAlign: "right", outline: "none" }} />
                 </div>
+                {/* Sprint 22: Opacity quick presets */}
+                <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+                    {[25, 50, 75, 100].map(v => (
+                        <button key={v} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: v / 100 } })}
+                            style={{ flex: 1, padding: "3px 0", fontSize: 10, borderRadius: 4, border: "1px solid #e5e7eb", background: Math.round((el.opacity ?? 1) * 100) === v ? "#3b82f6" : "#fff", color: Math.round((el.opacity ?? 1) * 100) === v ? "#fff" : "#6b7280", cursor: "pointer", fontWeight: 600 }}>{v}%</button>
+                    ))}
+                </div>
                 <Label>Xoay: {el.rotation ?? 0}°</Label>
                 <input type="range" min={-180} max={180}
                     value={el.rotation ?? 0}

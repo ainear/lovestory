@@ -112,6 +112,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
     // Sprint 21: Clipboard for copy-paste
     const [clipboard, setClipboard] = useState<CanvasElement | null>(null);
+    // Sprint 22: Canvas grid overlay
+    const [showGrid, setShowGrid] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -926,12 +928,12 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                 border: "1px solid #e5e7eb",
                             }}>
                                 {[
-                                    { icon: <Copy size={14} />, label: "Nhân bản", action: () => dispatch({ type: "DUPLICATE", id: sel.id }) },
-                                    { icon: <ArrowUp size={14} />, label: "Lên", action: () => dispatch({ type: "BRING_FORWARD", id: sel.id }) },
-                                    { icon: <ArrowDown size={14} />, label: "Xuống", action: () => dispatch({ type: "SEND_BACKWARD", id: sel.id }) },
-                                    { icon: <Trash2 size={14} />, label: "Xóa", action: () => dispatch({ type: "DELETE_ELEMENT", id: sel.id }), danger: true },
+                                    { icon: <Copy size={14} />, label: "Nhân bản", shortcut: "⌘D", action: () => dispatch({ type: "DUPLICATE", id: sel.id }) },
+                                    { icon: <ArrowUp size={14} />, label: "Lên", shortcut: "", action: () => dispatch({ type: "BRING_FORWARD", id: sel.id }) },
+                                    { icon: <ArrowDown size={14} />, label: "Xuống", shortcut: "", action: () => dispatch({ type: "SEND_BACKWARD", id: sel.id }) },
+                                    { icon: <Trash2 size={14} />, label: "Xóa", shortcut: "Del", action: () => dispatch({ type: "DELETE_ELEMENT", id: sel.id }), danger: true },
                                 ].map(btn => (
-                                    <button key={btn.label} title={btn.label} onClick={btn.action} style={{
+                                    <button key={btn.label} title={`${btn.label}${btn.shortcut ? ` (${btn.shortcut})` : ""}`} onClick={btn.action} style={{
                                         padding: "6px 10px", borderRadius: 8, border: "none",
                                         background: "transparent", cursor: "pointer",
                                         color: (btn as { danger?: boolean }).danger ? "#ef4444" : "#4b5563",
@@ -962,6 +964,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             selectedId={state.selectedId}
                             zoom={state.zoom}
                             particleEffect={state.particleEffect ?? "none"}
+                            showGrid={showGrid}
                             dispatch={dispatch}
                         />
                         {/* Sprint 11: Empty canvas guidance */}
@@ -1030,6 +1033,15 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             onMouseLeave={e => e.currentTarget.style.color = "#6b7280"}
                         >
                             <ZoomIn size={16} />
+                        </button>
+                        {/* Sprint 22: Grid toggle */}
+                        <div style={{ width: 1, height: 16, background: "#e5e7eb" }} />
+                        <button
+                            title={showGrid ? "Ẩn lưới (Grid Off)" : "Hiện lưới (Grid On)"}
+                            onClick={() => setShowGrid(g => !g)}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: showGrid ? "#3b82f6" : "#6b7280", padding: 0, display: "flex", transition: "color 0.2s" }}
+                        >
+                            <Grid size={16} />
                         </button>
                     </div>
 
