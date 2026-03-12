@@ -811,6 +811,10 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             type: "widget", emoji: "▶️", label: "YouTube Video", desc: "Nhúng video YouTube vào thiệp",
                                             props: { widgetType: "youtube", label: "Video cưới", youtubeUrl: "" }, w: 350, h: 200
                                         },
+                                        {
+                                            type: "widget", emoji: "📞", label: "Nút gọi", desc: "Nút bấm gọi điện cho cô dâu/chú rể",
+                                            props: { widgetType: "call", label: "Liên hệ cô/chú rể", phoneNumber: "0909 xxx xxx" }, w: 300, h: 140
+                                        },
                                     ] as Array<{ type: string; emoji: string; label: string; desc: string; props: Record<string, string>; w: number; h: number }>).map((w) => (
                                         <button key={w.label}
                                             onClick={() => dispatch({

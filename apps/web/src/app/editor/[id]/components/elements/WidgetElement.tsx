@@ -165,6 +165,18 @@ function YouTubeWidget({ props, scale }: { props: CanvasElement["props"]; scale:
     );
 }
 
+// ── CALL BUTTON WIDGET (Sprint 33 — Cinelove parity) ──
+function CallWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    return (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", borderRadius: 12 * scale, border: "1px solid #6ee7b7", padding: 14 * scale, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 * scale }}>
+            <span style={{ fontSize: 28 * scale }}>📞</span>
+            <p style={{ fontSize: 12 * scale, fontWeight: 700, color: "#065f46", margin: 0 }}>{props.label || "Liên hệ cô/chú rể"}</p>
+            <p style={{ fontSize: 10 * scale, color: "#059669", margin: 0, fontWeight: 600 }}>{props.phoneNumber || "0909 xxx xxx"}</p>
+            <button style={{ padding: `${7 * scale}px ${20 * scale}px`, borderRadius: 99, border: "none", background: "#10b981", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 * scale }}>📱 Gọi ngay</button>
+        </div>
+    );
+}
+
 // ── MAIN WIDGET ELEMENT ──
 export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetElementProps) {
     const scale = zoom / 100;
@@ -179,6 +191,7 @@ export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetEle
             {wt === "qr" && <QRWidget props={props} scale={scale} />}
             {wt === "gift" && <GiftWidget props={props} scale={scale} />}
             {wt === "youtube" && <YouTubeWidget props={props} scale={scale} />}
+            {wt === "call" && <CallWidget props={props} scale={scale} />}
         </div>
     );
 }
