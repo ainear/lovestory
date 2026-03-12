@@ -116,24 +116,45 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                 </div>
             )}
 
-            {/* Primary action buttons — Cinelove style */}
+            {/* Sprint 32: Crop mode controls */}
             <div style={{ padding: "4px 12px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
-                <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => {}} style={{
-                        flex: 1, padding: "9px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
-                        background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#374151",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                    }}>
-                        <Scissors size={13} /> Cắt ảnh
+                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    <button onClick={() => upd({ objectFit: p.objectFit === "contain" ? "cover" : "contain" })}
+                        style={{
+                            flex: 1, padding: "7px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
+                            background: p.objectFit === "contain" ? "#eff6ff" : "#fff",
+                            cursor: "pointer", fontSize: 11, fontWeight: 600,
+                            color: p.objectFit === "contain" ? "#2563eb" : "#374151",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                        }}>
+                        <Scissors size={12} /> {p.objectFit === "contain" ? "Vừa khung" : "Cắt vừa"}
                     </button>
-                    <button onClick={onReplaceImage} style={{
-                        flex: 1, padding: "9px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
-                        background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#374151",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                    }}>
-                        <ImageIcon size={13} /> Đổi ảnh
-                    </button>
+                    {([
+                        { label: "1:1", w: 1, h: 1 },
+                        { label: "4:3", w: 4, h: 3 },
+                        { label: "3:4", w: 3, h: 4 },
+                        { label: "16:9", w: 16, h: 9 },
+                    ] as const).map(r => (
+                        <button key={r.label} onClick={() => {
+                            const newW = Math.min(el.width, 350);
+                            const newH = Math.round(newW * r.h / r.w);
+                            dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { width: newW, height: newH } });
+                        }}
+                        style={{
+                            padding: "7px 10px", borderRadius: 8, border: "1.5px solid #e5e7eb",
+                            background: "#fff", cursor: "pointer", fontSize: 10, fontWeight: 600, color: "#6b7280",
+                        }}>
+                            {r.label}
+                        </button>
+                    ))}
                 </div>
+                <button onClick={onReplaceImage} style={{
+                    width: "100%", padding: "9px 0", borderRadius: 8, border: "1.5px solid #e5e7eb",
+                    background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#374151",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                }}>
+                    <ImageIcon size={13} /> Đổi ảnh
+                </button>
                 <button onClick={() => alert("Tính năng đang phát triển")} style={{
                     width: "100%", padding: "9px 0", borderRadius: 8, border: "none",
                     background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
