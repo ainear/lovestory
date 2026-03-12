@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import type { CanvasElement, CanvasSection as SectionType, Action } from "./useCanvasReducer";
-import { CanvasSection } from "./CanvasSection";
+import { TextElement } from "./elements/TextElement";
+import { ImageElement } from "./elements/ImageElement";
+import { WidgetElement } from "./elements/WidgetElement";
+import { SelectionBox } from "./SelectionBox";
 
 interface CanvasProps {
     width: number;
@@ -19,10 +22,8 @@ export function Canvas({ width, height, background, sections, elements, selected
     const scale = zoom / 100;
     const canvasW = width * scale;
 
-    // editingId: which text element is currently in inline-edit mode
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Stop editing when selection changes to a different element or clears
     useEffect(() => {
         if (editingId && editingId !== selectedId) {
             setEditingId(null);
@@ -43,7 +44,6 @@ export function Canvas({ width, height, background, sections, elements, selected
     // Keyboard shortcuts
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            // Don't intercept if inline editing is active
             if (editingId) return;
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
 
@@ -66,7 +66,6 @@ export function Canvas({ width, height, background, sections, elements, selected
                 e.preventDefault();
                 if (selectedId) dispatch({ type: "DUPLICATE", id: selectedId });
             }
-            // Arrow nudge
             if (selectedId && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
                 e.preventDefault();
                 const el = elements.find(el => el.id === selectedId);
@@ -82,18 +81,22 @@ export function Canvas({ width, height, background, sections, elements, selected
     }, [selectedId, elements, dispatch, editingId]);
 
     const selectedEl = elements.find(e => e.id === selectedId) ?? null;
-
-    // Sort by zIndex for rendering
     const sorted = [...elements].sort((a, b) => a.zIndex - b.zIndex);
+
+    // Auto-compute canvas height: max bottom edge of all elements + padding, minimum = height prop
+    const computedHeight = useMemo(() => {
+        if (elements.length === 0) return height;
+        const maxBottom = Math.max(...elements.map(el => el.y + el.height));
+        return Math.max(height, maxBottom + 100); // 100px padding at bottom
+    }, [elements, height]);
 
     return (
         <div
+            onClick={handleCanvasClick}
             style={{
                 position: "relative",
                 width: canvasW,
-                // height is determined by the total height of sections
-                display: "flex",
-                flexDirection: "column",
+                height: computedHeight * scale,
                 background,
                 boxShadow: "0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)",
                 borderRadius: 4,
@@ -102,20 +105,66 @@ export function Canvas({ width, height, background, sections, elements, selected
                 cursor: "default",
             }}
         >
-            {sections.map(section => (
-                <CanvasSection
-                    key={section.id}
-                    section={section}
-                    elements={elements.filter(e => e.sectionId === section.id)}
-                    selectedId={selectedId}
-                    editingId={editingId}
+            {/* All elements rendered at absolute position — NO section boundaries */}
+            {sorted.map(el => {
+                if (el.type === "text") {
+                    return (
+                        <TextElement
+                            key={el.id}
+                            element={el}
+                            zoom={zoom}
+                            isSelected={el.id === selectedId}
+                            isEditing={el.id === editingId}
+                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                            onDoubleClick={() => handleDoubleClick(el.id, "text")}
+                            onFinishEditing={() => setEditingId(null)}
+                            onUpdateText={(id, text) => dispatch({
+                                type: "UPDATE_ELEMENT", id,
+                                changes: { props: { ...el.props, text } },
+                            })}
+                            onUpdateProps={(id, changes) => dispatch({ type: "UPDATE_ELEMENT", id, changes })}
+                        />
+                    );
+                }
+                if (el.type === "image") {
+                    return (
+                        <ImageElement
+                            key={el.id}
+                            element={el}
+                            zoom={zoom}
+                            isSelected={el.id === selectedId}
+                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                        />
+                    );
+                }
+                if (el.type === "widget") {
+                    return (
+                        <WidgetElement
+                            key={el.id}
+                            element={el}
+                            zoom={zoom}
+                            isSelected={el.id === selectedId}
+                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                        />
+                    );
+                }
+                return null;
+            })}
+
+            {/* Selection overlay */}
+            {selectedEl && !editingId && (
+                <SelectionBox
+                    element={selectedEl}
                     zoom={zoom}
-                    dispatch={dispatch}
-                    setEditingId={setEditingId}
-                    handleDoubleClick={handleDoubleClick}
-                    onClick={handleCanvasClick}
+                    onMove={(id, x, y) => dispatch({ type: "MOVE", id, x, y })}
+                    onResize={(id, x, y, w, h) => dispatch({ type: "RESIZE", id, x, y, width: w, height: h })}
+                    onDelete={(id) => dispatch({ type: "DELETE_ELEMENT", id })}
+                    onDuplicate={(id) => dispatch({ type: "DUPLICATE", id })}
+                    onBringForward={(id) => dispatch({ type: "BRING_FORWARD", id })}
+                    onSendBackward={(id) => dispatch({ type: "SEND_BACKWARD", id })}
+                    onDoubleClick={() => handleDoubleClick(selectedEl.id, selectedEl.type)}
                 />
-            ))}
+            )}
         </div>
     );
 }

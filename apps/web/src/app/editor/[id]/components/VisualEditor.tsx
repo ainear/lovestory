@@ -858,26 +858,6 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             borderRadius: 10, letterSpacing: 0.5,
                             pointerEvents: "none", whiteSpace: "nowrap",
                         }}>7app.online — Tạo thiệp miễn phí</div>
-                        <div style={{ display: "flex", justifyContent: "center", marginTop: 24, paddingBottom: 68 }}>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    dispatch({ type: "ADD_SECTION" });
-                                }}
-                                style={{
-                                    display: "flex", alignItems: "center", gap: 6,
-                                    padding: "10px 20px", borderRadius: 20,
-                                    background: "#fff", border: "1px solid #e5e7eb",
-                                    color: "#4b5563", fontSize: 13, fontWeight: 600,
-                                    cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                                    transition: "all 0.2s"
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#4b5563"; }}
-                            >
-                                <Plus size={16} /> Thêm Trang Mới
-                            </button>
-                        </div>
                         <QuickImageBar
                             elements={state.elements}
                             selectedId={state.selectedId}

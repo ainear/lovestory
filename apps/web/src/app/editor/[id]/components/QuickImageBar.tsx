@@ -112,7 +112,7 @@ export function QuickImageBar({ elements, selectedId, onSelectElement, onReplace
                                         onClick={() => handleThumbnailClick(el)}
                                         title={isSelected ? "Click lần 2 để đổi ảnh" : "Click để chọn"}
                                         style={{
-                                            width: 42, height: 42,
+                                            width: 60, height: 60,
                                             borderRadius: 8,
                                             border: isSelected ? "2.5px solid #ff6b9d" : "1.5px solid #e5e7eb",
                                             overflow: "hidden",
@@ -167,7 +167,7 @@ export function QuickImageBar({ elements, selectedId, onSelectElement, onReplace
                             onClick={() => fileInputRef.current?.click()}
                             title="Thêm ảnh mới"
                             style={{
-                                width: 42, height: 42, minWidth: 42,
+                                width: 60, height: 60, minWidth: 60,
                                 borderRadius: 8,
                                 border: "1.5px dashed #d1d5db",
                                 background: "#f9fafb",
