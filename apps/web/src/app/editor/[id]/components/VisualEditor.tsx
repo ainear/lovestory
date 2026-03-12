@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -203,6 +203,39 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.elements, state.background, musicUrl]);
 
+    // Sprint 11: Keyboard shortcuts
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const t = e.target as HTMLElement;
+            if (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) return;
+            const ctrl = e.metaKey || e.ctrlKey;
+            if (ctrl && e.key === "z" && !e.shiftKey) { e.preventDefault(); dispatch({ type: "UNDO" }); }
+            else if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); dispatch({ type: "REDO" }); }
+            else if (ctrl && e.key === "d" && state.selectedId) { e.preventDefault(); dispatch({ type: "DUPLICATE", id: state.selectedId }); }
+            else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
+            else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [dispatch, state.selectedId]);
+
+    // Sprint 11: Export canvas as PNG
+    const handleExportPNG = useCallback(async () => {
+        const canvasArea = document.querySelector("[data-canvas-export]") as HTMLElement | null;
+        if (!canvasArea) { alert("Không tìm thấy canvas"); return; }
+        try {
+            const mod = await import("html2canvas");
+            const html2canvas = mod.default;
+            const canvas = await html2canvas(canvasArea, { scale: 2, useCORS: true, backgroundColor: null });
+            const link = document.createElement("a");
+            link.download = `thiep-cuoi-${projectSlug || "export"}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch {
+            alert("Export thất bại. Vui lòng thử lại.");
+        }
+    }, [projectSlug]);
+
     // P1: Music play/stop
     const handlePlayMusic = useCallback(() => {
         if (!musicUrl) return;
@@ -307,6 +340,20 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 }}>
                     <Eye size={14} /> Xem trước
                 </a>
+
+                {/* Export PNG */}
+                <button onClick={handleExportPNG} title="Tải thiệp dạng ảnh PNG" style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px", borderRadius: 10,
+                    border: "1px solid #e5e7eb", background: "#fff",
+                    color: "#374151", fontSize: 13, fontWeight: 500,
+                    cursor: "pointer", transition: "all 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
+                >
+                    <Download size={14} /> Tải PNG
+                </button>
 
                 {/* Publish — P0 fix: now saves status='published' before redirect */}
                 <button
@@ -767,7 +814,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         overflow: "auto", padding: 32,
                         background: "#e5e7eb",
                     }}>
-                    <div style={{ position: "relative", paddingBottom: 68 }}>
+                    <div style={{ position: "relative", paddingBottom: 68 }} data-canvas-export>
                         <Canvas
                             width={state.width}
                             height={state.height}
@@ -778,6 +825,28 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             zoom={state.zoom}
                             dispatch={dispatch}
                         />
+                        {/* Sprint 11: Empty canvas guidance */}
+                        {state.elements.length === 0 && (
+                            <div style={{
+                                position: "absolute", inset: 0,
+                                display: "flex", flexDirection: "column",
+                                alignItems: "center", justifyContent: "center",
+                                gap: 12, pointerEvents: "none",
+                            }}>
+                                <span style={{ fontSize: 48, opacity: 0.3 }}>💌</span>
+                                <p style={{ fontSize: 16, fontWeight: 600, color: "#9ca3af", margin: 0 }}>Chưa có nội dung</p>
+                                <p style={{ fontSize: 12, color: "#d1d5db", margin: 0, maxWidth: 220, textAlign: "center", lineHeight: 1.6 }}>Chọn &quot;Văn bản&quot;, &quot;Hình ảnh&quot; hoặc &quot;Tiện ích&quot; từ thanh bên trái để bắt đầu thiết kế thiệp</p>
+                            </div>
+                        )}
+                        {/* Sprint 11: Premium watermark */}
+                        <div style={{
+                            position: "absolute", bottom: 6, left: "50%",
+                            transform: "translateX(-50%)",
+                            background: "rgba(0,0,0,0.5)", color: "#fff",
+                            fontSize: 9, padding: "3px 10px",
+                            borderRadius: 10, letterSpacing: 0.5,
+                            pointerEvents: "none", whiteSpace: "nowrap",
+                        }}>7app.online — Tạo thiệp miễn phí</div>
                         <div style={{ display: "flex", justifyContent: "center", marginTop: 24, paddingBottom: 68 }}>
                             <button
                                 onClick={(e) => {
