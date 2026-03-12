@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home, Share2, Layers } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -360,6 +360,44 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 >
                     <Download size={14} /> Tải PNG
                 </button>
+
+                {/* Share / Copy Link */}
+                <button
+                    onClick={async () => {
+                        const url = `${window.location.origin}/i/${projectSlug}`;
+                        try {
+                            if (navigator.share) {
+                                await navigator.share({ title: "Thiệp mời cưới", url });
+                            } else {
+                                await navigator.clipboard.writeText(url);
+                                alert("✅ Đã sao chép link mời!");
+                            }
+                        } catch { /* user cancelled share */ }
+                    }}
+                    title="Chia sẻ thiệp mời"
+                    style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "8px 14px", borderRadius: 10,
+                        border: "1px solid #e5e7eb", background: "#fff",
+                        color: "#374151", fontSize: 13, fontWeight: 500,
+                        cursor: "pointer", transition: "all 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#3b82f6"; e.currentTarget.style.color = "#3b82f6"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
+                >
+                    <Share2 size={14} /> Chia sẻ
+                </button>
+
+                {/* Element count badge */}
+                <div style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    fontSize: 11, color: "#9ca3af", fontWeight: 500,
+                    padding: "4px 10px", borderRadius: 8,
+                    background: "#f9fafb", border: "1px solid #f3f4f6",
+                }}>
+                    <Layers size={12} />
+                    {state.elements.length} phần tử
+                </div>
 
                 {/* Publish — P0 fix: now saves status='published' before redirect */}
                 <button
