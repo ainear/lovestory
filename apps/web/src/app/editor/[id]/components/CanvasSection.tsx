@@ -3,6 +3,7 @@
 import type { CanvasElement, CanvasSection as SectionType, Action } from "./useCanvasReducer";
 import { TextElement } from "./elements/TextElement";
 import { ImageElement } from "./elements/ImageElement";
+import { WidgetElement } from "./elements/WidgetElement";
 import { SelectionBox } from "./SelectionBox";
 
 interface CanvasSectionProps {
@@ -61,6 +62,17 @@ export function CanvasSection({
                 if (el.type === "image") {
                     return (
                         <ImageElement
+                            key={el.id}
+                            element={el}
+                            zoom={zoom}
+                            isSelected={el.id === selectedId}
+                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
+                        />
+                    );
+                }
+                if (el.type === "widget") {
+                    return (
+                        <WidgetElement
                             key={el.id}
                             element={el}
                             zoom={zoom}

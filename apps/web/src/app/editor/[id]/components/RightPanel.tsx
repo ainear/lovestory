@@ -731,6 +731,73 @@ export function RightPanel({ selectedEl, dispatch, background, particleEffect, o
                 <TextPanel el={selectedEl} dispatch={dispatch} onShowFontPicker={onShowFontPicker} />
             )}
 
+            {/* Widget panel */}
+            {selectedEl?.type === "widget" && (() => {
+                const wp = selectedEl.props;
+                const updW = (changes: Record<string, unknown>) =>
+                    dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...wp, ...changes } } });
+
+                return (
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                        {/* Layer actions */}
+                        <div style={{ padding: "10px 12px 4px" }}>
+                            <LayerActions el={selectedEl} dispatch={dispatch} />
+                        </div>
+                        <div style={{ height: 1, background: "#f3f4f6" }} />
+
+                        <AccordionSection title="Cài đặt Widget" icon="⚙️" defaultOpen={true}>
+                            <Label>Nhãn</Label>
+                            <input type="text" value={wp.label ?? ""} onChange={e => updW({ label: e.target.value })}
+                                style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+
+                            {(wp.widgetType === "calendar" || wp.widgetType === "countdown") && (
+                                <>
+                                    <Label>Ngày cưới</Label>
+                                    <input type="date" value={wp.targetDate ?? ""} onChange={e => updW({ targetDate: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                </>
+                            )}
+
+                            {wp.widgetType === "calendar" && (
+                                <>
+                                    <Label>Ngày âm lịch</Label>
+                                    <input type="text" placeholder="Ví dụ: Mùng 8 tháng 12 năm Ất Tỵ"
+                                        value={wp.lunarDate ?? ""} onChange={e => updW({ lunarDate: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                </>
+                            )}
+
+                            {wp.widgetType === "map" && (
+                                <>
+                                    <Label>Tên địa điểm</Label>
+                                    <input type="text" value={wp.venueName ?? ""} onChange={e => updW({ venueName: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Địa chỉ</Label>
+                                    <input type="text" value={wp.venueAddress ?? ""} onChange={e => updW({ venueAddress: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Link Google Maps</Label>
+                                    <input type="url" value={wp.mapUrl ?? ""} onChange={e => updW({ mapUrl: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </>
+                            )}
+                        </AccordionSection>
+
+                        {/* Cơ bản */}
+                        <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={false}>
+                            <Label>Trong suất</Label>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                                <input type="range" min={0} max={100} value={Math.round((selectedEl.opacity ?? 1) * 100)}
+                                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                                    style={{ flex: 1 }} />
+                                <input type="number" min={0} max={1} step={0.01} value={(selectedEl.opacity ?? 1).toFixed(2)}
+                                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { opacity: Math.max(0, Math.min(1, Number(e.target.value))) } })}
+                                    style={{ width: 56, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, textAlign: "right", outline: "none" }} />
+                            </div>
+                        </AccordionSection>
+                    </div>
+                );
+            })()}
+
             {/* Font Picker Modal rendered as portal sibling */}
             {showFontPicker && selectedEl?.type === "text" && (() => {
                 const fp = selectedEl.props;

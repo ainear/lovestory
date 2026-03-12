@@ -495,12 +495,16 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                                     {([
                                         {
-                                            type: "countdown", emoji: "⏰", label: "Đếm ngược ngày cưới", desc: "Hiển thị thời gian đến ngày cưới",
-                                            props: { widgetType: "countdown", label: "Countdown", targetDate: "" }, w: 350, h: 100
+                                            type: "widget", emoji: "📅", label: "Lịch ngày cưới", desc: "Hiển thị lịch tháng với highlight ngày cưới",
+                                            props: { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }, w: 220, h: 220
+                                        },
+                                        {
+                                            type: "widget", emoji: "⏰", label: "Đếm ngược ngày cưới", desc: "Hiển thị thời gian đến ngày cưới",
+                                            props: { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }, w: 350, h: 100
                                         },
                                         {
                                             type: "widget", emoji: "🗺️", label: "Bản đồ", desc: "Gắn link Google Maps địa điểm",
-                                            props: { widgetType: "map", mapUrl: "https://maps.google.com", label: "Vị trí tiệc cưới" }, w: 350, h: 200
+                                            props: { widgetType: "map", mapUrl: "https://maps.google.com", label: "Vị trí tiệc cưới", venueName: "Diamond Palace", venueAddress: "123 Nguyễn Huệ, Q.1, TP.HCM" }, w: 350, h: 200
                                         },
                                         {
                                             type: "widget", emoji: "📱", label: "Mã QR", desc: "QR code link thiệp để chia sẻ",

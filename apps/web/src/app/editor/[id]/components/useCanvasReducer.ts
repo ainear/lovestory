@@ -3,7 +3,7 @@
 import { useReducer, useCallback } from "react";
 
 // ── Types ──
-export type ElementType = "text" | "image" | "sticker" | "shape";
+export type ElementType = "text" | "image" | "sticker" | "shape" | "widget";
 
 export interface TextProps {
     text: string;
@@ -50,6 +50,20 @@ export interface ImageProps {
     paddingLeft: number;
 }
 
+export interface WidgetProps {
+    widgetType: "calendar" | "countdown" | "map" | "qr" | "gift" | "rsvp" | "youtube";
+    label: string;
+    targetDate?: string;
+    lunarDate?: string;
+    mapUrl?: string;
+    venueName?: string;
+    venueAddress?: string;
+    qrValue?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
+}
+
 export interface ElementAnimation {
     entrance: "none" | "fadeIn" | "slideUp" | "zoomIn" | "bounceIn";
     loop: "none" | "pulse" | "float" | "shake";
@@ -74,7 +88,7 @@ export interface CanvasElement {
     zIndex: number;
     locked: boolean;
     animation?: ElementAnimation;
-    props: Partial<TextProps & ImageProps>;
+    props: Partial<TextProps & ImageProps & WidgetProps>;
 }
 
 export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
