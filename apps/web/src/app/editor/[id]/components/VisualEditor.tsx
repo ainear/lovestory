@@ -27,12 +27,12 @@ const TABS = [
 
 // Text preset styles
 const TEXT_PRESETS = [
-    { label: "Tiêu đề chính", text: "Tuấn Minh & Mai Lan", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const },
-    { label: "Tiêu đề phụ", text: "Trân trọng kính mời", fontSize: 18, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const },
-    { label: "Ngày tháng", text: "28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const },
-    { label: "Địa điểm", text: "Diamond Palace, TP.HCM", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const },
-    { label: "Ghi chú", text: "Sự hiện diện của Quý Khách là niềm hân hạnh của gia đình chúng tôi", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal" as const, fontStyle: "italic" as const },
-    { label: "Hashtag", text: "#TuanMinhMaiLan2026", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "bold" as const, fontStyle: "normal" as const },
+    { label: "Tiêu đề chính", text: "Nhập tiêu đề của bạn", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold" as const, fontStyle: "italic" as const },
+    { label: "Tiêu đề phụ", text: "Nhập nội dung phụ", fontSize: 18, fontFamily: "'Playfair Display', serif", fontWeight: "normal" as const, fontStyle: "italic" as const },
+    { label: "Ngày tháng", text: "DD · MM · YYYY", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold" as const, fontStyle: "normal" as const },
+    { label: "Địa điểm", text: "Tên nhà hàng, Thành phố", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal" as const, fontStyle: "normal" as const },
+    { label: "Ghi chú", text: "Nhập ghi chú của bạn tại đây", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal" as const, fontStyle: "italic" as const },
+    { label: "Hashtag", text: "#HashtagCủaBạn", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "bold" as const, fontStyle: "normal" as const },
 ];
 
 const BG_PRESETS = [
@@ -440,13 +440,16 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                     {TEXT_PRESETS.map((preset) => (
                                         <button key={preset.label}
                                             onClick={() => {
+                                                const newId = `el-${Date.now()}`;
+                                                const randomX = 20 + Math.floor(Math.random() * 20);
+                                                const randomY = 100 + state.elements.length * 60 + Math.floor(Math.random() * 30);
                                                 dispatch({
                                                     type: "ADD_ELEMENT",
                                                     element: {
-                                                        id: `el-${Date.now()}`,
+                                                        id: newId,
                                                         sectionId: state.sections[0]?.id || "section-1",
                                                         type: "text",
-                                                        x: 20, y: 120 + state.elements.length * 40,
+                                                        x: randomX, y: randomY,
                                                         width: 350, height: 60,
                                                         rotation: 0, opacity: 1, zIndex: state.elements.length + 1, locked: false,
                                                         props: {
@@ -455,11 +458,13 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                                             fontFamily: preset.fontFamily,
                                                             fontWeight: preset.fontWeight,
                                                             fontStyle: preset.fontStyle,
-                                                            color: "#1f2937",
+                                                            color: state.background.includes("0f0825") || state.background.includes("111827") ? "#ffffff" : "#1f2937",
                                                             textAlign: "center" as const,
                                                         },
                                                     },
                                                 });
+                                                // Auto-select the newly added element for immediate feedback
+                                                setTimeout(() => dispatch({ type: "SELECT", id: newId }), 50);
                                             }}
                                             style={{
                                                 padding: "10px 14px", borderRadius: 10,
