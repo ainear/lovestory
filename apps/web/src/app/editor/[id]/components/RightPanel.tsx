@@ -5,7 +5,7 @@ import {
     Scissors, ImageIcon, Sparkles, Trash2,
     ChevronsUp, ChevronsDown, Copy,
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    ChevronDown, Link2,
+    ChevronDown, Link2, Lock, Unlock,
 } from "lucide-react";
 import type { CanvasElement, Action, ParticleEffect } from "./useCanvasReducer";
 import { AccordionSection } from "./AccordionSection";
@@ -309,6 +309,37 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
 
             {/* ── Cơ bản ── */}
             <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={true}>
+                {/* Lock toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <Label>Khóa phần tử</Label>
+                    <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { locked: !el.locked } })} style={{
+                        display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 7, cursor: "pointer",
+                        border: `1.5px solid ${el.locked ? "#ef4444" : "#e5e7eb"}`,
+                        background: el.locked ? "#fef2f2" : "#fff",
+                        color: el.locked ? "#ef4444" : "#6b7280", fontSize: 11, fontWeight: 600,
+                    }}>
+                        {el.locked ? <Lock size={12} /> : <Unlock size={12} />}
+                        {el.locked ? "Đã khóa" : "Mở khóa"}
+                    </button>
+                </div>
+                {/* Size & Position */}
+                <Label>Kích thước & Vị trí</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 10 }}>
+                    {[
+                        { label: "W", key: "width", value: el.width },
+                        { label: "H", key: "height", value: el.height },
+                        { label: "X", key: "x", value: el.x },
+                        { label: "Y", key: "y", value: el.y },
+                    ].map(({ label, key, value }) => (
+                        <div key={key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", width: 14 }}>{label}</span>
+                            <input type="number" value={Math.round(value)}
+                                onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { [key]: Number(e.target.value) } })}
+                                style={{ flex: 1, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 11, outline: "none", boxSizing: "border-box" }}
+                            />
+                        </div>
+                    ))}
+                </div>
                 <Label>Trong suất</Label>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                     <input type="range" min={0} max={100} value={Math.round((el.opacity ?? 1) * 100)}
@@ -595,6 +626,57 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
                         Mở tab mới
                     </label>
                 </div>
+            </AccordionSection>
+
+            {/* ── Cơ bản (Text) ── */}
+            <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={false}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <Label>Khóa phần tử</Label>
+                    <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { locked: !el.locked } })} style={{
+                        display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 7, cursor: "pointer",
+                        border: `1.5px solid ${el.locked ? "#ef4444" : "#e5e7eb"}`,
+                        background: el.locked ? "#fef2f2" : "#fff",
+                        color: el.locked ? "#ef4444" : "#6b7280", fontSize: 11, fontWeight: 600,
+                    }}>
+                        {el.locked ? <Lock size={12} /> : <Unlock size={12} />}
+                        {el.locked ? "Đã khóa" : "Mở khóa"}
+                    </button>
+                </div>
+                <Label>Kích thước & Vị trí</Label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 10 }}>
+                    {[
+                        { label: "W", key: "width", value: el.width },
+                        { label: "H", key: "height", value: el.height },
+                        { label: "X", key: "x", value: el.x },
+                        { label: "Y", key: "y", value: el.y },
+                    ].map(({ label, key, value }) => (
+                        <div key={key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", width: 14 }}>{label}</span>
+                            <input type="number" value={Math.round(value)}
+                                onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { [key]: Number(e.target.value) } })}
+                                style={{ flex: 1, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 11, outline: "none", boxSizing: "border-box" }}
+                            />
+                        </div>
+                    ))}
+                </div>
+                <Label>Trong suất</Label>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <input type="range" min={0} max={100} value={Math.round((el.opacity ?? 1) * 100)}
+                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                        style={{ flex: 1 }} />
+                    <input type="number" min={0} max={1} step={0.01} value={(el.opacity ?? 1).toFixed(2)}
+                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Math.max(0, Math.min(1, Number(e.target.value))) } })}
+                        style={{ width: 56, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, textAlign: "right", outline: "none" }} />
+                </div>
+                <Label>Xoay: {el.rotation ?? 0}°</Label>
+                <input type="range" min={-180} max={180}
+                    value={el.rotation ?? 0}
+                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: Number(e.target.value) } })}
+                    style={{ width: "100%", marginBottom: 4 }} />
+                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: 0 } })} style={{
+                    width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
+                    background: "#f9fafb", cursor: "pointer", fontSize: 10, color: "#9ca3af",
+                }}>Reset 0°</button>
             </AccordionSection>
         </div>
     );
