@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -289,7 +289,13 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 background: "#fff", borderBottom: "1px solid #e5e7eb",
                 flexShrink: 0, zIndex: 100,
             }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d", marginRight: 8 }}>💌</span>
+                <a href="/dashboard" title="Về trang chủ" style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    textDecoration: "none", marginRight: 4,
+                }}>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d" }}>💌</span>
+                    <Home size={16} style={{ color: "#9ca3af" }} />
+                </a>
                 <span style={{ fontSize: 14, color: "#6b7280", fontWeight: 500, flex: 1 }}>Visual Editor</span>
 
                 {/* Undo / Redo */}
