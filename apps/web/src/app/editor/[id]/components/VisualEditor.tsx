@@ -120,6 +120,9 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [exportFormat, setExportFormat] = useState<"png" | "jpg">("png");
     const [showQR, setShowQR] = useState(false);
     const [fullscreenPreview, setFullscreenPreview] = useState(false);
+    // Sprint 26: Welcome onboarding + snap-to-grid
+    const [showWelcome, setShowWelcome] = useState(true);
+    const [snapToGrid, setSnapToGrid] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1045,6 +1048,28 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     </div>
                 </div>
                     
+                {/* Sprint 26: Welcome onboarding tooltip */}
+                {showWelcome && !state.selectedId && (
+                    <div style={{
+                        position: "absolute", bottom: 80, left: "50%", transform: "translateX(-50%)",
+                        zIndex: 200, background: "linear-gradient(135deg, #1e293b, #334155)",
+                        borderRadius: 14, padding: "16px 24px", maxWidth: 380,
+                        boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+                        color: "#fff", fontSize: 13, lineHeight: 1.6,
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 14 }}>👋 Chào mừng đến Editor!</span>
+                            <button onClick={() => setShowWelcome(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 16 }}>✕</button>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, color: "#cbd5e1" }}>
+                            <span>📌 Click phần tử để chỉnh sửa</span>
+                            <span>🖱️ Kéo thả để di chuyển</span>
+                            <span>⌨️ Nhấn <kbd style={{ background: "#475569", padding: "1px 6px", borderRadius: 3, fontSize: 11 }}>⌘/</kbd> để xem phím tắt</span>
+                            <span>📱 Bấm <strong>QR</strong> để chia sẻ thiệp</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── Floating Zoom Controls ── */}
                     <div style={{
                         position: "absolute",
@@ -1084,6 +1109,19 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         >
                             <Grid size={16} />
                         </button>
+                        {/* Sprint 26: Snap toggle */}
+                        <button
+                            title={snapToGrid ? "Snap Off" : "Snap On (10px)"}
+                            onClick={() => setSnapToGrid(s => !s)}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: snapToGrid ? "#f59e0b" : "#6b7280", padding: 0, display: "flex", transition: "color 0.2s", fontSize: 12, fontWeight: 700 }}
+                        >
+                            🧲
+                        </button>
+                        {/* Sprint 26: Canvas dimension badge */}
+                        <div style={{ width: 1, height: 16, background: "#e5e7eb" }} />
+                        <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
+                            {state.width}×{state.height}
+                        </span>
                     </div>
 
                     {/* ── Floating Music Vinyl Icon ── */}
