@@ -184,6 +184,36 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                     width: "100%", padding: "5px 0", borderRadius: 6, border: "1px solid #e5e7eb",
                     background: "#f9fafb", cursor: "pointer", fontSize: 11, color: "#9ca3af",
                 }}>Reset mặc định</button>
+
+                {/* Image fit mode */}
+                <div style={{ marginTop: 10 }}>
+                    <Label>Chế độ ảnh</Label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
+                        {(["cover", "contain", "fill"] as const).map(fit => (
+                            <button key={fit} onClick={() => upd({ objectFit: fit })} style={{
+                                padding: "6px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
+                                border: `1.5px solid ${(p.objectFit ?? "cover") === fit ? "#ff6b9d" : "#e5e7eb"}`,
+                                background: (p.objectFit ?? "cover") === fit ? "#fdf2f8" : "#fff",
+                                color: (p.objectFit ?? "cover") === fit ? "#ff6b9d" : "#374151",
+                            }}>{fit === "cover" ? "Lấp đầy" : fit === "contain" ? "Vừa khung" : "Kéo dãn"}</button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Quick border radius */}
+                <div style={{ marginTop: 10 }}>
+                    <Label>Bo góc nhanh</Label>
+                    <div style={{ display: "flex", gap: 4 }}>
+                        {[0, 8, 16, 50, 999].map(r => (
+                            <button key={r} onClick={() => upd({ borderRadius: r })} style={{
+                                flex: 1, padding: "6px 2px", borderRadius: 6, fontSize: 10, cursor: "pointer",
+                                border: `1.5px solid ${(p.borderRadius ?? 0) === r ? "#ff6b9d" : "#e5e7eb"}`,
+                                background: (p.borderRadius ?? 0) === r ? "#fdf2f8" : "#fff",
+                                color: (p.borderRadius ?? 0) === r ? "#ff6b9d" : "#374151",
+                            }}>{r === 0 ? "Vuông" : r === 999 ? "Tròn" : `${r}px`}</button>
+                        ))}
+                    </div>
+                </div>
             </AccordionSection>
 
             {/* ── Khoảng đệm ── */}
@@ -814,6 +844,16 @@ export function RightPanel({ selectedEl, allElements, dispatch, background, part
                                     }}
                                 />
                             ))}
+                        </div>
+
+                        {/* Custom bg color picker */}
+                        <div style={{ marginTop: 8, display: "flex", gap: 6, alignItems: "center" }}>
+                            <input type="color" value={background.startsWith("#") ? background : "#ffffff"}
+                                onChange={e => dispatch({ type: "SET_BACKGROUND", background: e.target.value })}
+                                style={{ width: 32, height: 28, borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer", padding: 1 }} />
+                            <input type="text" value={background} placeholder="#ffffff"
+                                onChange={e => dispatch({ type: "SET_BACKGROUND", background: e.target.value })}
+                                style={{ flex: 1, padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 11, fontFamily: "monospace", outline: "none" }} />
                         </div>
                     </AccordionSection>
 
