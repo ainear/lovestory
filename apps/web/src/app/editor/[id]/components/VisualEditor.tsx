@@ -125,6 +125,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [snapToGrid, setSnapToGrid] = useState(false);
     // Sprint 27: Duplicate toast
     const [dupToast, setDupToast] = useState(false);
+    // Sprint 28: Grid pattern + position indicator
+    const [gridPattern, setGridPattern] = useState<"dots" | "lines" | "cross">("dots");
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -270,6 +272,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             }
             // Sprint 24: Shortcut cheatsheet (Ctrl+/ or Ctrl+?)
             else if (ctrl && (e.key === "/" || e.key === "?")) { e.preventDefault(); setShowShortcuts(s => !s); }
+            // Sprint 28: Zoom to fit (⌘+1)
+            else if (ctrl && e.key === "1") {
+                e.preventDefault();
+                const containerW = window.innerWidth - 300 - 260; // minus sidebars
+                const containerH = window.innerHeight - 80; // minus toolbar
+                const fitZoom = Math.min(Math.floor((containerW / state.width) * 100), Math.floor((containerH / state.height) * 100), 200);
+                dispatch({ type: "SET_ZOOM", zoom: Math.max(25, fitZoom) });
+            }
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
@@ -1158,6 +1168,32 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
                             {state.width}×{state.height}
                         </span>
+                        {/* Sprint 28: X/Y position indicator */}
+                        {selectedEl && (
+                            <>
+                                <div style={{ width: 1, height: 16, background: "#e5e7eb" }} />
+                                <span style={{ fontSize: 10, color: "#6b7280", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
+                                    X:{Math.round(selectedEl.x)} Y:{Math.round(selectedEl.y)}
+                                </span>
+                            </>
+                        )}
+                        {/* Sprint 28: Grid pattern selector */}
+                        {showGrid && (
+                            <select
+                                value={gridPattern}
+                                onChange={e => setGridPattern(e.target.value as "dots" | "lines" | "cross")}
+                                title="Kiểu lưới"
+                                style={{
+                                    padding: "2px 4px", border: "1px solid #e5e7eb", borderRadius: 6,
+                                    fontSize: 10, color: "#6b7280", background: "#f9fafb",
+                                    cursor: "pointer", outline: "none",
+                                }}
+                            >
+                                <option value="dots">⊡ Dots</option>
+                                <option value="lines">⊞ Lines</option>
+                                <option value="cross">✚ Cross</option>
+                            </select>
+                        )}
                     </div>
 
                     {/* ── Floating Music Vinyl Icon ── */}
@@ -1298,6 +1334,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                 ["Escape", "Bỏ chọn"],
                                 ["⌘+ / ⌘−", "Phóng to / Thu nhỏ"],
                                 ["⌘0", "Zoom 100%"],
+                                ["⌘1", "Zoom vừa canvas"],
                                 ["Arrow ↑↓←→", "Di chuyển 1px"],
                                 ["Shift+Arrow", "Di chuyển 10px"],
                                 ["⌘A", "Chọn phần tử đầu"],
