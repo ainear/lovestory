@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home, Share2, Layers } from "lucide-react";
 import { Canvas } from "./Canvas";
-import { useCanvasReducer, type CanvasElement, type ParticleEffect, type IntroEffect } from "./useCanvasReducer";
+import { useCanvasReducer, type CanvasElement, type ParticleEffect, type IntroEffect, type MusicIconStyle } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
@@ -1151,6 +1151,30 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             }} />
                                         </label>
                                         <p style={{ fontSize: 9, color: "#a78bfa", margin: "4px 0 0", textAlign: "center" }}>Hỗ trợ MP3, WAV — tối đa 10MB</p>
+                                    </div>
+                                    {/* Sprint 38: Music Icon Style */}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "12px 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>🎨 Kiểu biểu tượng nhạc</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                                        {([
+                                            { id: "vinyl" as MusicIconStyle, emoji: "💿", label: "Đĩa xoay", desc: "Vinyl quay tròn" },
+                                            { id: "note" as MusicIconStyle, emoji: "🎵", label: "Nốt nhạc", desc: "Nốt nhạc bay" },
+                                            { id: "miniplayer" as MusicIconStyle, emoji: "🎧", label: "Mini Player", desc: "Thanh phát nhạc" },
+                                            { id: "wave" as MusicIconStyle, emoji: "🌊", label: "Sóng nhạc", desc: "Waveform" },
+                                        ]).map(st => (
+                                            <button key={st.id}
+                                                onClick={() => dispatch({ type: "SET_MUSIC_ICON_STYLE", style: st.id })}
+                                                style={{
+                                                    padding: "8px", borderRadius: 8,
+                                                    border: `2px solid ${state.musicIconStyle === st.id ? "#ff6b9d" : "#e5e7eb"}`,
+                                                    background: state.musicIconStyle === st.id ? "#fdf2f8" : "#fff",
+                                                    cursor: "pointer", textAlign: "center",
+                                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                                                }}>
+                                                <span style={{ fontSize: 20 }}>{st.emoji}</span>
+                                                <span style={{ fontSize: 10, fontWeight: 600, color: "#374151" }}>{st.label}</span>
+                                                <span style={{ fontSize: 8, color: "#9ca3af" }}>{st.desc}</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             )}

@@ -1046,6 +1046,27 @@ export function RightPanel({ selectedEl, allElements, dispatch, background, part
                                         style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                                 </>
                             )}
+                            {wp.widgetType === "call" && (
+                                <>
+                                    <Label>Số điện thoại</Label>
+                                    <input type="tel" placeholder="0909 xxx xxx" value={wp.phoneNumber ?? ""} onChange={e => updW({ phoneNumber: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", marginBottom: 6 }} />
+                                </>
+                            )}
+                            {wp.widgetType === "album" && (
+                                <>
+                                    <Label>Ảnh album (URL, phân tách bằng dấu phẩy)</Label>
+                                    <textarea placeholder="https://link1.jpg, https://link2.jpg" value={wp.albumImages ?? ""} onChange={e => updW({ albumImages: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", minHeight: 60, resize: "vertical" }} />
+                                </>
+                            )}
+                            {wp.widgetType === "guestname" && (
+                                <>
+                                    <Label>Dòng chữ kính mời</Label>
+                                    <input type="text" placeholder="Trân trọng kính mời" value={wp.guestNameLabel ?? ""} onChange={e => updW({ guestNameLabel: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </>
+                            )}
                         </AccordionSection>
 
                         {/* Cơ bản */}
