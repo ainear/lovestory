@@ -5,7 +5,7 @@ import {
     Scissors, ImageIcon, Sparkles, Trash2,
     ChevronsUp, ChevronsDown, Copy,
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    ChevronDown,
+    ChevronDown, Link2,
 } from "lucide-react";
 import type { CanvasElement, Action, ParticleEffect } from "./useCanvasReducer";
 import { AccordionSection } from "./AccordionSection";
@@ -288,13 +288,36 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                 </div>
             </AccordionSection>
 
-            {/* ── Độ mờ + Xoay ── */}
+            {/* ── Liên kết (Image) ── */}
+            <AccordionSection title="Liên kết" icon="🔗" defaultOpen={false}>
+                <Label>URL liên kết</Label>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <Link2 size={14} color="#9ca3af" />
+                    <input type="url" placeholder="https://..."
+                        value={(p as Record<string, unknown>).linkUrl as string ?? ""}
+                        onChange={e => upd({ linkUrl: e.target.value })}
+                        style={{ flex: 1, padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none" }} />
+                </div>
+                <div style={{ marginTop: 6 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6b7280", cursor: "pointer" }}>
+                        <input type="checkbox" checked={(p as Record<string, unknown>).linkNewTab as boolean ?? true}
+                            onChange={e => upd({ linkNewTab: e.target.checked })} style={{ width: 14, height: 14 }} />
+                        Mở tab mới
+                    </label>
+                </div>
+            </AccordionSection>
+
+            {/* ── Cơ bản ── */}
             <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={true}>
-                <Label>Độ trong suốt: {Math.round((el.opacity ?? 1) * 100)}%</Label>
-                <input type="range" min={10} max={100}
-                    value={Math.round((el.opacity ?? 1) * 100)}
-                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
-                    style={{ width: "100%", marginBottom: 10 }} />
+                <Label>Trong suất</Label>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <input type="range" min={0} max={100} value={Math.round((el.opacity ?? 1) * 100)}
+                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                        style={{ flex: 1 }} />
+                    <input type="number" min={0} max={1} step={0.01} value={(el.opacity ?? 1).toFixed(2)}
+                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Math.max(0, Math.min(1, Number(e.target.value))) } })}
+                        style={{ width: 56, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, textAlign: "right", outline: "none" }} />
+                </div>
                 <Label>Xoay: {el.rotation ?? 0}°</Label>
                 <input type="range" min={-180} max={180}
                     value={el.rotation ?? 0}
@@ -429,6 +452,73 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
                     <Label>Màu nền chữ</Label>
                     <ColorRow value={p.backgroundColor ?? "transparent"} onChange={c => upd({ backgroundColor: c })} />
                 </div>
+                <div style={{ marginTop: 10 }}>
+                    <Label>Trong suất</Label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <input type="range" min={0} max={100} value={Math.round((el.opacity ?? 1) * 100)}
+                            onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
+                            style={{ flex: 1 }} />
+                        <input type="number" min={0} max={1} step={0.01} value={(el.opacity ?? 1).toFixed(2)}
+                            onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Math.max(0, Math.min(1, Number(e.target.value))) } })}
+                            style={{ width: 56, padding: "5px 6px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, textAlign: "right", outline: "none" }} />
+                    </div>
+                </div>
+            </AccordionSection>
+
+            {/* ── Khoảng đệm (Text) ── */}
+            <AccordionSection title="Khoảng đệm" icon="📐" defaultOpen={false}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    {[
+                        { label: "Trên", key: "paddingTop" },
+                        { label: "Phải", key: "paddingRight" },
+                        { label: "Dưới", key: "paddingBottom" },
+                        { label: "Trái", key: "paddingLeft" },
+                    ].map(({ label, key }) => (
+                        <div key={key}>
+                            <Label>{label}</Label>
+                            <input type="number" min={0} max={100}
+                                value={(p as Record<string, unknown>)[key] as number ?? 0}
+                                onChange={e => upd({ [key]: Number(e.target.value) })}
+                                style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </AccordionSection>
+
+            {/* ── Đường viền (Text) ── */}
+            <AccordionSection title="Đường viền" icon="🔲" defaultOpen={false}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <div style={{ flex: 1 }}>
+                        <Label>Độ dày</Label>
+                        <input type="number" min={0} max={20}
+                            value={(p as Record<string, unknown>).borderWidth as number ?? 0}
+                            onChange={e => upd({ borderWidth: Number(e.target.value) })}
+                            style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                        />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <Label>Bo góc</Label>
+                        <input type="number" min={0} max={200}
+                            value={(p as Record<string, unknown>).borderRadius as number ?? 0}
+                            onChange={e => upd({ borderRadius: Number(e.target.value) })}
+                            style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
+                        />
+                    </div>
+                </div>
+                <Label>Kiểu viền</Label>
+                <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                    {(["solid", "dashed", "dotted"] as const).map(style => (
+                        <button key={style} onClick={() => upd({ borderStyle: style })} style={{
+                            flex: 1, padding: "5px 0", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                            border: `1.5px solid ${(p as Record<string, unknown>).borderStyle === style ? "#ff6b9d" : "#e5e7eb"}`,
+                            background: (p as Record<string, unknown>).borderStyle === style ? "#fdf2f8" : "#fff",
+                            color: (p as Record<string, unknown>).borderStyle === style ? "#ff6b9d" : "#374151",
+                        }}>{style === "solid" ? "Liền" : style === "dashed" ? "Đứt" : "Chấm"}</button>
+                    ))}
+                </div>
+                <Label>Màu viền</Label>
+                <ColorRow value={(p as Record<string, unknown>).borderColor as string ?? "#000000"} onChange={c => upd({ borderColor: c })} />
             </AccordionSection>
 
             {/* ── Đổ bóng ── */}
@@ -488,22 +578,23 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
                 </div>
             </AccordionSection>
 
-            {/* ── Cơ bản ── */}
-            <AccordionSection title="Cơ bản" icon="⚙️" defaultOpen={false}>
-                <Label>Độ trong suốt: {Math.round((el.opacity ?? 1) * 100)}%</Label>
-                <input type="range" min={10} max={100}
-                    value={Math.round((el.opacity ?? 1) * 100)}
-                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { opacity: Number(e.target.value) / 100 } })}
-                    style={{ width: "100%", marginBottom: 10 }} />
-                <Label>Xoay: {el.rotation ?? 0}°</Label>
-                <input type="range" min={-180} max={180}
-                    value={el.rotation ?? 0}
-                    onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: Number(e.target.value) } })}
-                    style={{ width: "100%", marginBottom: 4 }} />
-                <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: el.id, changes: { rotation: 0 } })} style={{
-                    width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
-                    background: "#f9fafb", cursor: "pointer", fontSize: 10, color: "#9ca3af",
-                }}>Reset 0°</button>
+            {/* ── Liên kết (Text) ── */}
+            <AccordionSection title="Liên kết" icon="🔗" defaultOpen={false}>
+                <Label>URL liên kết</Label>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <Link2 size={14} color="#9ca3af" />
+                    <input type="url" placeholder="https://..."
+                        value={(p as Record<string, unknown>).linkUrl as string ?? ""}
+                        onChange={e => upd({ linkUrl: e.target.value })}
+                        style={{ flex: 1, padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none" }} />
+                </div>
+                <div style={{ marginTop: 6 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6b7280", cursor: "pointer" }}>
+                        <input type="checkbox" checked={(p as Record<string, unknown>).linkNewTab as boolean ?? true}
+                            onChange={e => upd({ linkNewTab: e.target.checked })} style={{ width: 14, height: 14 }} />
+                        Mở tab mới
+                    </label>
+                </div>
             </AccordionSection>
         </div>
     );
@@ -542,13 +633,45 @@ export function RightPanel({ selectedEl, dispatch, background, particleEffect, o
             {!selectedEl && (
                 <div style={{ display: "flex", flexDirection: "column" }}>
                     <div style={{ padding: "12px 16px" }}>
-                        <div style={{ padding: "10px 14px", borderRadius: 10, background: "#f9fafb", border: "1px solid #f3f4f6", marginBottom: 16 }}>
+                        <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 8px" }}>Kích đúp vào văn bản để chỉnh sửa</p>
+
+                        {/* Trạng thái — Cinelove parity */}
+                        <div style={{ marginBottom: 14 }}>
+                            <Label>Trạng thái</Label>
+                            <select style={{
+                                width: "100%", padding: "8px 12px", borderRadius: 8,
+                                border: "1px solid #e5e7eb", background: "#fff",
+                                fontSize: 13, color: "#374151", outline: "none", cursor: "pointer",
+                            }}>
+                                <option value="public">Công khai</option>
+                                <option value="draft">Nháp</option>
+                            </select>
+                            <p style={{ fontSize: 10, color: "#9ca3af", margin: "4px 0 0" }}>
+                                Chỉ khi ở trạng thái &quot;Công khai&quot;, trang mới có thể xem được từ URL.
+                            </p>
+                        </div>
+
+                        {/* Social Preview — Cinelove parity */}
+                        <div style={{ marginBottom: 14 }}>
+                            <Label>Bản xem trước</Label>
+                            <div style={{
+                                border: "1px solid #e5e7eb", borderRadius: 10,
+                                overflow: "hidden", background: "#f9fafb",
+                            }}>
+                                <div style={{ width: "100%", height: 100, background: "linear-gradient(135deg, #fce7f3, #fdf2f8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <span style={{ fontSize: 28 }}>💕</span>
+                                </div>
+                                <div style={{ padding: "8px 10px" }}>
+                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>Thiệp mời cưới</p>
+                                    <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>Đây là cách trang sẽ hiển thị khi chia sẻ trên mạng xã hội.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Canvas info */}
+                        <div style={{ padding: "10px 14px", borderRadius: 10, background: "#f9fafb", border: "1px solid #f3f4f6" }}>
                             <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: 0.8 }}>Thiệp</p>
                             <p style={{ fontSize: 13, color: "#374151", margin: 0 }}>390 × 844px</p>
-                        </div>
-                        <div style={{ textAlign: "center", padding: "20px 0", color: "#d1d5db" }}>
-                            <p style={{ fontSize: 32, margin: 0 }}>👆</p>
-                            <p style={{ fontSize: 12, marginTop: 6, color: "#9ca3af" }}>Chọn phần tử để chỉnh sửa</p>
                         </div>
                     </div>
 
