@@ -114,6 +114,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [clipboard, setClipboard] = useState<CanvasElement | null>(null);
     // Sprint 22: Canvas grid overlay
     const [showGrid, setShowGrid] = useState(false);
+    // Sprint 24: Shortcut cheatsheet modal
+    const [showShortcuts, setShowShortcuts] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -246,6 +248,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     dispatch({ type: "UPDATE_ELEMENT", id: sel.id, changes: { x: sel.x + dx, y: sel.y + dy } });
                 }
             }
+            // Sprint 24: Shortcut cheatsheet (Ctrl+/ or Ctrl+?)
+            else if (ctrl && (e.key === "/" || e.key === "?")) { e.preventDefault(); setShowShortcuts(s => !s); }
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
@@ -1120,6 +1124,48 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     onSelectElement={(id) => dispatch({ type: "SELECT", id })}
                 />
             </div>
+
+            {/* Sprint 24: Keyboard Shortcut Cheatsheet Modal */}
+            {showShortcuts && (
+                <div onClick={() => setShowShortcuts(false)} style={{
+                    position: "fixed", inset: 0, zIndex: 9999,
+                    background: "rgba(0,0,0,0.5)", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    backdropFilter: "blur(4px)",
+                }}>
+                    <div onClick={e => e.stopPropagation()} style={{
+                        background: "#fff", borderRadius: 16,
+                        padding: "28px 32px", maxWidth: 480, width: "90%",
+                        boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111827" }}>⌨️ Phím tắt</h3>
+                            <button onClick={() => setShowShortcuts(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#9ca3af" }}>✕</button>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 24px", fontSize: 13 }}>
+                            {[
+                                ["⌘Z", "Hoàn tác (Undo)"],
+                                ["⌘⇧Z / ⌘Y", "Làm lại (Redo)"],
+                                ["⌘D", "Nhân bản"],
+                                ["⌘C / ⌘V", "Sao chép / Dán"],
+                                ["Delete", "Xóa phần tử"],
+                                ["Escape", "Bỏ chọn"],
+                                ["⌘+ / ⌘−", "Phóng to / Thu nhỏ"],
+                                ["⌘0", "Zoom 100%"],
+                                ["Arrow ↑↓←→", "Di chuyển 1px"],
+                                ["Shift+Arrow", "Di chuyển 10px"],
+                                ["⌘/", "Hiện bảng phím tắt"],
+                                ["Right-click", "Menu ngữ cảnh"],
+                            ].map(([key, desc]) => (
+                                <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f3f4f6" }}>
+                                    <kbd style={{ background: "#f3f4f6", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontFamily: "monospace", fontWeight: 600, color: "#374151" }}>{key}</kbd>
+                                    <span style={{ color: "#6b7280" }}>{desc}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
