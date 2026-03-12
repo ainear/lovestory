@@ -780,6 +780,39 @@ export function RightPanel({ selectedEl, dispatch, background, particleEffect, o
                                         style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                                 </>
                             )}
+
+                            {wp.widgetType === "rsvp" && (
+                                <>
+                                    <Label>Tiêu đề</Label>
+                                    <input type="text" value={wp.rsvpTitle ?? ""} onChange={e => updW({ rsvpTitle: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Phụ đề</Label>
+                                    <input type="text" value={wp.rsvpSubtitle ?? ""} onChange={e => updW({ rsvpSubtitle: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </>
+                            )}
+
+                            {(wp.widgetType === "gift" || wp.widgetType === "qr") && (
+                                <>
+                                    <Label>Ngân hàng</Label>
+                                    <input type="text" value={wp.bankName ?? ""} onChange={e => updW({ bankName: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Số tài khoản</Label>
+                                    <input type="text" value={wp.accountNumber ?? ""} onChange={e => updW({ accountNumber: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Tên chủ TK</Label>
+                                    <input type="text" value={wp.accountName ?? ""} onChange={e => updW({ accountName: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </>
+                            )}
+
+                            {wp.widgetType === "youtube" && (
+                                <>
+                                    <Label>Link YouTube</Label>
+                                    <input type="url" placeholder="https://www.youtube.com/watch?v=..." value={wp.youtubeUrl ?? ""} onChange={e => updW({ youtubeUrl: e.target.value })}
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </>
+                            )}
                         </AccordionSection>
 
                         {/* Cơ bản */}

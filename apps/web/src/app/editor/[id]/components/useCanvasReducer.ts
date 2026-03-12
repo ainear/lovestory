@@ -62,6 +62,9 @@ export interface WidgetProps {
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
+    youtubeUrl?: string;
+    rsvpTitle?: string;
+    rsvpSubtitle?: string;
 }
 
 export interface ElementAnimation {

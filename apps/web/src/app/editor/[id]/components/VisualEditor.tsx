@@ -512,7 +512,15 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         },
                                         {
                                             type: "widget", emoji: "💰", label: "Phong bì mừng cưới", desc: "Tài khoản nhận phong bì mừng cưới",
-                                            props: { widgetType: "gift", label: "Phong bì mừng cưới" }, w: 350, h: 120
+                                            props: { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Vietcombank", accountNumber: "0123456789", accountName: "NGUYEN VAN A" }, w: 350, h: 150
+                                        },
+                                        {
+                                            type: "widget", emoji: "📝", label: "RSVP Form", desc: "Form xác nhận tham dự tiệc cưới",
+                                            props: { widgetType: "rsvp", label: "RSVP", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng xác nhận sự hiện diện của bạn" }, w: 340, h: 220
+                                        },
+                                        {
+                                            type: "widget", emoji: "▶️", label: "YouTube Video", desc: "Nhúng video YouTube vào thiệp",
+                                            props: { widgetType: "youtube", label: "Video cưới", youtubeUrl: "" }, w: 350, h: 200
                                         },
                                     ] as Array<{ type: string; emoji: string; label: string; desc: string; props: Record<string, string>; w: number; h: number }>).map((w) => (
                                         <button key={w.label}
