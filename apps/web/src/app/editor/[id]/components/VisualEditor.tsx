@@ -116,6 +116,10 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [showGrid, setShowGrid] = useState(false);
     // Sprint 24: Shortcut cheatsheet modal
     const [showShortcuts, setShowShortcuts] = useState(false);
+    // Sprint 25: Export format + QR + fullscreen
+    const [exportFormat, setExportFormat] = useState<"png" | "jpg">("png");
+    const [showQR, setShowQR] = useState(false);
+    const [fullscreenPreview, setFullscreenPreview] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -255,7 +259,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         return () => window.removeEventListener("keydown", handler);
     }, [dispatch, state.selectedId, state.elements, state.zoom, clipboard]);
 
-    // Sprint 11: Export canvas as PNG
+    // Sprint 11+25: Export canvas as PNG or JPG
     const handleExportPNG = useCallback(async () => {
         const canvasArea = document.querySelector("[data-canvas-export]") as HTMLElement | null;
         if (!canvasArea) { alert("Không tìm thấy canvas"); return; }
@@ -264,13 +268,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             const html2canvas = mod.default;
             const canvas = await html2canvas(canvasArea, { scale: 2, useCORS: true, backgroundColor: null });
             const link = document.createElement("a");
-            link.download = `thiep-cuoi-${projectSlug || "export"}.png`;
-            link.href = canvas.toDataURL("image/png");
+            const ext = exportFormat;
+            link.download = `thiep-cuoi-${projectSlug || "export"}.${ext}`;
+            link.href = canvas.toDataURL(ext === "jpg" ? "image/jpeg" : "image/png", 0.95);
             link.click();
         } catch {
             alert("Export thất bại. Vui lòng thử lại.");
         }
-    }, [projectSlug]);
+    }, [projectSlug, exportFormat]);
 
     // P1: Music play/stop
     const handlePlayMusic = useCallback(() => {
@@ -442,18 +447,50 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     <Eye size={14} /> Xem trước
                 </a>
 
-                {/* Export PNG */}
-                <button onClick={handleExportPNG} title="Tải thiệp dạng ảnh PNG" style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "8px 14px", borderRadius: 10,
-                    border: "1px solid #e5e7eb", background: "#fff",
-                    color: "#374151", fontSize: 13, fontWeight: 500,
-                    cursor: "pointer", transition: "all 0.15s",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
+                {/* Sprint 25: Export with format toggle */}
+                <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <button onClick={handleExportPNG} title={`Tải thiệp dạng ${exportFormat.toUpperCase()}`} style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "8px 14px", borderRadius: "10px 0 0 10px",
+                        border: "1px solid #e5e7eb", borderRight: "none", background: "#fff",
+                        color: "#374151", fontSize: 13, fontWeight: 500,
+                        cursor: "pointer", transition: "all 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
+                    >
+                        <Download size={14} /> Tải {exportFormat.toUpperCase()}
+                    </button>
+                    <select
+                        value={exportFormat}
+                        onChange={e => setExportFormat(e.target.value as "png" | "jpg")}
+                        style={{
+                            padding: "8px 6px", borderRadius: "0 10px 10px 0",
+                            border: "1px solid #e5e7eb", background: "#f9fafb",
+                            fontSize: 11, fontWeight: 600, color: "#6b7280",
+                            cursor: "pointer", outline: "none",
+                        }}
+                    >
+                        <option value="png">PNG</option>
+                        <option value="jpg">JPG</option>
+                    </select>
+                </div>
+
+                {/* Sprint 25: QR Code button */}
+                <button
+                    onClick={() => setShowQR(true)}
+                    title="Tạo QR Code chia sẻ"
+                    style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "8px 12px", borderRadius: 10,
+                        border: "1px solid #e5e7eb", background: "#fff",
+                        color: "#374151", fontSize: 13, fontWeight: 500,
+                        cursor: "pointer", transition: "all 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
                 >
-                    <Download size={14} /> Tải PNG
+                    📱 QR
                 </button>
 
                 {/* Share / Copy Link */}
@@ -1124,6 +1161,41 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     onSelectElement={(id) => dispatch({ type: "SELECT", id })}
                 />
             </div>
+
+            {/* Sprint 25: QR Code Share Modal */}
+            {showQR && (() => {
+                const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/i/${projectSlug}`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+                return (
+                    <div onClick={() => setShowQR(false)} style={{
+                        position: "fixed", inset: 0, zIndex: 9999,
+                        background: "rgba(0,0,0,0.5)", display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        backdropFilter: "blur(4px)",
+                    }}>
+                        <div onClick={e => e.stopPropagation()} style={{
+                            background: "#fff", borderRadius: 16,
+                            padding: "28px 32px", maxWidth: 360, width: "90%",
+                            boxShadow: "0 20px 60px rgba(0,0,0,0.2)", textAlign: "center",
+                        }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111827" }}>📱 QR Code Chia sẻ</h3>
+                                <button onClick={() => setShowQR(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#9ca3af" }}>✕</button>
+                            </div>
+                            <img src={qrUrl} alt="QR Code" style={{ width: 200, height: 200, margin: "16px auto", borderRadius: 8, border: "1px solid #e5e7eb" }} />
+                            <p style={{ fontSize: 12, color: "#6b7280", wordBreak: "break-all", margin: "12px 0" }}>{shareUrl}</p>
+                            <button
+                                onClick={async () => { await navigator.clipboard.writeText(shareUrl); alert("✅ Đã sao chép link!"); }}
+                                style={{
+                                    width: "100%", padding: "10px 0", borderRadius: 10,
+                                    border: "none", background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                    color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                                }}
+                            >📋 Sao chép link mời</button>
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* Sprint 24: Keyboard Shortcut Cheatsheet Modal */}
             {showShortcuts && (
