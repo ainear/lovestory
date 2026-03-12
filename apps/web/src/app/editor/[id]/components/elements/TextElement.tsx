@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import type { CanvasElement } from "../useCanvasReducer";
+import { useScrollObserver } from "../useScrollObserver";
 
 interface TextElementProps {
     element: CanvasElement;
@@ -22,6 +23,8 @@ export function TextElement({
     const scale = zoom / 100;
     const ref = useRef<HTMLDivElement>(null);
     const p = element.props;
+
+    const { ref: observerRef, hasIntersected } = useScrollObserver();
 
     // When isEditing activates externally, focus + select all text
     useEffect(() => {
@@ -89,8 +92,15 @@ export function TextElement({
         animationStyle.animation = "el-shake 0.5s ease-in-out infinite";
     }
 
+    const entrance = element.animation?.entrance;
+    const hasEntrance = entrance && entrance !== "none";
+    const entranceClass = hasEntrance && hasIntersected ? `animate-entrance-${entrance}` : "";
+    const shouldHideText = hasEntrance && !hasIntersected;
+
     return (
         <div
+            ref={observerRef}
+            className={entranceClass}
             onClick={(e) => { e.stopPropagation(); if (!isEditing) onSelect(); }}
             onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(); }}
             style={{
@@ -101,7 +111,7 @@ export function TextElement({
                 minHeight: element.height * scale,
                 zIndex: element.zIndex * 10,
                 cursor: isEditing ? "text" : "pointer",
-                opacity: element.opacity,
+                opacity: shouldHideText ? 0 : element.opacity,
                 transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
                 // while editing, sit above SelectionBox's z-space
                 ...(isEditing ? { zIndex: element.zIndex * 10 + 10000 } : {}),
