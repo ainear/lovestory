@@ -7,6 +7,7 @@ import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./use
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
+import { TEMPLATE_PRESETS, TEMPLATE_CATEGORIES } from "./sidebar/templatePresets";
 import { QuickImageBar } from "./QuickImageBar";
 import { RightPanel } from "./RightPanel";
 
@@ -117,6 +118,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [musicUrl, setMusicUrl] = useState("");
     const [musicName, setMusicName] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
+    const [templateCat, setTemplateCat] = useState("all");
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [showFontPicker, setShowFontPicker] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -666,30 +668,58 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             )}
 
                             {/* TEMPLATES TAB */}
-                            {activeTab === "templates" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Đổi mẫu thiệp</p>
-                                    {EDITOR_TEMPLATES.map(t => (
-                                        <button key={t.slug}
-                                            onClick={() => dispatch({ type: "SET_BACKGROUND", background: t.bg })}
-                                            style={{
-                                                display: "flex", alignItems: "center", gap: 12,
-                                                padding: "10px 12px", borderRadius: 12,
-                                                border: `2px solid ${state.background === t.bg ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: state.background === t.bg ? "#fdf2f8" : "#fff",
-                                                cursor: "pointer", textAlign: "left",
-                                            }}
-                                        >
-                                            <div style={{ width: 40, height: 56, borderRadius: 6, background: t.bg, flexShrink: 0 }} />
-                                            <div>
-                                                <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{t.emoji} {t.label}</p>
-                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.slug}</p>
-                                            </div>
-                                            {state.background === t.bg && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 16 }}>✔</span>}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            {activeTab === "templates" && (() => {
+                                const [cat, setCat] = [templateCat, setTemplateCat];
+                                const filtered = cat === "all" ? TEMPLATE_PRESETS : TEMPLATE_PRESETS.filter(t => t.category === cat);
+                                return (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Chọn mẫu thiệp</p>
+                                        {/* Category filter */}
+                                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                            {TEMPLATE_CATEGORIES.map(c => (
+                                                <button key={c.key} onClick={() => setTemplateCat(c.key)}
+                                                    style={{
+                                                        padding: "5px 12px", borderRadius: 16,
+                                                        border: `1px solid ${cat === c.key ? "#ff6b9d" : "#e5e7eb"}`,
+                                                        background: cat === c.key ? "#fdf2f8" : "#fff",
+                                                        color: cat === c.key ? "#ff6b9d" : "#6b7280",
+                                                        fontSize: 11, fontWeight: 600, cursor: "pointer",
+                                                        transition: "all 0.15s",
+                                                    }}
+                                                >{c.label}</button>
+                                            ))}
+                                        </div>
+                                        {/* Template cards */}
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                                            {filtered.map(t => (
+                                                <button key={t.slug}
+                                                    onClick={() => {
+                                                        if (confirm(`Áp dụng mẫu "${t.label}"? Nội dung hiện tại sẽ được thay thế.`)) {
+                                                            dispatch({ type: "LOAD", elements: JSON.parse(JSON.stringify(t.elements)), background: t.background, sections: JSON.parse(JSON.stringify(t.sections)) });
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        padding: 0, border: `2px solid ${state.background === t.background ? t.accent : "#e5e7eb"}`,
+                                                        borderRadius: 12, overflow: "hidden",
+                                                        background: "#fff", cursor: "pointer",
+                                                        transition: "all 0.2s", textAlign: "left",
+                                                    }}
+                                                    onMouseEnter={e => e.currentTarget.style.borderColor = t.accent}
+                                                    onMouseLeave={e => { if (state.background !== t.background) e.currentTarget.style.borderColor = "#e5e7eb"; }}
+                                                >
+                                                    <div style={{ height: 80, background: t.background, position: "relative" }}>
+                                                        <span style={{ position: "absolute", top: 6, right: 6, fontSize: 18 }}>{t.emoji}</span>
+                                                    </div>
+                                                    <div style={{ padding: "8px 10px" }}>
+                                                        <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{t.label}</p>
+                                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.sections.length} sections · {t.elements.length} elements</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 )}
