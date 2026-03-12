@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -696,6 +696,41 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                 {/* ── Canvas Area ── */}
                 <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                    {/* Element Toolbar — floating action bar */}
+                    {state.selectedId && (() => {
+                        const sel = state.elements.find(e => e.id === state.selectedId);
+                        if (!sel) return null;
+                        const scale = state.zoom / 100;
+                        return (
+                            <div className="animate-toolbar-in" style={{
+                                position: "absolute", top: 8, left: "50%",
+                                transform: "translateX(-50%)", zIndex: 200,
+                                background: "#fff", borderRadius: 12,
+                                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                                padding: "6px 10px", display: "flex", gap: 4,
+                                border: "1px solid #e5e7eb",
+                            }}>
+                                {[
+                                    { icon: <Copy size={14} />, label: "Nhân bản", action: () => dispatch({ type: "DUPLICATE", id: sel.id }) },
+                                    { icon: <ArrowUp size={14} />, label: "Lên", action: () => dispatch({ type: "BRING_FORWARD", id: sel.id }) },
+                                    { icon: <ArrowDown size={14} />, label: "Xuống", action: () => dispatch({ type: "SEND_BACKWARD", id: sel.id }) },
+                                    { icon: <Trash2 size={14} />, label: "Xóa", action: () => dispatch({ type: "DELETE_ELEMENT", id: sel.id }), danger: true },
+                                ].map(btn => (
+                                    <button key={btn.label} title={btn.label} onClick={btn.action} style={{
+                                        padding: "6px 10px", borderRadius: 8, border: "none",
+                                        background: "transparent", cursor: "pointer",
+                                        color: (btn as { danger?: boolean }).danger ? "#ef4444" : "#4b5563",
+                                        display: "flex", alignItems: "center", gap: 4,
+                                        fontSize: 11, fontWeight: 500,
+                                        transition: "background 0.15s",
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = "#f3f4f6"}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                    >{btn.icon}<span>{btn.label}</span></button>
+                                ))}
+                            </div>
+                        );
+                    })()}
                     <div style={{
                         flex: 1, display: "flex",
                         alignItems: "center", justifyContent: "center",
@@ -779,6 +814,45 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             <ZoomIn size={16} />
                         </button>
                     </div>
+
+                    {/* ── Floating Music Vinyl Icon ── */}
+                    <button
+                        onClick={() => {
+                            const body = document.body;
+                            const cur = body.getAttribute("data-music") === "playing";
+                            body.setAttribute("data-music", cur ? "paused" : "playing");
+                            // Force re-render for class toggle
+                            (window as unknown as Record<string, unknown>).__musicPlaying = !cur;
+                        }}
+                        title="Bật/Tắt nhạc nền"
+                        style={{
+                            position: "absolute", bottom: 24, right: 24, zIndex: 100,
+                            width: 48, height: 48, borderRadius: "50%",
+                            background: "linear-gradient(135deg, #1f2937, #374151)",
+                            border: "3px solid #4b5563",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                            cursor: "pointer", display: "flex",
+                            alignItems: "center", justifyContent: "center",
+                            color: "#fff", fontSize: 20,
+                            transition: "transform 0.3s, box-shadow 0.3s",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.3)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.2)"; }}
+                    >
+                        <span className="animate-vinyl-spin" style={{ fontSize: 22, lineHeight: 1 }}>🎵</span>
+                        {/* Vinyl rings */}
+                        <div style={{
+                            position: "absolute", inset: 3,
+                            borderRadius: "50%",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                        }} />
+                        <div style={{
+                            position: "absolute", width: 10, height: 10,
+                            borderRadius: "50%", background: "#9ca3af",
+                            top: "50%", left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }} />
+                    </button>
                 </div>
 
                 {/* ── Right Panel (Properties) ── */}

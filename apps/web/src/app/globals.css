@@ -218,4 +218,28 @@ body {
 .animate-entrance-zoomIn { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-entrance-bounceIn { animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
+/* Sprint 9: Canvas Polish */
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes envelopeOpen {
+  0% { transform: perspective(600px) rotateX(0deg); opacity: 1; }
+  50% { transform: perspective(600px) rotateX(-120deg); opacity: 0.9; }
+  100% { transform: perspective(600px) rotateX(-180deg); opacity: 0; }
+}
+@keyframes envelopeSlideUp {
+  0% { transform: translateY(60px); opacity: 0; }
+  60% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes toolbarFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-vinyl-spin { animation: vinylSpin 3s linear infinite; }
+.animate-vinyl-paused { animation: vinylSpin 3s linear infinite; animation-play-state: paused; }
+.animate-envelope-flap { animation: envelopeOpen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-envelope-content { animation: envelopeSlideUp 0.8s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-toolbar-in { animation: toolbarFadeIn 0.15s ease-out forwards; }
 
