@@ -250,11 +250,23 @@ function ImagePanel({ el, dispatch, onReplaceImage }: { el: CanvasElement; dispa
                     </div>
                     <div style={{ flex: 1 }}>
                         <Label>Bo góc</Label>
-                        <input type="number" min={0} max={200}
-                            value={p.borderRadius ?? 0}
-                            onChange={e => upd({ borderRadius: Number(e.target.value) })}
-                            style={{ width: "100%", padding: "6px 8px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }}
-                        />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                            {[
+                                { label: "↖", key: "borderRadiusTL" },
+                                { label: "↗", key: "borderRadiusTR" },
+                                { label: "↙", key: "borderRadiusBL" },
+                                { label: "↘", key: "borderRadiusBR" },
+                            ].map(({ label, key }) => (
+                                <div key={key} style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                    <span style={{ fontSize: 9, color: "#9ca3af", width: 12 }}>{label}</span>
+                                    <input type="number" min={0} max={200}
+                                        value={(p as Record<string, unknown>)[key] as number ?? (p.borderRadius ?? 0)}
+                                        onChange={e => upd({ [key]: Number(e.target.value) })}
+                                        style={{ width: "100%", padding: "4px 6px", border: "1px solid #e5e7eb", borderRadius: 4, fontSize: 11, outline: "none", boxSizing: "border-box" }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 <Label>Kiểu viền</Label>

@@ -276,12 +276,63 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
     const selectedEl = state.elements.find(e => e.id === state.selectedId) ?? null;
 
+    // ── Right-click context menu ──
+    const [contextMenu, setContextMenu] = useState<{ x: number; y: number; elId: string } | null>(null);
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        const target = (e.target as HTMLElement).closest("[data-element-id]");
+        if (target) {
+            const elId = target.getAttribute("data-element-id")!;
+            dispatch({ type: "SELECT", id: elId });
+            setContextMenu({ x: e.clientX, y: e.clientY, elId });
+        } else {
+            setContextMenu(null);
+        }
+    }, [dispatch]);
+
+    // Close context menu on click anywhere
+    useEffect(() => {
+        const close = () => setContextMenu(null);
+        window.addEventListener("click", close);
+        return () => window.removeEventListener("click", close);
+    }, []);
+
     return (
         <div style={{
             display: "flex", flexDirection: "column", height: "100vh",
             background: "#f0f0f0", fontFamily: "'Inter', -apple-system, sans-serif",
             overflow: "hidden",
         }}>
+            {/* \u2500\u2500 Context Menu \u2500\u2500 */}
+            {contextMenu && (() => {
+                const ctxEl = state.elements.find(e => e.id === contextMenu.elId);
+                if (!ctxEl) return null;
+                const items = [
+                    { label: "📋 Nhân bản", action: () => dispatch({ type: "DUPLICATE", id: ctxEl.id }) },
+                    { label: "🗑️ Xóa", action: () => dispatch({ type: "DELETE_ELEMENT", id: ctxEl.id }), danger: true },
+                    { label: ctxEl.locked ? "🔓 Mở khóa" : "🔒 Khóa vị trí", action: () => dispatch({ type: "UPDATE_ELEMENT", id: ctxEl.id, changes: { locked: !ctxEl.locked } }) },
+                    { label: "⬆️ Lên trước", action: () => dispatch({ type: "BRING_FORWARD", id: ctxEl.id }) },
+                    { label: "⬇️ Xuống sau", action: () => dispatch({ type: "SEND_BACKWARD", id: ctxEl.id }) },
+                ];
+                return (
+                    <div style={{
+                        position: "fixed", left: contextMenu.x, top: contextMenu.y, zIndex: 9999,
+                        background: "#fff", borderRadius: 10, boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                        border: "1px solid #e5e7eb", padding: "4px 0", minWidth: 180,
+                    }}>
+                        {items.map((item, i) => (
+                            <button key={i} onClick={() => { item.action(); setContextMenu(null); }} style={{
+                                width: "100%", padding: "8px 14px", border: "none", background: "transparent",
+                                cursor: "pointer", fontSize: 13, textAlign: "left", display: "flex", alignItems: "center", gap: 8,
+                                color: (item as { danger?: boolean }).danger ? "#e11d48" : "#374151",
+                            }}
+                                onMouseEnter={e => (e.currentTarget.style.background = "#f3f4f6")}
+                                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                            >{item.label}</button>
+                        ))}
+                    </div>
+                );
+            })()}
             {/* ── Top Bar ── */}
             <div style={{
                 height: 52, display: "flex", alignItems: "center",
@@ -821,7 +872,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 )}
 
                 {/* ── Canvas Area ── */}
-                <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <div onContextMenu={handleContextMenu} style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
                     {/* Element Toolbar — floating action bar */}
                     {state.selectedId && (() => {
                         const sel = state.elements.find(e => e.id === state.selectedId);

@@ -45,6 +45,7 @@ export function ImageElement({ element, zoom, isSelected, onSelect }: ImageEleme
 
     return (
         <div
+            data-element-id={element.id}
             ref={observerRef}
             className={entranceClass}
             onClick={(e) => { e.stopPropagation(); onSelect(); }}

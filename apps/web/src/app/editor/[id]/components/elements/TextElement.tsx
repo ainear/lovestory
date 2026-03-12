@@ -99,6 +99,7 @@ export function TextElement({
 
     return (
         <div
+            data-element-id={element.id}
             ref={observerRef}
             className={entranceClass}
             onClick={(e) => { e.stopPropagation(); if (!isEditing) onSelect(); }}

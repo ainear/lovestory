@@ -171,7 +171,7 @@ export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetEle
     const { x, y, width, height, opacity, rotation, props } = element;
     const wt = props.widgetType ?? "countdown";
     return (
-        <div onClick={(e) => { e.stopPropagation(); onSelect(); }} style={{ position: "absolute", left: x * scale, top: y * scale, width: width * scale, height: height * scale, opacity: opacity ?? 1, transform: rotation ? `rotate(${rotation}deg)` : undefined, cursor: "pointer", outline: isSelected ? "2px solid #3b82f6" : "none", outlineOffset: 2, transition: "outline 0.1s" }}>
+        <div data-element-id={element.id} onClick={(e) => { e.stopPropagation(); onSelect(); }} style={{ position: "absolute", left: x * scale, top: y * scale, width: width * scale, height: height * scale, opacity: opacity ?? 1, transform: rotation ? `rotate(${rotation}deg)` : undefined, cursor: "pointer", outline: isSelected ? "2px solid #3b82f6" : "none", outlineOffset: 2, transition: "outline 0.1s" }}>
             {wt === "calendar" && <CalendarWidget props={props} scale={scale} />}
             {wt === "countdown" && <CountdownWidget props={props} scale={scale} />}
             {wt === "map" && <MapWidget props={props} scale={scale} />}
