@@ -226,6 +226,22 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.elements, state.background, musicUrl]);
 
+    // Sprint 31: Auto-zoom fit on initial load — make canvas fill space like Cinelove
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const containerW = window.innerWidth - 200 - 52 - 300; // panel + icons + right panel
+            const containerH = window.innerHeight - 60 - 24; // top bar + status bar
+            const fitZoom = Math.min(
+                Math.floor((containerW / state.width) * 100),
+                Math.floor((containerH / state.height) * 100),
+                150
+            );
+            dispatch({ type: "SET_ZOOM", zoom: Math.max(50, fitZoom) });
+        }, 300);
+        return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Sprint 11: Keyboard shortcuts
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -600,7 +616,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                 {/* ── Vertical Icon Column (60px) — Canva-style ── */}
                 <div style={{
-                    width: 64, background: "#fff",
+                    width: 52, background: "#fff",
                     borderRight: "1px solid #f0f0f0",
                     display: "flex", flexDirection: "column", alignItems: "center",
                     paddingTop: 8, gap: 2, flexShrink: 0, overflowY: "auto",
@@ -609,7 +625,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 }}>
                     {TABS.map(tab => (
                         <button key={tab.key} onClick={() => setActiveTab(activeTab === tab.key ? "" : tab.key)} title={tab.label} style={{
-                            width: 52, padding: "10px 4px",
+                            width: 44, padding: "8px 2px",
                             border: "none",
                             borderRadius: 10,
                             background: activeTab === tab.key ? "#fff0f5" : "transparent",
@@ -627,7 +643,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 {/* ── Expandable Panel (240px) — slides in when tab active ── */}
                 {activeTab !== "" && (
                     <div style={{
-                        width: 248, background: "#fff",
+                        width: 200, background: "#fff",
                         borderRight: "1px solid #e5e7eb",
                         display: "flex", flexDirection: "column",
                         overflow: "hidden", flexShrink: 0,
@@ -1044,10 +1060,43 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     <div style={{
                         flex: 1, display: "flex",
                         alignItems: "center", justifyContent: "center",
-                        overflow: "auto", padding: 32,
-                        background: "#e5e7eb",
+                        overflow: "auto", padding: 16,
+                        background: "#f1f5f9",
                     }}>
                     <div style={{ position: "relative", paddingBottom: 68 }} data-canvas-export>
+
+                    {/* Sprint 31: Thay ảnh nhanh — quick image strip like Cinelove */}
+                    {(() => {
+                        const imageEls = state.elements.filter(e => e.type === "image");
+                        if (imageEls.length === 0) return null;
+                        return (
+                            <div style={{
+                                position: "absolute", bottom: 70, left: 16, zIndex: 110,
+                                background: "rgba(255,255,255,0.95)", borderRadius: 12,
+                                padding: "8px 12px", display: "flex", gap: 8, alignItems: "center",
+                                boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+                                backdropFilter: "blur(8px)",
+                            }}>
+                                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap" }}>Thay ảnh nhanh</span>
+                                <div style={{ width: 1, height: 28, background: "#e5e7eb" }} />
+                                {imageEls.slice(0, 6).map(img => (
+                                    <button
+                                        key={img.id}
+                                        onClick={() => {
+                                            dispatch({ type: "SELECT", id: img.id });
+                                            setLastAction(`Chọn ảnh: ${img.id.slice(0, 6)}`);
+                                        }}
+                                        style={{
+                                            width: 40, height: 40, borderRadius: 8, border: img.id === state.selectedId ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
+                                            padding: 0, cursor: "pointer", overflow: "hidden", background: "#f3f4f6", flexShrink: 0,
+                                        }}
+                                    >
+                                        <img src={img.props.src || ""} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    </button>
+                                ))}
+                            </div>
+                        );
+                    })()}
                         <Canvas
                             width={state.width}
                             height={state.height}
