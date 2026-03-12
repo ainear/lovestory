@@ -3,7 +3,7 @@
 import { useReducer, useCallback } from "react";
 
 // ── Types ──
-export type ElementType = "text" | "image" | "sticker" | "shape";
+export type ElementType = "text" | "image" | "sticker" | "shape" | "widget";
 
 export interface TextProps {
     text: string;
@@ -24,6 +24,7 @@ export interface TextProps {
         x: number;
         y: number;
     };
+    textTransform: "none" | "uppercase" | "capitalize" | "lowercase";
 }
 
 export interface ImageProps {
@@ -38,6 +39,32 @@ export interface ImageProps {
     brightness: number; // 0-200
     contrast: number;   // 0-200
     saturation: number; // 0-200
+    // border style
+    borderStyle: "solid" | "dashed" | "dotted";
+    // box shadow
+    boxShadow: string;
+    // padding
+    paddingTop: number;
+    paddingRight: number;
+    paddingBottom: number;
+    paddingLeft: number;
+}
+
+export interface WidgetProps {
+    widgetType: "calendar" | "countdown" | "map" | "qr" | "gift" | "rsvp" | "youtube";
+    label: string;
+    targetDate?: string;
+    lunarDate?: string;
+    mapUrl?: string;
+    venueName?: string;
+    venueAddress?: string;
+    qrValue?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
+    youtubeUrl?: string;
+    rsvpTitle?: string;
+    rsvpSubtitle?: string;
 }
 
 export interface ElementAnimation {
@@ -45,8 +72,15 @@ export interface ElementAnimation {
     loop: "none" | "pulse" | "float" | "shake";
 }
 
+export interface CanvasSection {
+    id: string;
+    name: string;
+    height: number;
+}
+
 export interface CanvasElement {
     id: string;
+    sectionId: string; // which section it belongs to
     type: ElementType;
     x: number;
     y: number;
@@ -57,7 +91,7 @@ export interface CanvasElement {
     zIndex: number;
     locked: boolean;
     animation?: ElementAnimation;
-    props: Partial<TextProps & ImageProps>;
+    props: Partial<TextProps & ImageProps & WidgetProps>;
 }
 
 export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
@@ -65,12 +99,13 @@ export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
 export interface CanvasState {
     width: number;
     height: number;
-    background: string;
+    background: string; // global background or first section background
+    sections: CanvasSection[];
     elements: CanvasElement[];
     selectedId: string | null;
     zoom: number;
-    past: CanvasElement[][];
-    future: CanvasElement[][];
+    past: { elements: CanvasElement[], sections: CanvasSection[] }[];
+    future: { elements: CanvasElement[], sections: CanvasSection[] }[];
     particleEffect: ParticleEffect;
 }
 
@@ -82,25 +117,30 @@ export type Action =
     | { type: "UPDATE_ELEMENT"; id: string; changes: Partial<CanvasElement> }
     | { type: "DELETE_ELEMENT"; id: string }
     | { type: "SELECT"; id: string | null }
-    | { type: "MOVE"; id: string; x: number; y: number }
+    | { type: "MOVE"; id: string; x: number; y: number; sectionId?: string }
     | { type: "RESIZE"; id: string; x: number; y: number; width: number; height: number }
     | { type: "SET_BACKGROUND"; background: string }
     | { type: "SET_ZOOM"; zoom: number }
     | { type: "UNDO" }
     | { type: "REDO" }
-    | { type: "LOAD"; elements: CanvasElement[]; background: string }
+    | { type: "LOAD"; elements: CanvasElement[]; background?: string; sections?: CanvasSection[] }
     | { type: "BRING_FORWARD"; id: string }
     | { type: "SEND_BACKWARD"; id: string }
     | { type: "DUPLICATE"; id: string }
-    | { type: "SET_PARTICLE_EFFECT"; effect: ParticleEffect };
+    | { type: "SET_PARTICLE_EFFECT"; effect: ParticleEffect }
+    | { type: "ADD_SECTION" }
+    | { type: "UPDATE_SECTION"; id: string; changes: Partial<CanvasSection> }
+    | { type: "DELETE_SECTION"; id: string }
+    | { type: "MOVE_SECTION_UP"; id: string }
+    | { type: "MOVE_SECTION_DOWN"; id: string };
 
-function snapshot(elements: CanvasElement[]): CanvasElement[] {
-    return JSON.parse(JSON.stringify(elements));
+function snapshot(state: CanvasState): { elements: CanvasElement[], sections: CanvasSection[] } {
+    return JSON.parse(JSON.stringify({ elements: state.elements, sections: state.sections }));
 }
 
-function withHistory(state: CanvasState, newElements: CanvasElement[]): CanvasState {
-    const past = [...state.past, snapshot(state.elements)].slice(-MAX_HISTORY);
-    return { ...state, elements: newElements, past, future: [] };
+function withHistory(state: CanvasState, newElements: CanvasElement[], newSections?: CanvasSection[]): CanvasState {
+    const past = [...state.past, snapshot(state)].slice(-MAX_HISTORY);
+    return { ...state, elements: newElements, sections: newSections || state.sections, past, future: [] };
 }
 
 export function canvasReducer(state: CanvasState, action: Action): CanvasState {
@@ -108,6 +148,10 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
         case "ADD_ELEMENT": {
             const maxZ = state.elements.reduce((m, e) => Math.max(m, e.zIndex), 0);
             const el = { ...action.element, zIndex: maxZ + 1 };
+            // Ensure sectionId exists, default to first section
+            if (!el.sectionId && state.sections.length > 0) {
+                el.sectionId = state.sections[0].id;
+            }
             return withHistory(state, [...state.elements, el]);
         }
         case "UPDATE_ELEMENT": {
@@ -124,7 +168,7 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             return { ...state, selectedId: action.id };
         case "MOVE": {
             const moved = state.elements.map(e =>
-                e.id === action.id ? { ...e, x: action.x, y: action.y } : e
+                e.id === action.id ? { ...e, x: action.x, y: action.y, sectionId: action.sectionId || e.sectionId } : e
             );
             return { ...state, elements: moved }; // no history on drag (too noisy)
         }
@@ -140,8 +184,25 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             return { ...state, zoom: action.zoom };
         case "SET_PARTICLE_EFFECT":
             return { ...state, particleEffect: action.effect };
-        case "LOAD":
-            return { ...state, elements: action.elements, background: action.background, past: [], future: [], selectedId: null };
+        case "LOAD": {
+            // Backward compatibility
+            const loadedSections = action.sections && action.sections.length > 0 
+                ? action.sections 
+                : [{ id: "section-1", name: "Trang bìa", height: 844 }];
+            const loadedElements = action.elements.map(el => ({
+                ...el,
+                sectionId: el.sectionId || loadedSections[0].id
+            }));
+            return { 
+                ...state, 
+                elements: loadedElements, 
+                sections: loadedSections,
+                background: action.background || state.background, 
+                past: [], 
+                future: [], 
+                selectedId: null 
+            };
+        }
         case "BRING_FORWARD": {
             const el = state.elements.find(e => e.id === action.id);
             if (!el) return state;
@@ -171,14 +232,63 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             if (state.past.length === 0) return state;
             const previous = state.past[state.past.length - 1];
             const newPast = state.past.slice(0, -1);
-            return { ...state, elements: previous, past: newPast, future: [snapshot(state.elements), ...state.future].slice(0, MAX_HISTORY) };
+            return { 
+                ...state, 
+                elements: previous.elements, 
+                sections: previous.sections,
+                past: newPast, 
+                future: [snapshot(state), ...state.future].slice(0, MAX_HISTORY) 
+            };
         }
         case "REDO": {
             if (state.future.length === 0) return state;
             const next = state.future[0];
             const newFuture = state.future.slice(1);
-            return { ...state, elements: next, past: [...state.past, snapshot(state.elements)], future: newFuture };
+            return { 
+                ...state, 
+                elements: next.elements, 
+                sections: next.sections,
+                past: [...state.past, snapshot(state)], 
+                future: newFuture 
+            };
         }
+        
+        // ── Section Actions ── //
+        case "ADD_SECTION": {
+            const newSection: CanvasSection = {
+                id: `section-${Date.now()}`,
+                name: `Trang ${state.sections.length + 1}`,
+                height: 844,
+            };
+            return withHistory(state, state.elements, [...state.sections, newSection]);
+        }
+        case "UPDATE_SECTION": {
+            const updatedSections = state.sections.map(s => 
+                s.id === action.id ? { ...s, ...action.changes } : s
+            );
+            return withHistory(state, state.elements, updatedSections);
+        }
+        case "DELETE_SECTION": {
+            if (state.sections.length <= 1) return state; // Must have at least one section
+            const remainingSections = state.sections.filter(s => s.id !== action.id);
+            const remainingElements = state.elements.filter(e => e.sectionId !== action.id);
+            return { ...withHistory(state, remainingElements, remainingSections), selectedId: null };
+        }
+        case "MOVE_SECTION_UP": {
+            const idx = state.sections.findIndex(s => s.id === action.id);
+            if (idx <= 0) return state;
+            const newSections = [...state.sections];
+            [newSections[idx - 1], newSections[idx]] = [newSections[idx], newSections[idx - 1]];
+            return withHistory(state, state.elements, newSections);
+        }
+        case "MOVE_SECTION_DOWN": {
+            const idx = state.sections.findIndex(s => s.id === action.id);
+            if (idx === -1 || idx >= state.sections.length - 1) return state;
+            const newSections = [...state.sections];
+            [newSections[idx], newSections[idx + 1]] = [newSections[idx + 1], newSections[idx]];
+            return withHistory(state, state.elements, newSections);
+        }
+
         default:
             return state;
     }
@@ -188,6 +298,7 @@ export const initialCanvasState: CanvasState = {
     width: 390,
     height: 844,
     background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+    sections: [{ id: "section-1", name: "Trang bìa", height: 844 }],
     elements: [],
     selectedId: null,
     zoom: 75,
@@ -200,11 +311,12 @@ export const initialCanvasState: CanvasState = {
 export function useCanvasReducer(initial?: Partial<CanvasState>) {
     const [state, dispatch] = useReducer(canvasReducer, { ...initialCanvasState, ...initial });
 
-    const addText = useCallback((text = "Nhấn để chỉnh sửa", x = 50, y = 100) => {
+    const addText = useCallback((text = "Nhấn để chỉnh sửa", x = 50, y = 100, sectionId?: string) => {
         dispatch({
             type: "ADD_ELEMENT",
             element: {
                 id: `el-${Date.now()}`,
+                sectionId: sectionId || state.sections[0]?.id || "section-1",
                 type: "text",
                 x, y, width: 290, height: 60,
                 rotation: 0, opacity: 1, zIndex: 1, locked: false,
@@ -216,13 +328,14 @@ export function useCanvasReducer(initial?: Partial<CanvasState>) {
                 },
             },
         });
-    }, []);
+    }, [state.sections]);
 
-    const addImage = useCallback((src: string, x = 20, y = 200) => {
+    const addImage = useCallback((src: string, x = 20, y = 200, sectionId?: string) => {
         dispatch({
             type: "ADD_ELEMENT",
             element: {
                 id: `el-${Date.now()}`,
+                sectionId: sectionId || state.sections[0]?.id || "section-1",
                 type: "image",
                 x, y, width: 350, height: 280,
                 rotation: 0, opacity: 1, zIndex: 1, locked: false,

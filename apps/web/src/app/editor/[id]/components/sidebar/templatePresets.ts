@@ -1,0 +1,122 @@
+import type { CanvasElement, CanvasSection } from "../useCanvasReducer";
+
+export interface TemplatePreset {
+    slug: string;
+    label: string;
+    emoji: string;
+    category: "romantic" | "modern" | "classic" | "minimal";
+    background: string;
+    sections: CanvasSection[];
+    elements: CanvasElement[];
+    accent: string; // for thumbnail border
+}
+
+// Helper to create unique IDs
+let _uid = 0;
+function uid() { return `tpl_${Date.now()}_${++_uid}`; }
+
+export const TEMPLATE_PRESETS: TemplatePreset[] = [
+    {
+        slug: "rose-garden",
+        label: "Hoa Hồng",
+        emoji: "🌹",
+        category: "romantic",
+        background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+        accent: "#ff6b9d",
+        sections: [
+            { id: "s1", name: "Bìa", height: 600 },
+            { id: "s2", name: "Thông tin", height: 500 },
+            { id: "s3", name: "Đếm ngược", height: 400 },
+        ],
+        elements: [
+            { id: uid(), sectionId: "s1", type: "text", x: 60, y: 40, width: 280, height: 60, rotation: 0, opacity: 1, zIndex: 1, locked: false, props: { text: "Save the Date", fontSize: 14, fontFamily: "'Playfair Display', serif", color: "#be185d", textAlign: "center", fontWeight: "normal", fontStyle: "italic", textDecoration: "none", lineHeight: 1.4, letterSpacing: 2, textTransform: "uppercase", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 30, y: 120, width: 340, height: 100, rotation: 0, opacity: 1, zIndex: 2, locked: false, props: { text: "Tuấn Minh\n&\nMai Lan", fontSize: 36, fontFamily: "'Dancing Script', cursive", color: "#831843", textAlign: "center", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", lineHeight: 1.2, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 80, y: 300, width: 240, height: 40, rotation: 0, opacity: 1, zIndex: 3, locked: false, props: { text: "28 . 05 . 2026", fontSize: 20, fontFamily: "'Playfair Display', serif", color: "#9d174d", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.4, letterSpacing: 4, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "text", x: 40, y: 40, width: 320, height: 50, rotation: 0, opacity: 1, zIndex: 4, locked: false, props: { text: "Trân trọng kính mời", fontSize: 18, fontFamily: "'Playfair Display', serif", color: "#9d174d", textAlign: "center", fontWeight: "normal", fontStyle: "italic", textDecoration: "none", lineHeight: 1.6, letterSpacing: 1, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "text", x: 30, y: 120, width: 340, height: 200, rotation: 0, opacity: 1, zIndex: 5, locked: false, props: { text: "Chúng tôi vui mừng thông báo lễ thành hôn sẽ được tổ chức vào lúc 17:00 ngày 28/05/2026 tại Trung tâm Tiệc Cưới Diamond Palace.", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "#4b5563", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.8, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s3", type: "widget", x: 25, y: 40, width: 350, height: 100, rotation: 0, opacity: 1, zIndex: 6, locked: false, props: { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" } },
+            { id: uid(), sectionId: "s3", type: "widget", x: 90, y: 180, width: 220, height: 180, rotation: 0, opacity: 1, zIndex: 7, locked: false, props: { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" } },
+        ],
+    },
+    {
+        slug: "midnight-romance",
+        label: "Đêm Huyền",
+        emoji: "🌙",
+        category: "modern",
+        background: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)",
+        accent: "#a78bfa",
+        sections: [
+            { id: "s1", name: "Bìa", height: 600 },
+            { id: "s2", name: "Chi tiết", height: 500 },
+        ],
+        elements: [
+            { id: uid(), sectionId: "s1", type: "text", x: 80, y: 60, width: 240, height: 40, rotation: 0, opacity: 0.7, zIndex: 1, locked: false, props: { text: "WE'RE GETTING MARRIED", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "#c4b5fd", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.4, letterSpacing: 4, textTransform: "uppercase", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 20, y: 140, width: 360, height: 120, rotation: 0, opacity: 1, zIndex: 2, locked: false, props: { text: "Tuấn Minh\n&\nMai Lan", fontSize: 38, fontFamily: "'Dancing Script', cursive", color: "#e9d5ff", textAlign: "center", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", lineHeight: 1.2, letterSpacing: 0, textTransform: "none", textShadow: { active: true, color: "#7c3aed", blur: 20, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 100, y: 320, width: 200, height: 40, rotation: 0, opacity: 1, zIndex: 3, locked: false, props: { text: "28 . 05 . 2026", fontSize: 18, fontFamily: "'Playfair Display', serif", color: "#c4b5fd", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.4, letterSpacing: 3, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "widget", x: 25, y: 50, width: 350, height: 100, rotation: 0, opacity: 1, zIndex: 4, locked: false, props: { widgetType: "countdown", label: "ĐẾM NGƯỢC", targetDate: "2026-05-28" } },
+        ],
+    },
+    {
+        slug: "golden-hour",
+        label: "Hoàng Hôn",
+        emoji: "🌅",
+        category: "classic",
+        background: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)",
+        accent: "#f59e0b",
+        sections: [
+            { id: "s1", name: "Bìa", height: 600 },
+            { id: "s2", name: "Thông tin", height: 450 },
+            { id: "s3", name: "Bản đồ", height: 350 },
+        ],
+        elements: [
+            { id: uid(), sectionId: "s1", type: "text", x: 60, y: 50, width: 280, height: 50, rotation: 0, opacity: 1, zIndex: 1, locked: false, props: { text: "Wedding Invitation", fontSize: 16, fontFamily: "'Playfair Display', serif", color: "#92400e", textAlign: "center", fontWeight: "normal", fontStyle: "italic", textDecoration: "none", lineHeight: 1.4, letterSpacing: 2, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 30, y: 130, width: 340, height: 100, rotation: 0, opacity: 1, zIndex: 2, locked: false, props: { text: "Tuấn Minh\n&\nMai Lan", fontSize: 34, fontFamily: "'Dancing Script', cursive", color: "#78350f", textAlign: "center", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", lineHeight: 1.2, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "text", x: 30, y: 30, width: 340, height: 180, rotation: 0, opacity: 1, zIndex: 3, locked: false, props: { text: "Chúng tôi trân trọng kính mời quý khách đến dự tiệc chung vui cùng gia đình chúng tôi.", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "#78350f", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.8, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s3", type: "widget", x: 25, y: 30, width: 350, height: 200, rotation: 0, opacity: 1, zIndex: 4, locked: false, props: { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Diamond Palace", venueAddress: "123 Nguyễn Huệ, Q.1, TP.HCM", mapUrl: "https://maps.google.com" } },
+        ],
+    },
+    {
+        slug: "cherry-blossom",
+        label: "Anh Đào",
+        emoji: "🌸",
+        category: "romantic",
+        background: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)",
+        accent: "#ec4899",
+        sections: [
+            { id: "s1", name: "Bìa", height: 600 },
+            { id: "s2", name: "Lịch & RSVP", height: 500 },
+        ],
+        elements: [
+            { id: uid(), sectionId: "s1", type: "text", x: 30, y: 60, width: 340, height: 50, rotation: 0, opacity: 0.6, zIndex: 1, locked: false, props: { text: "TOGETHER WITH THEIR FAMILIES", fontSize: 11, fontFamily: "'Inter', sans-serif", color: "#9d174d", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.4, letterSpacing: 3, textTransform: "uppercase", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 20, y: 130, width: 360, height: 120, rotation: 0, opacity: 1, zIndex: 2, locked: false, props: { text: "Tuấn Minh\n&\nMai Lan", fontSize: 36, fontFamily: "'Dancing Script', cursive", color: "#be185d", textAlign: "center", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", lineHeight: 1.2, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 60, y: 310, width: 280, height: 100, rotation: 0, opacity: 1, zIndex: 3, locked: false, props: { text: "Mời bạn đến chung vui và chia sẻ niềm hạnh phúc cùng chúng tôi.", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "#9d174d", textAlign: "center", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", lineHeight: 1.8, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "widget", x: 90, y: 20, width: 220, height: 220, rotation: 0, opacity: 1, zIndex: 4, locked: false, props: { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" } },
+            { id: uid(), sectionId: "s2", type: "widget", x: 30, y: 270, width: 340, height: 200, rotation: 0, opacity: 1, zIndex: 5, locked: false, props: { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng cho chúng tôi biết bạn có đến không" } },
+        ],
+    },
+    {
+        slug: "ocean-breeze",
+        label: "Biển Xanh",
+        emoji: "🌊",
+        category: "minimal",
+        background: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)",
+        accent: "#06b6d4",
+        sections: [
+            { id: "s1", name: "Bìa", height: 550 },
+            { id: "s2", name: "Phong bì", height: 400 },
+        ],
+        elements: [
+            { id: uid(), sectionId: "s1", type: "text", x: 40, y: 80, width: 320, height: 50, rotation: 0, opacity: 1, zIndex: 1, locked: false, props: { text: "Thiệp Mời", fontSize: 16, fontFamily: "'Playfair Display', serif", color: "#164e63", textAlign: "center", fontWeight: "normal", fontStyle: "italic", textDecoration: "none", lineHeight: 1.4, letterSpacing: 2, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s1", type: "text", x: 20, y: 160, width: 360, height: 100, rotation: 0, opacity: 1, zIndex: 2, locked: false, props: { text: "Tuấn Minh\n&\nMai Lan", fontSize: 32, fontFamily: "'Dancing Script', cursive", color: "#0e7490", textAlign: "center", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", lineHeight: 1.3, letterSpacing: 0, textTransform: "none", textShadow: { active: false, color: "#000", blur: 0, x: 0, y: 0 }, backgroundColor: "" } },
+            { id: uid(), sectionId: "s2", type: "widget", x: 25, y: 40, width: 350, height: 150, rotation: 0, opacity: 1, zIndex: 3, locked: false, props: { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Vietcombank", accountNumber: "0123456789", accountName: "NGUYEN VAN A" } },
+        ],
+    },
+];
+
+export const TEMPLATE_CATEGORIES = [
+    { key: "all", label: "Tất cả" },
+    { key: "romantic", label: "Lãng mạn" },
+    { key: "modern", label: "Hiện đại" },
+    { key: "classic", label: "Cổ điển" },
+    { key: "minimal", label: "Tối giản" },
+];

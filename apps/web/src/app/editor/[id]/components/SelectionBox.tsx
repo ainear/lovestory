@@ -12,6 +12,7 @@ interface SelectionBoxProps {
     onDuplicate: (id: string) => void;
     onBringForward: (id: string) => void;
     onSendBackward: (id: string) => void;
+    onDoubleClick?: () => void;
 }
 
 const HANDLES = [
@@ -26,8 +27,9 @@ const HANDLES = [
 ];
 
 export function SelectionBox({
-    element, zoom, onMove, onResize, onDelete, onDuplicate, onBringForward, onSendBackward
+    element, zoom, onMove, onResize, onDelete, onDuplicate, onBringForward, onSendBackward, onDoubleClick
 }: SelectionBoxProps) {
+
     const scale = zoom / 100;
     const isDragging = useRef(false);
     const dragStart = useRef({ mouseX: 0, mouseY: 0, elX: 0, elY: 0 });
@@ -89,6 +91,7 @@ export function SelectionBox({
     return (
         <div
             onPointerDown={handleMovePointerDown}
+            onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick?.(); }}
             style={{
                 position: "absolute",
                 left: element.x * scale,

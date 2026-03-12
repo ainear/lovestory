@@ -1,36 +1,56 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import type { CanvasElement, Action } from "./useCanvasReducer";
-import { TextElement } from "./elements/TextElement";
-import { ImageElement } from "./elements/ImageElement";
-import { SelectionBox } from "./SelectionBox";
+import { useCallback, useEffect, useState } from "react";
+import type { CanvasElement, CanvasSection as SectionType, Action } from "./useCanvasReducer";
+import { CanvasSection } from "./CanvasSection";
 
 interface CanvasProps {
     width: number;
     height: number;
     background: string;
+    sections: SectionType[];
     elements: CanvasElement[];
     selectedId: string | null;
     zoom: number;
     dispatch: (action: Action) => void;
 }
 
-export function Canvas({ width, height, background, elements, selectedId, zoom, dispatch }: CanvasProps) {
+export function Canvas({ width, height, background, sections, elements, selectedId, zoom, dispatch }: CanvasProps) {
     const scale = zoom / 100;
     const canvasW = width * scale;
-    const canvasH = height * scale;
+
+    // editingId: which text element is currently in inline-edit mode
+    const [editingId, setEditingId] = useState<string | null>(null);
+
+    // Stop editing when selection changes to a different element or clears
+    useEffect(() => {
+        if (editingId && editingId !== selectedId) {
+            setEditingId(null);
+        }
+    }, [selectedId, editingId]);
 
     const handleCanvasClick = useCallback(() => {
+        setEditingId(null);
         dispatch({ type: "SELECT", id: null });
     }, [dispatch]);
+
+    const handleDoubleClick = useCallback((id: string, type: string) => {
+        if (type === "text") {
+            setEditingId(id);
+        }
+    }, []);
 
     // Keyboard shortcuts
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            // Catch only if canvas is focused, not inside an input
+            // Don't intercept if inline editing is active
+            if (editingId) return;
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
 
+            if (e.key === "Escape") {
+                setEditingId(null);
+                return;
+            }
             if (e.key === "Delete" || e.key === "Backspace") {
                 if (selectedId) dispatch({ type: "DELETE_ELEMENT", id: selectedId });
             }
@@ -59,7 +79,7 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, [selectedId, elements, dispatch]);
+    }, [selectedId, elements, dispatch, editingId]);
 
     const selectedEl = elements.find(e => e.id === selectedId) ?? null;
 
@@ -71,7 +91,9 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
             style={{
                 position: "relative",
                 width: canvasW,
-                height: canvasH,
+                // height is determined by the total height of sections
+                display: "flex",
+                flexDirection: "column",
                 background,
                 boxShadow: "0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)",
                 borderRadius: 4,
@@ -79,56 +101,21 @@ export function Canvas({ width, height, background, elements, selectedId, zoom, 
                 flexShrink: 0,
                 cursor: "default",
             }}
-            onClick={handleCanvasClick}
         >
-            {/* Background layer */}
-            <div style={{ position: "absolute", inset: 0, background, zIndex: 0 }} />
-
-            {/* Element render */}
-            {sorted.map(el => {
-                if (el.type === "text") {
-                    return (
-                        <TextElement
-                            key={el.id}
-                            element={el}
-                            zoom={zoom}
-                            isSelected={el.id === selectedId}
-                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
-                            onUpdateText={(id, text) => dispatch({
-                                type: "UPDATE_ELEMENT", id,
-                                changes: { props: { ...el.props, text } },
-                            })}
-                            onUpdateProps={(id, changes) => dispatch({ type: "UPDATE_ELEMENT", id, changes })}
-                        />
-                    );
-                }
-                if (el.type === "image") {
-                    return (
-                        <ImageElement
-                            key={el.id}
-                            element={el}
-                            zoom={zoom}
-                            isSelected={el.id === selectedId}
-                            onSelect={() => dispatch({ type: "SELECT", id: el.id })}
-                        />
-                    );
-                }
-                return null;
-            })}
-
-            {/* Selection overlay (rendered on top of all elements) */}
-            {selectedEl && (
-                <SelectionBox
-                    element={selectedEl}
+            {sections.map(section => (
+                <CanvasSection
+                    key={section.id}
+                    section={section}
+                    elements={elements.filter(e => e.sectionId === section.id)}
+                    selectedId={selectedId}
+                    editingId={editingId}
                     zoom={zoom}
-                    onMove={(id, x, y) => dispatch({ type: "MOVE", id, x, y })}
-                    onResize={(id, x, y, w, h) => dispatch({ type: "RESIZE", id, x, y, width: w, height: h })}
-                    onDelete={(id) => dispatch({ type: "DELETE_ELEMENT", id })}
-                    onDuplicate={(id) => dispatch({ type: "DUPLICATE", id })}
-                    onBringForward={(id) => dispatch({ type: "BRING_FORWARD", id })}
-                    onSendBackward={(id) => dispatch({ type: "SEND_BACKWARD", id })}
+                    dispatch={dispatch}
+                    setEditingId={setEditingId}
+                    handleDoubleClick={handleDoubleClick}
+                    onClick={handleCanvasClick}
                 />
-            )}
+            ))}
         </div>
     );
 }

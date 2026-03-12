@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, ChevronsUp, ChevronsDown, Copy, Trash2 } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
+import { TEMPLATE_PRESETS, TEMPLATE_CATEGORIES } from "./sidebar/templatePresets";
+import { QuickImageBar } from "./QuickImageBar";
+import { RightPanel } from "./RightPanel";
 
 // ── Sidebar tab map ──
 const TABS = [
@@ -115,7 +118,9 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [musicUrl, setMusicUrl] = useState("");
     const [musicName, setMusicName] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
+    const [templateCat, setTemplateCat] = useState("all");
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [showFontPicker, setShowFontPicker] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const supabase = createBrowserClient(
@@ -198,6 +203,39 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.elements, state.background, musicUrl]);
 
+    // Sprint 11: Keyboard shortcuts
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const t = e.target as HTMLElement;
+            if (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) return;
+            const ctrl = e.metaKey || e.ctrlKey;
+            if (ctrl && e.key === "z" && !e.shiftKey) { e.preventDefault(); dispatch({ type: "UNDO" }); }
+            else if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); dispatch({ type: "REDO" }); }
+            else if (ctrl && e.key === "d" && state.selectedId) { e.preventDefault(); dispatch({ type: "DUPLICATE", id: state.selectedId }); }
+            else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
+            else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [dispatch, state.selectedId]);
+
+    // Sprint 11: Export canvas as PNG
+    const handleExportPNG = useCallback(async () => {
+        const canvasArea = document.querySelector("[data-canvas-export]") as HTMLElement | null;
+        if (!canvasArea) { alert("Không tìm thấy canvas"); return; }
+        try {
+            const mod = await import("html2canvas");
+            const html2canvas = mod.default;
+            const canvas = await html2canvas(canvasArea, { scale: 2, useCORS: true, backgroundColor: null });
+            const link = document.createElement("a");
+            link.download = `thiep-cuoi-${projectSlug || "export"}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch {
+            alert("Export thất bại. Vui lòng thử lại.");
+        }
+    }, [projectSlug]);
+
     // P1: Music play/stop
     const handlePlayMusic = useCallback(() => {
         if (!musicUrl) return;
@@ -251,7 +289,13 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 background: "#fff", borderBottom: "1px solid #e5e7eb",
                 flexShrink: 0, zIndex: 100,
             }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d", marginRight: 8 }}>💌</span>
+                <a href="/dashboard" title="Về trang chủ" style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    textDecoration: "none", marginRight: 4,
+                }}>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d" }}>💌</span>
+                    <Home size={16} style={{ color: "#9ca3af" }} />
+                </a>
                 <span style={{ fontSize: 14, color: "#6b7280", fontWeight: 500, flex: 1 }}>Visual Editor</span>
 
                 {/* Undo / Redo */}
@@ -302,6 +346,20 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 }}>
                     <Eye size={14} /> Xem trước
                 </a>
+
+                {/* Export PNG */}
+                <button onClick={handleExportPNG} title="Tải thiệp dạng ảnh PNG" style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px", borderRadius: 10,
+                    border: "1px solid #e5e7eb", background: "#fff",
+                    color: "#374151", fontSize: 13, fontWeight: 500,
+                    cursor: "pointer", transition: "all 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#374151"; }}
+                >
+                    <Download size={14} /> Tải PNG
+                </button>
 
                 {/* Publish — P0 fix: now saves status='published' before redirect */}
                 <button
@@ -386,6 +444,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                                     type: "ADD_ELEMENT",
                                                     element: {
                                                         id: `el-${Date.now()}`,
+                                                        sectionId: state.sections[0]?.id || "section-1",
                                                         type: "text",
                                                         x: 20, y: 120 + state.elements.length * 40,
                                                         width: 350, height: 60,
@@ -456,6 +515,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         type: "ADD_ELEMENT",
                                         element: {
                                             id: `el-${Date.now()}`,
+                                            sectionId: state.sections[0]?.id || "section-1",
                                             type: "image",
                                             x: 20, y: 80,
                                             width: 200, height: 200,
@@ -475,6 +535,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         element: {
                                             ...el,
                                             id: `el-${Date.now()}`,
+                                            sectionId: state.sections[0]?.id || "section-1",
                                             zIndex: state.elements.length + 1,
                                         },
                                     })}
@@ -489,12 +550,16 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
 
                                     {([
                                         {
-                                            type: "countdown", emoji: "⏰", label: "Đếm ngược ngày cưới", desc: "Hiển thị thời gian đến ngày cưới",
-                                            props: { widgetType: "countdown", label: "Countdown", targetDate: "" }, w: 350, h: 100
+                                            type: "widget", emoji: "📅", label: "Lịch ngày cưới", desc: "Hiển thị lịch tháng với highlight ngày cưới",
+                                            props: { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }, w: 220, h: 220
+                                        },
+                                        {
+                                            type: "widget", emoji: "⏰", label: "Đếm ngược ngày cưới", desc: "Hiển thị thời gian đến ngày cưới",
+                                            props: { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }, w: 350, h: 100
                                         },
                                         {
                                             type: "widget", emoji: "🗺️", label: "Bản đồ", desc: "Gắn link Google Maps địa điểm",
-                                            props: { widgetType: "map", mapUrl: "https://maps.google.com", label: "Vị trí tiệc cưới" }, w: 350, h: 200
+                                            props: { widgetType: "map", mapUrl: "https://maps.google.com", label: "Vị trí tiệc cưới", venueName: "Diamond Palace", venueAddress: "123 Nguyễn Huệ, Q.1, TP.HCM" }, w: 350, h: 200
                                         },
                                         {
                                             type: "widget", emoji: "📱", label: "Mã QR", desc: "QR code link thiệp để chia sẻ",
@@ -502,7 +567,15 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         },
                                         {
                                             type: "widget", emoji: "💰", label: "Phong bì mừng cưới", desc: "Tài khoản nhận phong bì mừng cưới",
-                                            props: { widgetType: "gift", label: "Phong bì mừng cưới" }, w: 350, h: 120
+                                            props: { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Vietcombank", accountNumber: "0123456789", accountName: "NGUYEN VAN A" }, w: 350, h: 150
+                                        },
+                                        {
+                                            type: "widget", emoji: "📝", label: "RSVP Form", desc: "Form xác nhận tham dự tiệc cưới",
+                                            props: { widgetType: "rsvp", label: "RSVP", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng xác nhận sự hiện diện của bạn" }, w: 340, h: 220
+                                        },
+                                        {
+                                            type: "widget", emoji: "▶️", label: "YouTube Video", desc: "Nhúng video YouTube vào thiệp",
+                                            props: { widgetType: "youtube", label: "Video cưới", youtubeUrl: "" }, w: 350, h: 200
                                         },
                                     ] as Array<{ type: string; emoji: string; label: string; desc: string; props: Record<string, string>; w: number; h: number }>).map((w) => (
                                         <button key={w.label}
@@ -510,6 +583,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                                 type: "ADD_ELEMENT",
                                                 element: {
                                                     id: `el-${Date.now()}`,
+                                                    sectionId: state.sections[0]?.id || "section-1",
                                                     type: w.type as CanvasElement["type"],
                                                     x: 20, y: 100 + state.elements.length * 30,
                                                     width: w.w, height: w.h,
@@ -647,52 +721,243 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             )}
 
                             {/* TEMPLATES TAB */}
-                            {activeTab === "templates" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Đổi mẫu thiệp</p>
-                                    {EDITOR_TEMPLATES.map(t => (
-                                        <button key={t.slug}
-                                            onClick={() => dispatch({ type: "SET_BACKGROUND", background: t.bg })}
-                                            style={{
-                                                display: "flex", alignItems: "center", gap: 12,
-                                                padding: "10px 12px", borderRadius: 12,
-                                                border: `2px solid ${state.background === t.bg ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: state.background === t.bg ? "#fdf2f8" : "#fff",
-                                                cursor: "pointer", textAlign: "left",
-                                            }}
-                                        >
-                                            <div style={{ width: 40, height: 56, borderRadius: 6, background: t.bg, flexShrink: 0 }} />
-                                            <div>
-                                                <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>{t.emoji} {t.label}</p>
-                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.slug}</p>
-                                            </div>
-                                            {state.background === t.bg && <span style={{ marginLeft: "auto", color: "#ff6b9d", fontSize: 16 }}>✔</span>}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            {activeTab === "templates" && (() => {
+                                const [cat, setCat] = [templateCat, setTemplateCat];
+                                const filtered = cat === "all" ? TEMPLATE_PRESETS : TEMPLATE_PRESETS.filter(t => t.category === cat);
+                                return (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Chọn mẫu thiệp</p>
+                                        {/* Category filter */}
+                                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                            {TEMPLATE_CATEGORIES.map(c => (
+                                                <button key={c.key} onClick={() => setTemplateCat(c.key)}
+                                                    style={{
+                                                        padding: "5px 12px", borderRadius: 16,
+                                                        border: `1px solid ${cat === c.key ? "#ff6b9d" : "#e5e7eb"}`,
+                                                        background: cat === c.key ? "#fdf2f8" : "#fff",
+                                                        color: cat === c.key ? "#ff6b9d" : "#6b7280",
+                                                        fontSize: 11, fontWeight: 600, cursor: "pointer",
+                                                        transition: "all 0.15s",
+                                                    }}
+                                                >{c.label}</button>
+                                            ))}
+                                        </div>
+                                        {/* Template cards */}
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                                            {filtered.map(t => (
+                                                <button key={t.slug}
+                                                    onClick={() => {
+                                                        if (confirm(`Áp dụng mẫu "${t.label}"? Nội dung hiện tại sẽ được thay thế.`)) {
+                                                            dispatch({ type: "LOAD", elements: JSON.parse(JSON.stringify(t.elements)), background: t.background, sections: JSON.parse(JSON.stringify(t.sections)) });
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        padding: 0, border: `2px solid ${state.background === t.background ? t.accent : "#e5e7eb"}`,
+                                                        borderRadius: 12, overflow: "hidden",
+                                                        background: "#fff", cursor: "pointer",
+                                                        transition: "all 0.2s", textAlign: "left",
+                                                    }}
+                                                    onMouseEnter={e => e.currentTarget.style.borderColor = t.accent}
+                                                    onMouseLeave={e => { if (state.background !== t.background) e.currentTarget.style.borderColor = "#e5e7eb"; }}
+                                                >
+                                                    <div style={{ height: 80, background: t.background, position: "relative" }}>
+                                                        <span style={{ position: "absolute", top: 6, right: 6, fontSize: 18 }}>{t.emoji}</span>
+                                                    </div>
+                                                    <div style={{ padding: "8px 10px" }}>
+                                                        <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{t.label}</p>
+                                                        <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>{t.sections.length} sections · {t.elements.length} elements</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 )}
 
                 {/* ── Canvas Area ── */}
-                <div style={{
-                    flex: 1, display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    overflow: "auto", padding: 32,
-                    background: "#e5e7eb",
-                }}>
-                    <div style={{ position: "relative" }}>
+                <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                    {/* Element Toolbar — floating action bar */}
+                    {state.selectedId && (() => {
+                        const sel = state.elements.find(e => e.id === state.selectedId);
+                        if (!sel) return null;
+                        const scale = state.zoom / 100;
+                        return (
+                            <div className="animate-toolbar-in" style={{
+                                position: "absolute", top: 8, left: "50%",
+                                transform: "translateX(-50%)", zIndex: 200,
+                                background: "#fff", borderRadius: 12,
+                                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                                padding: "6px 10px", display: "flex", gap: 4,
+                                border: "1px solid #e5e7eb",
+                            }}>
+                                {[
+                                    { icon: <Copy size={14} />, label: "Nhân bản", action: () => dispatch({ type: "DUPLICATE", id: sel.id }) },
+                                    { icon: <ArrowUp size={14} />, label: "Lên", action: () => dispatch({ type: "BRING_FORWARD", id: sel.id }) },
+                                    { icon: <ArrowDown size={14} />, label: "Xuống", action: () => dispatch({ type: "SEND_BACKWARD", id: sel.id }) },
+                                    { icon: <Trash2 size={14} />, label: "Xóa", action: () => dispatch({ type: "DELETE_ELEMENT", id: sel.id }), danger: true },
+                                ].map(btn => (
+                                    <button key={btn.label} title={btn.label} onClick={btn.action} style={{
+                                        padding: "6px 10px", borderRadius: 8, border: "none",
+                                        background: "transparent", cursor: "pointer",
+                                        color: (btn as { danger?: boolean }).danger ? "#ef4444" : "#4b5563",
+                                        display: "flex", alignItems: "center", gap: 4,
+                                        fontSize: 11, fontWeight: 500,
+                                        transition: "background 0.15s",
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = "#f3f4f6"}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                    >{btn.icon}<span>{btn.label}</span></button>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                    <div style={{
+                        flex: 1, display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        overflow: "auto", padding: 32,
+                        background: "#e5e7eb",
+                    }}>
+                    <div style={{ position: "relative", paddingBottom: 68 }} data-canvas-export>
                         <Canvas
                             width={state.width}
                             height={state.height}
                             background={state.background}
+                            sections={state.sections}
                             elements={state.elements}
                             selectedId={state.selectedId}
                             zoom={state.zoom}
                             dispatch={dispatch}
                         />
+                        {/* Sprint 11: Empty canvas guidance */}
+                        {state.elements.length === 0 && (
+                            <div style={{
+                                position: "absolute", inset: 0,
+                                display: "flex", flexDirection: "column",
+                                alignItems: "center", justifyContent: "center",
+                                gap: 12, pointerEvents: "none",
+                            }}>
+                                <span style={{ fontSize: 48, opacity: 0.3 }}>💌</span>
+                                <p style={{ fontSize: 16, fontWeight: 600, color: "#9ca3af", margin: 0 }}>Chưa có nội dung</p>
+                                <p style={{ fontSize: 12, color: "#d1d5db", margin: 0, maxWidth: 220, textAlign: "center", lineHeight: 1.6 }}>Chọn &quot;Văn bản&quot;, &quot;Hình ảnh&quot; hoặc &quot;Tiện ích&quot; từ thanh bên trái để bắt đầu thiết kế thiệp</p>
+                            </div>
+                        )}
+                        {/* Sprint 11: Premium watermark */}
+                        <div style={{
+                            position: "absolute", bottom: 6, left: "50%",
+                            transform: "translateX(-50%)",
+                            background: "rgba(0,0,0,0.5)", color: "#fff",
+                            fontSize: 9, padding: "3px 10px",
+                            borderRadius: 10, letterSpacing: 0.5,
+                            pointerEvents: "none", whiteSpace: "nowrap",
+                        }}>7app.online — Tạo thiệp miễn phí</div>
+                        <div style={{ display: "flex", justifyContent: "center", marginTop: 24, paddingBottom: 68 }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    dispatch({ type: "ADD_SECTION" });
+                                }}
+                                style={{
+                                    display: "flex", alignItems: "center", gap: 6,
+                                    padding: "10px 20px", borderRadius: 20,
+                                    background: "#fff", border: "1px solid #e5e7eb",
+                                    color: "#4b5563", fontSize: 13, fontWeight: 600,
+                                    cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                    transition: "all 0.2s"
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = "#ff6b9d"; e.currentTarget.style.color = "#ff6b9d"; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#4b5563"; }}
+                            >
+                                <Plus size={16} /> Thêm Trang Mới
+                            </button>
+                        </div>
+                        <QuickImageBar
+                            elements={state.elements}
+                            selectedId={state.selectedId}
+                            onSelectElement={(id) => dispatch({ type: "SELECT", id })}
+                            onReplaceImage={(id, src) => {
+                                const el = state.elements.find(e => e.id === id);
+                                if (el) dispatch({ type: "UPDATE_ELEMENT", id, changes: { props: { ...el.props, src } } });
+                            }}
+                            onAddImage={(src) => {
+                                addImage(src);
+                            }}
+                        />
                     </div>
+                </div>
+                    
+                {/* ── Floating Zoom Controls ── */}
+                    <div style={{
+                        position: "absolute",
+                        bottom: 24, left: 24, zIndex: 100,
+                        backgroundColor: "#fff",
+                        borderRadius: 20,
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+                        padding: "8px 12px",
+                        display: "flex", alignItems: "center", gap: 12,
+                        border: "1px solid #e5e7eb"
+                    }}>
+                        <button 
+                            onClick={() => dispatch({ type: "SET_ZOOM", zoom: Math.max(25, state.zoom - 25) })}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280", padding: 0, display: "flex", transition: "color 0.2s" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#ff6b9d"}
+                            onMouseLeave={e => e.currentTarget.style.color = "#6b7280"}
+                        >
+                            <ZoomOut size={16} />
+                        </button>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", minWidth: 44, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+                            {state.zoom}%
+                        </span>
+                        <button 
+                            onClick={() => dispatch({ type: "SET_ZOOM", zoom: Math.min(200, state.zoom + 25) })}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280", padding: 0, display: "flex", transition: "color 0.2s" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#ff6b9d"}
+                            onMouseLeave={e => e.currentTarget.style.color = "#6b7280"}
+                        >
+                            <ZoomIn size={16} />
+                        </button>
+                    </div>
+
+                    {/* ── Floating Music Vinyl Icon ── */}
+                    <button
+                        onClick={() => {
+                            const body = document.body;
+                            const cur = body.getAttribute("data-music") === "playing";
+                            body.setAttribute("data-music", cur ? "paused" : "playing");
+                            // Force re-render for class toggle
+                            (window as unknown as Record<string, unknown>).__musicPlaying = !cur;
+                        }}
+                        title="Bật/Tắt nhạc nền"
+                        style={{
+                            position: "absolute", bottom: 24, right: 24, zIndex: 100,
+                            width: 48, height: 48, borderRadius: "50%",
+                            background: "linear-gradient(135deg, #1f2937, #374151)",
+                            border: "3px solid #4b5563",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                            cursor: "pointer", display: "flex",
+                            alignItems: "center", justifyContent: "center",
+                            color: "#fff", fontSize: 20,
+                            transition: "transform 0.3s, box-shadow 0.3s",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.3)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.2)"; }}
+                    >
+                        <span className="animate-vinyl-spin" style={{ fontSize: 22, lineHeight: 1 }}>🎵</span>
+                        {/* Vinyl rings */}
+                        <div style={{
+                            position: "absolute", inset: 3,
+                            borderRadius: "50%",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                        }} />
+                        <div style={{
+                            position: "absolute", width: 10, height: 10,
+                            borderRadius: "50%", background: "#9ca3af",
+                            top: "50%", left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }} />
+                    </button>
                 </div>
 
                 {/* ── Right Panel (Properties) ── */}
@@ -717,521 +982,16 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     }}
                 />
 
-                <div style={{
-                    width: 260, background: "#fff",
-                    borderLeft: "1px solid #e5e7eb",
-                    flexShrink: 0, overflowY: "auto",
-                    padding: 16,
-                    display: "flex", flexDirection: "column", gap: 0,
-                }}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: "0 0 12px", letterSpacing: 0.5 }}>
-                        ✏️ Tuỳ chỉnh
-                    </p>
-
-                    {/* ── GLOBAL PANEL (no element selected) ── */}
-                    {!selectedEl && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-                            {/* Canvas info */}
-                            <div style={{ padding: "10px 14px", borderRadius: 10, background: "#f9fafb", border: "1px solid #f3f4f6" }}>
-                                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: 0.8 }}>Thiệp</p>
-                                <p style={{ fontSize: 13, color: "#374151", margin: 0 }}>390 × 844px</p>
-                                <p style={{ fontSize: 11, color: "#9ca3af", margin: "2px 0 0" }}>{state.elements.length} phần tử</p>
-                            </div>
-
-                            {/* Quick background */}
-                            <div>
-                                <p style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.8 }}>Nền nhanh</p>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-                                    {BG_PRESETS.map(bg => (
-                                        <button key={bg.label}
-                                            title={bg.label}
-                                            onClick={() => dispatch({ type: "SET_BACKGROUND", background: bg.value })}
-                                            style={{
-                                                width: "100%", aspectRatio: "1", borderRadius: 8,
-                                                background: bg.value,
-                                                border: `2px solid ${state.background === bg.value ? "#ff6b9d" : "transparent"}`,
-                                                cursor: "pointer", padding: 0,
-                                                boxShadow: "0 1px 4px rgba(0,0,0,.1)",
-                                                transition: "border-color 0.15s",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Particle effects */}
-                            <div>
-                                <p style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.8 }}>Hiệu ứng hạt</p>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                                    {([
-                                        { label: "🌸 Hoa", effect: "petals" as ParticleEffect },
-                                        { label: "💕 Tim", effect: "hearts" as ParticleEffect },
-                                        { label: "✨ Bokeh", effect: "bokeh" as ParticleEffect },
-                                        { label: "❄️ Tuyết", effect: "snow" as ParticleEffect },
-                                    ]).map(fx => (
-                                        <button key={fx.effect}
-                                            onClick={() => dispatch({ type: "SET_PARTICLE_EFFECT", effect: fx.effect === state.particleEffect ? "none" : fx.effect })}
-                                            style={{
-                                                padding: "8px 6px", borderRadius: 8, fontSize: 12,
-                                                border: `1.5px solid ${state.particleEffect === fx.effect ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: state.particleEffect === fx.effect ? "#fdf2f8" : "#fafafa",
-                                                cursor: "pointer", color: "#374151",
-                                                fontWeight: state.particleEffect === fx.effect ? 700 : 400,
-                                                transition: "all 0.15s",
-                                            }}>
-                                            {fx.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                {state.particleEffect !== "none" && (
-                                    <button onClick={() => dispatch({ type: "SET_PARTICLE_EFFECT", effect: "none" })}
-                                        style={{
-                                            marginTop: 6, width: "100%", padding: "5px 0", borderRadius: 6,
-                                            border: "1px solid #e5e7eb", background: "#f9fafb",
-                                            cursor: "pointer", fontSize: 11, color: "#9ca3af"
-                                        }}>
-                                        🚫 Tắt hiệu ứng
-                                    </button>
-                                )}
-                            </div>
-
-                            <div style={{ textAlign: "center", padding: "20px 0 8px", color: "#d1d5db" }}>
-                                <p style={{ fontSize: 32, margin: 0 }}>👆</p>
-                                <p style={{ fontSize: 12, marginTop: 6, color: "#9ca3af" }}>Chọn phần tử để chỉnh sửa</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ── TEXT ELEMENT PANEL ── */}
-                    {selectedEl?.type === "text" && (() => {
-                        const p = selectedEl.props;
-                        const upd = (changes: Record<string, unknown>) =>
-                            dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...p, ...changes } } });
-                        const shadow = p.textShadow ?? { active: false, color: "rgba(0,0,0,0.4)", blur: 4, x: 2, y: 2 };
-
-                        return (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-                                {/* Layer / Action row */}
-                                <div style={{ display: "flex", gap: 5 }}>
-                                    {[
-                                        { icon: <ChevronsUp size={13} />, label: "↑", action: () => dispatch({ type: "BRING_FORWARD", id: selectedEl.id }), title: "Lên trên" },
-                                        { icon: <ChevronsDown size={13} />, label: "↓", action: () => dispatch({ type: "SEND_BACKWARD", id: selectedEl.id }), title: "Xuống dưới" },
-                                        { icon: <Copy size={13} />, label: "", action: () => dispatch({ type: "DUPLICATE", id: selectedEl.id }), title: "Nhân đôi" },
-                                    ].map((btn, i) => (
-                                        <button key={i} title={btn.title} onClick={btn.action} style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 11, color: "#374151" }}>
-                                            {btn.icon}{btn.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* ── Font Family ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Font chữ</label>
-                                    <select
-                                        value={p.fontFamily ?? "'Dancing Script', cursive"}
-                                        onChange={e => upd({ fontFamily: e.target.value })}
-                                        style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, outline: "none", background: "#fff" }}
-                                    >
-                                        {[
-                                            ["'Dancing Script', cursive", "Dancing Script ✍️"],
-                                            ["'Playfair Display', serif", "Playfair Display 📜"],
-                                            ["'Cormorant Garamond', serif", "Cormorant Garamond"],
-                                            ["'Lora', serif", "Lora"],
-                                            ["'EB Garamond', serif", "EB Garamond"],
-                                            ["'Inter', sans-serif", "Inter 🔤"],
-                                            ["'Roboto', sans-serif", "Roboto"],
-                                            ["'Montserrat', sans-serif", "Montserrat"],
-                                            ["'Nunito', sans-serif", "Nunito"],
-                                            ["'Poppins', sans-serif", "Poppins"],
-                                            ["'Great Vibes', cursive", "Great Vibes ✨"],
-                                            ["'Pacifico', cursive", "Pacifico"],
-                                            ["'Sacramento', cursive", "Sacramento"],
-                                            ["'Satisfy', cursive", "Satisfy"],
-                                            ["Georgia, serif", "Georgia (System)"],
-                                        ].map(([val, label]) => (
-                                            <option key={val} value={val}>{label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* ── Font Size stepper ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Cỡ chữ</label>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                        <button onClick={() => upd({ fontSize: Math.max(8, (p.fontSize ?? 24) - 1) })} style={{ width: 30, height: 30, borderRadius: 7, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#374151" }}>−</button>
-                                        <input
-                                            type="number" min={8} max={120}
-                                            value={p.fontSize ?? 24}
-                                            onChange={e => upd({ fontSize: Number(e.target.value) })}
-                                            style={{ flex: 1, textAlign: "center", padding: "6px 4px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 13, outline: "none" }}
-                                        />
-                                        <button onClick={() => upd({ fontSize: Math.min(120, (p.fontSize ?? 24) + 1) })} style={{ width: 30, height: 30, borderRadius: 7, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#374151" }}>+</button>
-                                    </div>
-                                </div>
-
-                                {/* ── Bold / Italic / Underline / Strikethrough ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Định dạng</label>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 5 }}>
-                                        {[
-                                            { label: "B", active: p.fontWeight === "bold", style: { fontWeight: "bold" as const }, action: () => upd({ fontWeight: p.fontWeight === "bold" ? "normal" : "bold" }), title: "In đậm" },
-                                            { label: "I", active: p.fontStyle === "italic", style: { fontStyle: "italic" as const }, action: () => upd({ fontStyle: p.fontStyle === "italic" ? "normal" : "italic" }), title: "In nghiêng" },
-                                            { label: "U", active: p.textDecoration === "underline", style: { textDecoration: "underline" as const }, action: () => upd({ textDecoration: p.textDecoration === "underline" ? "none" : "underline" }), title: "Gạch chân" },
-                                            { label: "S̶", active: p.textDecoration === "line-through", style: { textDecoration: "line-through" as const }, action: () => upd({ textDecoration: p.textDecoration === "line-through" ? "none" : "line-through" }), title: "Gạch ngang" },
-                                        ].map((btn, i) => (
-                                            <button key={i} title={btn.title} onClick={btn.action} style={{
-                                                padding: "8px 0", borderRadius: 8, fontSize: 14, cursor: "pointer",
-                                                border: `1.5px solid ${btn.active ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: btn.active ? "#fdf2f8" : "#fff",
-                                                color: btn.active ? "#ff6b9d" : "#374151",
-                                                ...btn.style,
-                                            }}>{btn.label}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* ── Text Alignment ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Căn chỉnh</label>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 5 }}>
-                                        {([["left", "≡ Trái"], ["center", "≡ Giữa"], ["right", "≡ Phải"], ["justify", "≡≡"]] as const).map(([align, label]) => (
-                                            <button key={align} onClick={() => upd({ textAlign: align })} style={{
-                                                padding: "7px 2px", borderRadius: 8, fontSize: 10, cursor: "pointer",
-                                                border: `1.5px solid ${p.textAlign === align ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: p.textAlign === align ? "#fdf2f8" : "#fff",
-                                                color: p.textAlign === align ? "#ff6b9d" : "#374151",
-                                                fontWeight: p.textAlign === align ? 700 : 400,
-                                            }}>{label}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* ── Text Color + Hex ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Màu chữ</label>
-                                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                        <input type="color" value={p.color ?? "#831843"}
-                                            onChange={e => upd({ color: e.target.value })}
-                                            style={{ width: 42, height: 36, borderRadius: 8, border: "1px solid #e5e7eb", cursor: "pointer", padding: 2, flexShrink: 0 }}
-                                        />
-                                        <input type="text" value={p.color ?? "#831843"}
-                                            onChange={e => { if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) upd({ color: e.target.value }); }}
-                                            style={{ flex: 1, padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12, fontFamily: "monospace", outline: "none" }}
-                                        />
-                                    </div>
-                                    {/* Color swatches */}
-                                    <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
-                                        {["#ffffff", "#000000", "#831843", "#1e40af", "#065f46", "#92400e", "#7c3aed", "#be123c", "#0f766e", "#374151", "#f59e0b", "#ec4899"].map(c => (
-                                            <button key={c} onClick={() => upd({ color: c })} title={c} style={{
-                                                width: 20, height: 20, borderRadius: 4, background: c, border: p.color === c ? "2.5px solid #ff6b9d" : "1.5px solid #e5e7eb",
-                                                cursor: "pointer", padding: 0, flexShrink: 0,
-                                            }} />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* ── Line Height ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>
-                                        Giãn dòng: {(p.lineHeight ?? 1.4).toFixed(1)}×
-                                    </label>
-                                    <input type="range" min={8} max={40} step={1}
-                                        value={Math.round((p.lineHeight ?? 1.4) * 10)}
-                                        onChange={e => upd({ lineHeight: Number(e.target.value) / 10 })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* ── Letter Spacing ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>
-                                        Khoảng cách chữ: {p.letterSpacing ?? 0}px
-                                    </label>
-                                    <input type="range" min={-5} max={20} step={0.5}
-                                        value={p.letterSpacing ?? 0}
-                                        onChange={e => upd({ letterSpacing: Number(e.target.value) })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* ── Text Shadow ── */}
-                                <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #f3f4f6", background: "#fafafa" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: shadow.active ? 10 : 0 }}>
-                                        <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280" }}>Đổ bóng chữ</label>
-                                        <button onClick={() => upd({ textShadow: { ...shadow, active: !shadow.active } })} style={{
-                                            width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
-                                            background: shadow.active ? "#ff6b9d" : "#d1d5db",
-                                            position: "relative", transition: "all 0.2s", flexShrink: 0,
-                                        }}>
-                                            <span style={{
-                                                position: "absolute", top: 2, width: 16, height: 16, borderRadius: "50%",
-                                                background: "#fff", transition: "all 0.2s",
-                                                left: shadow.active ? 18 : 2,
-                                            }} />
-                                        </button>
-                                    </div>
-                                    {shadow.active && (
-                                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                                <input type="color" value={shadow.color} onChange={e => upd({ textShadow: { ...shadow, color: e.target.value } })}
-                                                    style={{ width: 34, height: 28, borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer", padding: 1 }} />
-                                                <span style={{ fontSize: 10, color: "#9ca3af" }}>Màu bóng</span>
-                                            </div>
-                                            {[
-                                                { label: `Mờ: ${shadow.blur}px`, min: 0, max: 20, val: shadow.blur, key: "blur" },
-                                                { label: `X: ${shadow.x}px`, min: -20, max: 20, val: shadow.x, key: "x" },
-                                                { label: `Y: ${shadow.y}px`, min: -20, max: 20, val: shadow.y, key: "y" },
-                                            ].map(s => (
-                                                <div key={s.key}>
-                                                    <span style={{ fontSize: 10, color: "#6b7280" }}>{s.label}</span>
-                                                    <input type="range" min={s.min} max={s.max}
-                                                        value={s.val}
-                                                        onChange={e => upd({ textShadow: { ...shadow, [s.key]: Number(e.target.value) } })}
-                                                        style={{ width: "100%" }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* ── Opacity ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>
-                                        Độ mờ: {Math.round((selectedEl.opacity ?? 1) * 100)}%
-                                    </label>
-                                    <input type="range" min={10} max={100}
-                                        value={Math.round((selectedEl.opacity ?? 1) * 100)}
-                                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { opacity: Number(e.target.value) / 100 } })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* ── Rotation ── */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>
-                                        Xoay: {selectedEl.rotation ?? 0}°
-                                    </label>
-                                    <input type="range" min={-180} max={180}
-                                        value={selectedEl.rotation ?? 0}
-                                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: Number(e.target.value) } })}
-                                        style={{ width: "100%" }}
-                                    />
-                                    <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: 0 } })}
-                                        style={{ marginTop: 4, width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "pointer", fontSize: 11, color: "#6b7280" }}>Reset 0°</button>
-                                </div>
-
-                                {/* ── Animation ── */}
-                                <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #f3f4f6", background: "#fafafa" }}>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 8 }}>🎬 Hiệu ứng chuyển động</label>
-                                    <div style={{ marginBottom: 6 }}>
-                                        <span style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4, display: "block" }}>Xuất hiện</span>
-                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
-                                            {([["none", "Không"], ["fadeIn", "Fade In"], ["slideUp", "Slide Up"], ["zoomIn", "Zoom In"]] as const).map(([val, label]) => (
-                                                <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { animation: { ...selectedEl.animation, entrance: val, loop: selectedEl.animation?.loop ?? "none" } } })} style={{
-                                                    padding: "5px 4px", borderRadius: 7, fontSize: 10, cursor: "pointer",
-                                                    border: `1.5px solid ${(selectedEl.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
-                                                    background: (selectedEl.animation?.entrance ?? "none") === val ? "#fdf2f8" : "#fff",
-                                                    color: (selectedEl.animation?.entrance ?? "none") === val ? "#ff6b9d" : "#374151",
-                                                }}>{label}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4, display: "block" }}>Liên tục</span>
-                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 4 }}>
-                                            {([["none", "Không"], ["pulse", "Pulse"], ["float", "Float"], ["shake", "Shake"]] as const).map(([val, label]) => (
-                                                <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { animation: { entrance: selectedEl.animation?.entrance ?? "none", loop: val } } })} style={{
-                                                    padding: "5px 2px", borderRadius: 7, fontSize: 9, cursor: "pointer",
-                                                    border: `1.5px solid ${(selectedEl.animation?.loop ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
-                                                    background: (selectedEl.animation?.loop ?? "none") === val ? "#fdf2f8" : "#fff",
-                                                    color: (selectedEl.animation?.loop ?? "none") === val ? "#ff6b9d" : "#374151",
-                                                }}>{label}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Delete */}
-                                <button onClick={() => dispatch({ type: "DELETE_ELEMENT", id: selectedEl.id })} style={{
-                                    width: "100%", padding: "9px 0", borderRadius: 10,
-                                    border: "1px solid #fecdd3", background: "#fff1f2",
-                                    color: "#e11d48", cursor: "pointer", fontSize: 13, fontWeight: 600,
-                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                                }}>
-                                    <Trash2 size={14} /> Xóa phần tử
-                                </button>
-                            </div>
-                        );
-                    })()}
-
-                    {/* ── IMAGE ELEMENT PANEL ── */}
-                    {selectedEl?.type === "image" && (() => {
-                        const p = selectedEl.props;
-                        const upd = (changes: Record<string, unknown>) =>
-                            dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { props: { ...p, ...changes } } });
-
-                        return (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                                {/* Layer / Action row */}
-                                <div style={{ display: "flex", gap: 5 }}>
-                                    {[
-                                        { icon: <ChevronsUp size={13} />, action: () => dispatch({ type: "BRING_FORWARD", id: selectedEl.id }), title: "Lên trên" },
-                                        { icon: <ChevronsDown size={13} />, action: () => dispatch({ type: "SEND_BACKWARD", id: selectedEl.id }), title: "Xuống dưới" },
-                                        { icon: <Copy size={13} />, action: () => dispatch({ type: "DUPLICATE", id: selectedEl.id }), title: "Nhân đôi" },
-                                    ].map((btn, i) => (
-                                        <button key={i} title={btn.title} onClick={btn.action} style={{ flex: 1, padding: "6px 4px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#374151" }}>
-                                            {btn.icon}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Replace image */}
-                                <button onClick={() => replaceImageInputRef.current?.click()} style={{
-                                    padding: "10px", borderRadius: 10, border: "1px solid #e5e7eb",
-                                    background: "#fff", cursor: "pointer", fontSize: 13, color: "#374151",
-                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                                }}>
-                                    <ImageIcon size={14} /> Đổi ảnh
-                                </button>
-
-                                {/* Opacity */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Độ mờ: {Math.round((selectedEl.opacity ?? 1) * 100)}%</label>
-                                    <input type="range" min={10} max={100}
-                                        value={Math.round((selectedEl.opacity ?? 1) * 100)}
-                                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { opacity: Number(e.target.value) / 100 } })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* Border radius */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Bo góc: {p.borderRadius ?? 12}px</label>
-                                    <input type="range" min={0} max={60} value={p.borderRadius ?? 12}
-                                        onChange={e => upd({ borderRadius: Number(e.target.value) })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* Border/Stroke */}
-                                <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #f3f4f6", background: "#fafafa" }}>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 8 }}>Đường viền</label>
-                                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6 }}>
-                                        <input type="color" value={p.borderColor ?? "#ffffff"}
-                                            onChange={e => upd({ borderColor: e.target.value })}
-                                            style={{ width: 34, height: 28, borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer", padding: 1 }} />
-                                        <span style={{ fontSize: 10, color: "#6b7280" }}>Độ dày: {p.borderWidth ?? 0}px</span>
-                                    </div>
-                                    <input type="range" min={0} max={20} value={p.borderWidth ?? 0}
-                                        onChange={e => upd({ borderWidth: Number(e.target.value) })}
-                                        style={{ width: "100%" }}
-                                    />
-                                </div>
-
-                                {/* Image filters — Brightness / Contrast / Saturation */}
-                                <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #f3f4f6", background: "#fafafa" }}>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 8 }}>Điều chỉnh ảnh</label>
-                                    {[
-                                        { label: "Độ sáng", key: "brightness", val: p.brightness ?? 100, min: 0, max: 200 },
-                                        { label: "Độ tương phản", key: "contrast", val: p.contrast ?? 100, min: 0, max: 200 },
-                                        { label: "Độ bão hòa", key: "saturation", val: p.saturation ?? 100, min: 0, max: 200 },
-                                    ].map(f => (
-                                        <div key={f.key} style={{ marginBottom: 8 }}>
-                                            <span style={{ fontSize: 10, color: "#6b7280" }}>{f.label}: {f.val}%</span>
-                                            <input type="range" min={f.min} max={f.max} value={f.val}
-                                                onChange={e => upd({ [f.key]: Number(e.target.value) })}
-                                                style={{ width: "100%", marginTop: 2 }}
-                                            />
-                                        </div>
-                                    ))}
-                                    <button onClick={() => upd({ brightness: 100, contrast: 100, saturation: 100 })} style={{
-                                        width: "100%", padding: "4px 0", borderRadius: 6, border: "1px solid #e5e7eb",
-                                        background: "#fff", cursor: "pointer", fontSize: 10, color: "#9ca3af",
-                                    }}>Reset về mặc định</button>
-                                </div>
-
-                                {/* CSS filter presets */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Bộ lọc nhanh</label>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5 }}>
-                                        {[
-                                            { label: "Gốc", filter: "" },
-                                            { label: "B&W", filter: "grayscale(100%)" },
-                                            { label: "Sepia", filter: "sepia(80%)" },
-                                            { label: "Ấm", filter: "saturate(150%) hue-rotate(-15deg)" },
-                                            { label: "Mát", filter: "saturate(80%) hue-rotate(15deg) brightness(1.05)" },
-                                            { label: "Fade", filter: "opacity(70%) brightness(1.1)" },
-                                        ].map(f => (
-                                            <button key={f.label} onClick={() => upd({ filter: f.filter })} style={{
-                                                padding: "6px 4px", borderRadius: 8, fontSize: 11,
-                                                border: `1px solid ${p.filter === f.filter ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: p.filter === f.filter ? "#fdf2f8" : "#fafafa",
-                                                cursor: "pointer", color: "#374151",
-                                            }}>{f.label}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* ObjectFit */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Kiểu hiển thị</label>
-                                    <div style={{ display: "flex", gap: 6 }}>
-                                        {(["cover", "contain"] as const).map(fit => (
-                                            <button key={fit} onClick={() => upd({ objectFit: fit })} style={{
-                                                flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12,
-                                                border: `1px solid ${p.objectFit === fit ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: p.objectFit === fit ? "#fdf2f8" : "#fff",
-                                                cursor: "pointer",
-                                            }}>{fit === "cover" ? "Cắt đầy" : "Vừa khung"}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Rotation */}
-                                <div>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 5 }}>Xoay: {selectedEl.rotation ?? 0}°</label>
-                                    <input type="range" min={-180} max={180}
-                                        value={selectedEl.rotation ?? 0}
-                                        onChange={e => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: Number(e.target.value) } })}
-                                        style={{ width: "100%" }}
-                                    />
-                                    <button onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { rotation: 0 } })} style={{
-                                        marginTop: 4, width: "100%", padding: "4px 0", borderRadius: 6,
-                                        border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "pointer", fontSize: 11, color: "#6b7280",
-                                    }}>Reset 0°</button>
-                                </div>
-
-                                {/* Animation */}
-                                <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #f3f4f6", background: "#fafafa" }}>
-                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 8 }}>🎬 Hiệu ứng liên tục</label>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 4 }}>
-                                        {([["none", "Không"], ["pulse", "Pulse"], ["float", "Float"], ["shake", "Shake"]] as const).map(([val, label]) => (
-                                            <button key={val} onClick={() => dispatch({ type: "UPDATE_ELEMENT", id: selectedEl.id, changes: { animation: { entrance: selectedEl.animation?.entrance ?? "none", loop: val } } })} style={{
-                                                padding: "5px 2px", borderRadius: 7, fontSize: 9, cursor: "pointer",
-                                                border: `1.5px solid ${(selectedEl.animation?.loop ?? "none") === val ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: (selectedEl.animation?.loop ?? "none") === val ? "#fdf2f8" : "#fff",
-                                                color: (selectedEl.animation?.loop ?? "none") === val ? "#ff6b9d" : "#374151",
-                                            }}>{label}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Delete */}
-                                <button onClick={() => dispatch({ type: "DELETE_ELEMENT", id: selectedEl.id })} style={{
-                                    width: "100%", padding: "9px 0", borderRadius: 10,
-                                    border: "1px solid #fecdd3", background: "#fff1f2",
-                                    color: "#e11d48", cursor: "pointer", fontSize: 13, fontWeight: 600,
-                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                                }}>
-                                    <Trash2 size={14} /> Xóa phần tử
-                                </button>
-                            </div>
-                        );
-                    })()}
-                </div>
+                <RightPanel
+                    selectedEl={selectedEl}
+                    dispatch={dispatch}
+                    background={state.background}
+                    particleEffect={state.particleEffect ?? "none"}
+                    onReplaceImage={() => replaceImageInputRef.current?.click()}
+                    onShowFontPicker={() => setShowFontPicker(true)}
+                    showFontPicker={showFontPicker}
+                    onCloseFontPicker={() => setShowFontPicker(false)}
+                />
             </div>
         </div>
     );

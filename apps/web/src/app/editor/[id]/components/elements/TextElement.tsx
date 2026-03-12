@@ -1,52 +1,79 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import type { CanvasElement } from "../useCanvasReducer";
+import { useScrollObserver } from "../useScrollObserver";
 
 interface TextElementProps {
     element: CanvasElement;
     zoom: number;
     isSelected: boolean;
+    isEditing: boolean;              // controlled from Canvas
     onSelect: () => void;
+    onDoubleClick: () => void;       // notify Canvas to activate editing
+    onFinishEditing: () => void;     // notify Canvas editing is done
     onUpdateText: (id: string, text: string) => void;
     onUpdateProps: (id: string, changes: Partial<CanvasElement>) => void;
 }
 
-export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText, onUpdateProps }: TextElementProps) {
+export function TextElement({
+    element, zoom, isSelected, isEditing,
+    onSelect, onDoubleClick, onFinishEditing, onUpdateText, onUpdateProps
+}: TextElementProps) {
     const scale = zoom / 100;
-    const [editing, setEditing] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const p = element.props;
 
-    const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
-        setEditing(true);
-        setTimeout(() => {
-            if (ref.current) {
-                ref.current.focus();
-                const range = document.createRange();
-                range.selectNodeContents(ref.current);
-                const sel = window.getSelection();
-                sel?.removeAllRanges();
-                sel?.addRange(range);
-            }
-        }, 0);
-    }, []);
+    const { ref: observerRef, hasIntersected } = useScrollObserver();
+
+    // When isEditing activates externally, focus + select all text
+    useEffect(() => {
+        if (isEditing && ref.current) {
+            const el = ref.current;
+            el.contentEditable = "true";
+            // Need setTimeout so browser processes the contentEditable DOM change first
+            setTimeout(() => {
+                el.focus();
+                try {
+                    const range = document.createRange();
+                    range.selectNodeContents(el);
+                    const sel = window.getSelection();
+                    sel?.removeAllRanges();
+                    sel?.addRange(range);
+                } catch {
+                    // Non-fatal: cursor will still be placed by browser default
+                }
+            }, 10);
+        } else if (!isEditing && ref.current) {
+            ref.current.contentEditable = "false";
+            ref.current.blur();
+        }
+    }, [isEditing]);
+
 
     const handleBlur = useCallback(() => {
-        setEditing(false);
         if (ref.current) {
             const newText = ref.current.innerText || "";
             onUpdateText(element.id, newText);
         }
-    }, [element.id, onUpdateText]);
+        onFinishEditing();
+    }, [element.id, onUpdateText, onFinishEditing]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === "Escape") {
-            setEditing(false);
+            if (ref.current) {
+                const newText = ref.current.innerText || "";
+                onUpdateText(element.id, newText);
+            }
+            onFinishEditing();
             ref.current?.blur();
         }
-    }, []);
+        // Prevent Enter from propagating to canvas shortcuts
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.stopPropagation();
+        }
+        e.stopPropagation(); // prevent arrow keys from nudging while typing
+    }, [element.id, onUpdateText, onFinishEditing]);
 
     // Build textShadow CSS
     const shadow = p.textShadow;
@@ -54,7 +81,7 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
         ? `${shadow.x ?? 2}px ${shadow.y ?? 2}px ${shadow.blur ?? 4}px ${shadow.color ?? "rgba(0,0,0,0.4)"}`
         : undefined;
 
-    // Build animation class
+    // Build loop animation CSS
     const animationStyle: React.CSSProperties = {};
     const loop = element.animation?.loop;
     if (loop === "pulse") {
@@ -65,10 +92,17 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
         animationStyle.animation = "el-shake 0.5s ease-in-out infinite";
     }
 
+    const entrance = element.animation?.entrance;
+    const hasEntrance = entrance && entrance !== "none";
+    const entranceClass = hasEntrance && hasIntersected ? `animate-entrance-${entrance}` : "";
+    const shouldHideText = hasEntrance && !hasIntersected;
+
     return (
         <div
-            onClick={(e) => { e.stopPropagation(); onSelect(); }}
-            onDoubleClick={handleDoubleClick}
+            ref={observerRef}
+            className={entranceClass}
+            onClick={(e) => { e.stopPropagation(); if (!isEditing) onSelect(); }}
+            onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(); }}
             style={{
                 position: "absolute",
                 left: element.x * scale,
@@ -76,15 +110,16 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
                 width: element.width * scale,
                 minHeight: element.height * scale,
                 zIndex: element.zIndex * 10,
-                cursor: editing ? "text" : "pointer",
-                opacity: element.opacity,
+                cursor: isEditing ? "text" : "pointer",
+                opacity: shouldHideText ? 0 : element.opacity,
                 transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
+                // while editing, sit above SelectionBox's z-space
+                ...(isEditing ? { zIndex: element.zIndex * 10 + 10000 } : {}),
                 ...animationStyle,
             }}
         >
             <div
                 ref={ref}
-                contentEditable={editing}
                 suppressContentEditableWarning
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
@@ -102,16 +137,17 @@ export function TextElement({ element, zoom, isSelected, onSelect, onUpdateText,
                     lineHeight: p.lineHeight ?? 1.4,
                     letterSpacing: p.letterSpacing !== undefined ? `${p.letterSpacing * scale}px` : undefined,
                     textShadow: textShadowCss,
-                    outline: editing ? "1px dashed #3b82f6" : "none",
+                    outline: isEditing ? "2px dashed #3b82f6" : "none",
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                     padding: "2px 4px",
                     borderRadius: 2,
                     boxSizing: "border-box",
                     background: p.backgroundColor ?? "transparent",
+                    userSelect: isEditing ? "text" : "none",
                 }}
             >
-                {p.text ?? "Nhấn để chỉnh sửa"}
+                {p.text ?? "Nhấn đúp để chỉnh sửa"}
             </div>
         </div>
     );

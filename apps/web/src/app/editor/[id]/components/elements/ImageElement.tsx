@@ -1,6 +1,7 @@
 "use client";
 
 import type { CanvasElement } from "../useCanvasReducer";
+import { useScrollObserver } from "../useScrollObserver";
 
 interface ImageElementProps {
     element: CanvasElement;
@@ -12,6 +13,8 @@ interface ImageElementProps {
 export function ImageElement({ element, zoom, isSelected, onSelect }: ImageElementProps) {
     const scale = zoom / 100;
     const p = element.props;
+
+    const { ref: observerRef, hasIntersected } = useScrollObserver();
 
     // Build combined CSS filter from per-channel sliders + preset
     const brightness = p.brightness ?? 100;
@@ -35,8 +38,15 @@ export function ImageElement({ element, zoom, isSelected, onSelect }: ImageEleme
         animationStyle.animation = "el-shake 0.5s ease-in-out infinite";
     }
 
+    const entrance = element.animation?.entrance;
+    const hasEntrance = entrance && entrance !== "none";
+    const entranceClass = hasEntrance && hasIntersected ? `animate-entrance-${entrance}` : "";
+    const shouldHideImage = hasEntrance && !hasIntersected;
+
     return (
         <div
+            ref={observerRef}
+            className={entranceClass}
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
             style={{
                 position: "absolute",
@@ -47,7 +57,7 @@ export function ImageElement({ element, zoom, isSelected, onSelect }: ImageEleme
                 zIndex: element.zIndex * 10,
                 borderRadius: (p.borderRadius ?? 12) * scale,
                 overflow: "hidden",
-                opacity: element.opacity,
+                opacity: shouldHideImage ? 0 : element.opacity,
                 cursor: "pointer",
                 transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
                 background: p.src ? undefined : "linear-gradient(135deg, #f3f4f6, #e5e7eb)",
