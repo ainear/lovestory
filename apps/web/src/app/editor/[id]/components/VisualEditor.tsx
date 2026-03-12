@@ -123,6 +123,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     // Sprint 26: Welcome onboarding + snap-to-grid
     const [showWelcome, setShowWelcome] = useState(true);
     const [snapToGrid, setSnapToGrid] = useState(false);
+    // Sprint 27: Duplicate toast
+    const [dupToast, setDupToast] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -224,7 +226,11 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             const ctrl = e.metaKey || e.ctrlKey;
             if (ctrl && e.key === "z" && !e.shiftKey) { e.preventDefault(); dispatch({ type: "UNDO" }); }
             else if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); dispatch({ type: "REDO" }); }
-            else if (ctrl && e.key === "d" && state.selectedId) { e.preventDefault(); dispatch({ type: "DUPLICATE", id: state.selectedId }); }
+            else if (ctrl && e.key === "d" && state.selectedId) {
+                e.preventDefault();
+                dispatch({ type: "DUPLICATE", id: state.selectedId });
+                setDupToast(true); setTimeout(() => setDupToast(false), 1200);
+            }
             else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
             else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
             // Sprint 21: Copy-paste (Ctrl+C / Ctrl+V)
@@ -253,6 +259,13 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
                     const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
                     dispatch({ type: "UPDATE_ELEMENT", id: sel.id, changes: { x: sel.x + dx, y: sel.y + dy } });
+                }
+            }
+            // Sprint 27: Select first element (⌘A)
+            else if (ctrl && e.key === "a") {
+                e.preventDefault();
+                if (state.elements.length > 0) {
+                    dispatch({ type: "SELECT", id: state.elements[0].id });
                 }
             }
             // Sprint 24: Shortcut cheatsheet (Ctrl+/ or Ctrl+?)
@@ -523,16 +536,26 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     <Share2 size={14} /> Chia sẻ
                 </button>
 
-                {/* Element count badge */}
-                <div style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    fontSize: 11, color: "#9ca3af", fontWeight: 500,
-                    padding: "4px 10px", borderRadius: 8,
-                    background: "#f9fafb", border: "1px solid #f3f4f6",
-                }}>
-                    <Layers size={12} />
-                    {state.elements.length} phần tử
-                </div>
+                {/* Sprint 27: Element count breakdown badge */}
+                {(() => {
+                    const texts = state.elements.filter(e => e.type === "text").length;
+                    const images = state.elements.filter(e => e.type === "image").length;
+                    const widgets = state.elements.filter(e => e.type === "widget").length;
+                    return (
+                        <div title={`${texts} text · ${images} image · ${widgets} widget`} style={{
+                            display: "flex", alignItems: "center", gap: 6,
+                            fontSize: 11, color: "#9ca3af", fontWeight: 500,
+                            padding: "4px 10px", borderRadius: 8,
+                            background: "#f9fafb", border: "1px solid #f3f4f6",
+                            cursor: "default",
+                        }}>
+                            <Layers size={12} />
+                            {state.elements.length}
+                            <span style={{ color: "#d1d5db" }}>|</span>
+                            <span style={{ fontSize: 10 }}>T{texts} · I{images} · W{widgets}</span>
+                        </div>
+                    );
+                })()}
 
                 {/* Publish — P0 fix: now saves status='published' before redirect */}
                 <button
@@ -1070,6 +1093,19 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     </div>
                 )}
 
+                {/* Sprint 27: Duplicate toast */}
+                {dupToast && (
+                    <div style={{
+                        position: "absolute", bottom: 80, left: "50%", transform: "translateX(-50%)",
+                        zIndex: 300, background: "#10b981", color: "#fff",
+                        borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 600,
+                        boxShadow: "0 4px 20px rgba(16,185,129,0.3)",
+                        animation: "fadeInUp 0.3s ease",
+                    }}>
+                        ✅ Đã nhân bản phần tử!
+                    </div>
+                )}
+
                 {/* ── Floating Zoom Controls ── */}
                     <div style={{
                         position: "absolute",
@@ -1264,6 +1300,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                 ["⌘0", "Zoom 100%"],
                                 ["Arrow ↑↓←→", "Di chuyển 1px"],
                                 ["Shift+Arrow", "Di chuyển 10px"],
+                                ["⌘A", "Chọn phần tử đầu"],
                                 ["⌘/", "Hiện bảng phím tắt"],
                                 ["Right-click", "Menu ngữ cảnh"],
                             ].map(([key, desc]) => (
