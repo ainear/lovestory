@@ -717,6 +717,69 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             {preset.label}
                                         </button>
                                     ))}
+                                    {/* Sprint 36: Text Cluster Presets */}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "12px 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>✨ Bộ chữ thiết kế</p>
+                                    {[
+                                        { id: "tc1", label: "Tiêu đề + Phụ đề", emoji: "📝", texts: [
+                                            { text: "Tiêu đề chính", fontSize: 28, fontFamily: "'Dancing Script', cursive", fontWeight: "700", fontStyle: "normal", dy: 0 },
+                                            { text: "Phụ đề mô tả bên dưới", fontSize: 14, fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: "400", fontStyle: "normal", dy: 50 },
+                                        ]},
+                                        { id: "tc2", label: "Tên cô dâu & Chú rể", emoji: "💍", texts: [
+                                            { text: "Minh", fontSize: 32, fontFamily: "'Great Vibes', cursive", fontWeight: "400", fontStyle: "normal", dy: 0 },
+                                            { text: "&", fontSize: 20, fontFamily: "'Dancing Script', cursive", fontWeight: "700", fontStyle: "italic", dy: 45 },
+                                            { text: "Lan", fontSize: 32, fontFamily: "'Great Vibes', cursive", fontWeight: "400", fontStyle: "normal", dy: 75 },
+                                        ]},
+                                        { id: "tc3", label: "Save The Date", emoji: "📅", texts: [
+                                            { text: "SAVE THE DATE", fontSize: 12, fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: "700", fontStyle: "normal", dy: 0 },
+                                            { text: "25.12.2025", fontSize: 26, fontFamily: "'Playfair Display', serif", fontWeight: "700", fontStyle: "normal", dy: 22 },
+                                        ]},
+                                        { id: "tc4", label: "Thiệp mời dự tiệc", emoji: "🎉", texts: [
+                                            { text: "Trân trọng kính mời", fontSize: 13, fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: "500", fontStyle: "normal", dy: 0 },
+                                            { text: "Quý khách đến dự bữa tiệc", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "700", fontStyle: "normal", dy: 28 },
+                                            { text: "Mừng Hỷ", fontSize: 24, fontFamily: "'Great Vibes', cursive", fontWeight: "400", fontStyle: "normal", dy: 58 },
+                                        ]},
+                                    ].map(cluster => (
+                                        <button key={cluster.id}
+                                            onClick={() => {
+                                                const baseY = 100 + state.elements.length * 40;
+                                                cluster.texts.forEach((t, i) => {
+                                                    const newId = `el-${Date.now()}-${i}`;
+                                                    dispatch({
+                                                        type: "ADD_ELEMENT",
+                                                        element: {
+                                                            id: newId,
+                                                            sectionId: state.sections[0]?.id || "section-1",
+                                                            type: "text",
+                                                            x: 20, y: baseY + t.dy,
+                                                            width: 350, height: t.fontSize + 20,
+                                                            rotation: 0, opacity: 1, zIndex: state.elements.length + 1 + i, locked: false,
+                                                            props: {
+                                                                text: t.text,
+                                                                fontSize: t.fontSize,
+                                                                fontFamily: t.fontFamily,
+                                                                fontWeight: t.fontWeight as "bold" | "normal" | undefined,
+                                                                fontStyle: t.fontStyle as "italic" | "normal" | undefined,
+                                                                color: state.background.includes("0f0825") || state.background.includes("111827") ? "#ffffff" : "#1f2937",
+                                                                textAlign: "center" as const,
+                                                            },
+                                                        },
+                                                    });
+                                                });
+                                            }}
+                                            style={{
+                                                padding: "10px 14px", borderRadius: 10,
+                                                border: "1px solid #e5e7eb", background: "linear-gradient(135deg, #fdf2f8, #fff)",
+                                                cursor: "pointer", textAlign: "left",
+                                                display: "flex", alignItems: "center", gap: 8,
+                                            }}
+                                        >
+                                            <span style={{ fontSize: 20 }}>{cluster.emoji}</span>
+                                            <div>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 }}>{cluster.label}</p>
+                                                <p style={{ fontSize: 9, color: "#9ca3af", margin: 0 }}>{cluster.texts.length} phần tử • click để thêm</p>
+                                            </div>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
 
@@ -887,6 +950,35 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             </button>
                                         ))}
                                     </div>
+                                    {/* Sprint 36: Background Image Library */}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "12px 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>🖼️ Ảnh nền cưới</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                                        {[
+                                            { id: "bg1", label: "Hoa hồng", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800" },
+                                            { id: "bg2", label: "Hoa lavender", url: "https://images.unsplash.com/photo-1490750967868-88df5691cc35?w=800" },
+                                            { id: "bg3", label: "Vải lụa", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
+                                            { id: "bg4", label: "Bokeh vàng", url: "https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?w=800" },
+                                            { id: "bg5", label: "Mây trời", url: "https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=800" },
+                                            { id: "bg6", label: "Hoa trắng", url: "https://images.unsplash.com/photo-1487530811015-780c5b3ac781?w=800" },
+                                            { id: "bg7", label: "Marble", url: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800" },
+                                            { id: "bg8", label: "Watercolor", url: "https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=800" },
+                                        ].map(bg => (
+                                            <button key={bg.id}
+                                                onClick={() => dispatch({ type: "SET_BACKGROUND", background: `url(${bg.url}) center/cover` })}
+                                                style={{
+                                                    padding: 0, borderRadius: 8, overflow: "hidden",
+                                                    border: `2px solid ${state.background.includes(bg.url) ? "#ff6b9d" : "#e5e7eb"}`,
+                                                    cursor: "pointer", background: "none",
+                                                    display: "flex", flexDirection: "column",
+                                                }}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={bg.url.replace("w=800", "w=200")} alt={bg.label} style={{ width: "100%", height: 60, objectFit: "cover" }} />
+                                                <span style={{ fontSize: 9, color: "#6b7280", padding: "3px 0", textAlign: "center", background: "#fff", width: "100%" }}>{bg.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: 8, color: "#9ca3af", margin: "2px 0 0", textAlign: "center" }}>📷 Ảnh từ Unsplash — miễn phí thương mại</p>
                                 </div>
                             )}
 
