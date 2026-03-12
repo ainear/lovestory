@@ -3,8 +3,9 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Search, X, Upload } from "lucide-react";
 
-// 30 curated fonts for wedding invitations
+// 40 curated fonts for wedding invitations
 export const SYSTEM_FONTS = [
+    // Script — viết tay, sang trọng
     { name: "Dancing Script", label: "Dancing Script", category: "Script" },
     { name: "Great Vibes", label: "Great Vibes", category: "Script" },
     { name: "Pacifico", label: "Pacifico", category: "Script" },
@@ -13,6 +14,13 @@ export const SYSTEM_FONTS = [
     { name: "Pinyon Script", label: "Pinyon Script", category: "Script" },
     { name: "Allura", label: "Allura", category: "Script" },
     { name: "Alex Brush", label: "Alex Brush", category: "Script" },
+    { name: "Rouge Script", label: "Rouge Script", category: "Script" },
+    { name: "Tangerine", label: "Tangerine", category: "Script" },
+    { name: "Petit Formal Script", label: "Petit Formal Script", category: "Script" },
+    { name: "Mr De Haviland", label: "Mr De Haviland", category: "Script" },
+    { name: "Marck Script", label: "Marck Script", category: "Script" },
+    { name: "Charm", label: "Charm", category: "Script" },
+    // Serif — cổ điển, thanh lịch
     { name: "Cormorant Garamond", label: "Cormorant Garamond", category: "Serif" },
     { name: "Playfair Display", label: "Playfair Display", category: "Serif" },
     { name: "EB Garamond", label: "EB Garamond", category: "Serif" },
@@ -20,6 +28,10 @@ export const SYSTEM_FONTS = [
     { name: "Libre Baskerville", label: "Libre Baskerville", category: "Serif" },
     { name: "Merriweather", label: "Merriweather", category: "Serif" },
     { name: "Georgia", label: "Georgia", category: "Serif" },
+    { name: "Philosopher", label: "Philosopher", category: "Serif" },
+    { name: "Crimson Text", label: "Crimson Text", category: "Serif" },
+    { name: "Cormorant Infant", label: "Cormorant Infant", category: "Serif" },
+    // Sans-serif — hiện đại, tối giản
     { name: "Inter", label: "Inter", category: "Sans-serif" },
     { name: "Poppins", label: "Poppins", category: "Sans-serif" },
     { name: "Montserrat", label: "Montserrat", category: "Sans-serif" },
@@ -27,9 +39,14 @@ export const SYSTEM_FONTS = [
     { name: "Nunito", label: "Nunito", category: "Sans-serif" },
     { name: "Roboto", label: "Roboto", category: "Sans-serif" },
     { name: "Josefin Sans", label: "Josefin Sans", category: "Sans-serif" },
+    { name: "Quicksand", label: "Quicksand", category: "Sans-serif" },
+    // Display — nổi bật, trang trí
     { name: "Cinzel", label: "Cinzel", category: "Display" },
     { name: "Uncial Antiqua", label: "Uncial Antiqua", category: "Display" },
-    { name: "Philosopher", label: "Philosopher", category: "Serif" },
+    { name: "Abril Fatface", label: "Abril Fatface", category: "Display" },
+    { name: "Lobster", label: "Lobster", category: "Display" },
+    { name: "Cormorant Unicase", label: "Cormorant Unicase", category: "Display" },
+    { name: "Cinzel Decorative", label: "Cinzel Decorative", category: "Display" },
 ];
 
 // Load all fonts at startup

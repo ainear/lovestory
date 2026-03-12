@@ -834,6 +834,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             elements={state.elements}
                             selectedId={state.selectedId}
                             zoom={state.zoom}
+                            particleEffect={state.particleEffect ?? "none"}
                             dispatch={dispatch}
                         />
                         {/* Sprint 11: Empty canvas guidance */}

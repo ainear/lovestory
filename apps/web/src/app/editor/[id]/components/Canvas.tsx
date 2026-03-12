@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useMemo } from "react";
-import type { CanvasElement, CanvasSection as SectionType, Action } from "./useCanvasReducer";
+import type { CanvasElement, CanvasSection as SectionType, Action, ParticleEffect } from "./useCanvasReducer";
 import { TextElement } from "./elements/TextElement";
 import { ImageElement } from "./elements/ImageElement";
 import { WidgetElement } from "./elements/WidgetElement";
@@ -15,10 +15,11 @@ interface CanvasProps {
     elements: CanvasElement[];
     selectedId: string | null;
     zoom: number;
+    particleEffect: ParticleEffect;
     dispatch: (action: Action) => void;
 }
 
-export function Canvas({ width, height, background, sections, elements, selectedId, zoom, dispatch }: CanvasProps) {
+export function Canvas({ width, height, background, sections, elements, selectedId, zoom, particleEffect, dispatch }: CanvasProps) {
     const scale = zoom / 100;
     const canvasW = width * scale;
 
@@ -165,6 +166,59 @@ export function Canvas({ width, height, background, sections, elements, selected
                     onDoubleClick={() => handleDoubleClick(selectedEl.id, selectedEl.type)}
                 />
             )}
+
+            {/* Particle effects overlay */}
+            {particleEffect !== "none" && <ParticleOverlay effect={particleEffect} />}
+        </div>
+    );
+}
+
+// ── CSS Particle Overlay ──
+const PARTICLE_CONFIG: Record<Exclude<ParticleEffect, "none">, { chars: string[]; count: number; color: string }> = {
+    hearts: { chars: ["❤️", "💕", "💗", "💖", "♥"], count: 20, color: "" },
+    petals: { chars: ["🌸", "🩷", "✿", "❀", "🪷"], count: 24, color: "" },
+    bokeh: { chars: ["●", "●", "●", "●"], count: 18, color: "rgba(255,255,255,0.3)" },
+    snow: { chars: ["❄", "❅", "❆", "✦"], count: 22, color: "" },
+};
+
+function ParticleOverlay({ effect }: { effect: Exclude<ParticleEffect, "none"> }) {
+    const { chars, count, color } = PARTICLE_CONFIG[effect];
+    useEffect(() => {
+        if (document.getElementById("particle-keyframes")) return;
+        const style = document.createElement("style");
+        style.id = "particle-keyframes";
+        style.textContent = `
+            @keyframes particle-fall { 0% { transform: translateY(-40px) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.8; } 100% { transform: translateY(calc(100vh + 40px)) rotate(360deg); opacity: 0; } }
+            @keyframes particle-sway { 0%,100% { margin-left: 0; } 50% { margin-left: 30px; } }
+        `;
+        document.head.appendChild(style);
+    }, []);
+
+    const particles = useMemo(() =>
+        Array.from({ length: count }, (_, i) => ({
+            char: chars[i % chars.length],
+            left: `${Math.random() * 100}%`,
+            delay: `${Math.random() * 8}s`,
+            duration: `${6 + Math.random() * 6}s`,
+            size: 10 + Math.random() * 14,
+            swayDuration: `${3 + Math.random() * 4}s`,
+        })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [effect]);
+
+    return (
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 9999 }}>
+            {particles.map((p, i) => (
+                <span key={i} style={{
+                    position: "absolute",
+                    left: p.left, top: "-30px",
+                    fontSize: p.size,
+                    color: color || undefined,
+                    animation: `particle-fall ${p.duration} ${p.delay} infinite linear, particle-sway ${p.swayDuration} ${p.delay} infinite ease-in-out`,
+                    filter: effect === "bokeh" ? "blur(2px)" : undefined,
+                    opacity: effect === "bokeh" ? 0.4 : 0.8,
+                }}>{p.char}</span>
+            ))}
         </div>
     );
 }
