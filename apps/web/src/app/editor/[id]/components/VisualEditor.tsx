@@ -129,6 +129,10 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     const [gridPattern, setGridPattern] = useState<"dots" | "lines" | "cross">("dots");
     // Sprint 29: Minimap toggle
     const [showMinimap, setShowMinimap] = useState(false);
+    // Sprint 30: Element search + status bar + stats panel
+    const [elementSearch, setElementSearch] = useState("");
+    const [lastAction, setLastAction] = useState("Editor khởi tạo");
+    const [showStats, setShowStats] = useState(false);
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -228,14 +232,15 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             const t = e.target as HTMLElement;
             if (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) return;
             const ctrl = e.metaKey || e.ctrlKey;
-            if (ctrl && e.key === "z" && !e.shiftKey) { e.preventDefault(); dispatch({ type: "UNDO" }); }
-            else if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); dispatch({ type: "REDO" }); }
+            if (ctrl && e.key === "z" && !e.shiftKey) { e.preventDefault(); dispatch({ type: "UNDO" }); setLastAction("Hoàn tác (Undo)"); }
+            else if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); dispatch({ type: "REDO" }); setLastAction("Làm lại (Redo)"); }
             else if (ctrl && e.key === "d" && state.selectedId) {
                 e.preventDefault();
                 dispatch({ type: "DUPLICATE", id: state.selectedId });
                 setDupToast(true); setTimeout(() => setDupToast(false), 1200);
+                setLastAction("Nhân bản phần tử");
             }
-            else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
+            else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); setLastAction("Xóa phần tử"); }
             else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
             // Sprint 21: Copy-paste (Ctrl+C / Ctrl+V)
             else if (ctrl && e.key === "c" && state.selectedId) {
@@ -1243,6 +1248,50 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                             <div style={{ position: "absolute", bottom: 2, left: 0, right: 0, textAlign: "center", fontSize: 8, color: "#9ca3af" }}>
                                 Minimap
                             </div>
+                        </div>
+                    )}
+
+                    {/* Sprint 30: Status bar — bottom status strip */}
+                    <div style={{
+                        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 120,
+                        height: 24, background: "linear-gradient(90deg, #1e293b, #334155)",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "0 16px", fontSize: 10, color: "#94a3b8",
+                        fontFamily: "monospace",
+                    }}>
+                        <span>⚡ {lastAction}</span>
+                        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                            <span>{state.elements.length} elements</span>
+                            <span>{state.zoom}%</span>
+                            <span>{saveStatus === "saved" ? "✅ Saved" : saveStatus === "saving" ? "💾 Saving..." : "⚠️ Unsaved"}</span>
+                            <button
+                                onClick={() => setShowStats(s => !s)}
+                                style={{ background: "none", border: "none", color: showStats ? "#60a5fa" : "#64748b", cursor: "pointer", fontSize: 10, fontFamily: "monospace" }}
+                            >
+                                📊 Stats
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Sprint 30: Stats panel */}
+                    {showStats && (
+                        <div style={{
+                            position: "absolute", bottom: 30, right: 24, zIndex: 200,
+                            background: "#1e293b", color: "#e2e8f0", borderRadius: 12,
+                            padding: "14px 18px", fontSize: 11, lineHeight: 1.8,
+                            boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+                            fontFamily: "monospace", minWidth: 200,
+                        }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: "#60a5fa" }}>📊 Editor Stats</div>
+                            <div>📐 Canvas: {state.width}×{state.height}px</div>
+                            <div>🔍 Zoom: {state.zoom}%</div>
+                            <div>📦 Elements: {state.elements.length}</div>
+                            <div>📝 Text: {state.elements.filter(e => e.type === "text").length}</div>
+                            <div>🖼️ Image: {state.elements.filter(e => e.type === "image").length}</div>
+                            <div>🧩 Widget: {state.elements.filter(e => e.type === "widget").length}</div>
+                            <div>🔒 Locked: {state.elements.filter(e => e.locked).length}</div>
+                            <div>💾 Status: {saveStatus === "saved" ? "Đã lưu" : saveStatus === "saving" ? "Đang lưu..." : "Chưa lưu"}</div>
+                            <div>⚡ Action: {lastAction}</div>
                         </div>
                     )}
 
