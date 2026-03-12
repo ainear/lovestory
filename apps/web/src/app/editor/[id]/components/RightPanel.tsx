@@ -479,6 +479,33 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
             <AccordionSection title="Màu sắc" icon="🎨" defaultOpen={false}>
                 <Label>Màu chữ</Label>
                 <ColorRow value={p.color ?? "#831843"} onChange={c => upd({ color: c })} />
+                {/* Gradient text presets */}
+                <div style={{ marginTop: 8 }}>
+                    <Label>Gradient chữ</Label>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                        {[
+                            { label: "Hồng-Tím", value: "linear-gradient(135deg, #ff6b9d, #c084fc)" },
+                            { label: "Vàng-Cam", value: "linear-gradient(135deg, #f59e0b, #ef4444)" },
+                            { label: "Xanh-Lam", value: "linear-gradient(135deg, #06b6d4, #3b82f6)" },
+                            { label: "Xanh-Tím", value: "linear-gradient(135deg, #10b981, #8b5cf6)" },
+                            { label: "Vàng-Gold", value: "linear-gradient(135deg, #d4a574, #b8860b)" },
+                            { label: "Hồng-Rose", value: "linear-gradient(135deg, #f472b6, #ec4899, #be185d)" },
+                        ].map(g => (
+                            <button key={g.label} title={g.label} onClick={() => upd({ color: g.value })} style={{
+                                width: 28, height: 28, borderRadius: 7, border: `2px solid ${p.color === g.value ? "#ff6b9d" : "#e5e7eb"}`,
+                                background: g.value, cursor: "pointer", padding: 0, flexShrink: 0,
+                                boxShadow: p.color === g.value ? "0 0 0 2px rgba(255,107,157,0.3)" : "none",
+                            }} />
+                        ))}
+                        {/* Reset to solid color */}
+                        {typeof p.color === "string" && p.color.startsWith("linear-gradient") && (
+                            <button onClick={() => upd({ color: "#831843" })} style={{
+                                height: 28, padding: "0 8px", borderRadius: 7, border: "1px solid #e5e7eb",
+                                background: "#fff", cursor: "pointer", fontSize: 9, color: "#9ca3af", fontWeight: 600,
+                            }}>Reset</button>
+                        )}
+                    </div>
+                </div>
                 <div style={{ marginTop: 10 }}>
                     <Label>Màu nền chữ</Label>
                     <ColorRow value={p.backgroundColor ?? "transparent"} onChange={c => upd({ backgroundColor: c })} />

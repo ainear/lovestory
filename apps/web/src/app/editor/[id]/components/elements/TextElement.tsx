@@ -128,8 +128,19 @@ export function TextElement({
                     minHeight: "100%",
                     fontSize: (p.fontSize ?? 24) * scale,
                     fontFamily: p.fontFamily ?? "'Dancing Script', cursive",
-                    color: p.color ?? "#831843",
-                    backgroundColor: p.backgroundColor ?? "transparent",
+                    // Gradient text: if color starts with gradient syntax, use background-clip
+                    ...(typeof p.color === "string" && (p.color.startsWith("linear-gradient") || p.color.startsWith("radial-gradient"))
+                        ? {
+                            background: p.color,
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                        }
+                        : {
+                            color: p.color ?? "#831843",
+                            background: p.backgroundColor ?? "transparent",
+                        }
+                    ),
                     textAlign: p.textAlign ?? "center",
                     fontWeight: p.fontWeight ?? "normal",
                     fontStyle: p.fontStyle ?? "normal",
@@ -143,7 +154,6 @@ export function TextElement({
                     padding: "2px 4px",
                     borderRadius: 2,
                     boxSizing: "border-box",
-                    background: p.backgroundColor ?? "transparent",
                     userSelect: isEditing ? "text" : "none",
                 }}
             >
