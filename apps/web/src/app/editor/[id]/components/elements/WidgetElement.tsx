@@ -177,6 +177,41 @@ function CallWidget({ props, scale }: { props: CanvasElement["props"]; scale: nu
     );
 }
 
+// ── ALBUM WIDGET (Sprint 35 — Cinelove parity) ──
+function AlbumWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    const images = (props.albumImages || "").split(",").filter(Boolean);
+    return (
+        <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12 * scale, border: "1px solid #e5e7eb", padding: 10 * scale, display: "flex", flexDirection: "column", gap: 6 * scale, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <p style={{ fontSize: 11 * scale, fontWeight: 700, color: "#374151", margin: 0, textAlign: "center" }}>{props.label || "Album ảnh cưới"}</p>
+            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 * scale, overflow: "hidden" }}>
+                {(images.length > 0 ? images : ["📷", "📷", "📷", "📷"]).map((img, i) => (
+                    <div key={i} style={{ background: "linear-gradient(135deg, #fdf2f8, #fce7f3)", borderRadius: 6 * scale, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", aspectRatio: "1" }}>
+                        {img.startsWith("http") ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                            <span style={{ fontSize: 20 * scale, opacity: 0.4 }}>{img}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+            <p style={{ fontSize: 8 * scale, color: "#9ca3af", margin: 0, textAlign: "center" }}>Vuốt để xem thêm ảnh</p>
+        </div>
+    );
+}
+
+// ── GUEST NAME WIDGET (Sprint 35 — Cinelove parity) ──
+function GuestNameWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    return (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #fdf2f8, #faf5ff)", borderRadius: 12 * scale, border: "1px dashed #d946ef", padding: 14 * scale, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 * scale }}>
+            <span style={{ fontSize: 24 * scale }}>👤</span>
+            <p style={{ fontSize: 10 * scale, fontWeight: 600, color: "#9333ea", margin: 0, textTransform: "uppercase", letterSpacing: 1 }}>{props.guestNameLabel || "Trân trọng kính mời"}</p>
+            <p style={{ fontSize: 16 * scale, fontWeight: 800, color: "#7c3aed", margin: 0, fontStyle: "italic" }}>Tên khách mời</p>
+            <p style={{ fontSize: 8 * scale, color: "#a78bfa", margin: 0 }}>Tên sẽ tự động thay đổi khi gửi thiệp</p>
+        </div>
+    );
+}
+
 // ── MAIN WIDGET ELEMENT ──
 export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetElementProps) {
     const scale = zoom / 100;
@@ -192,6 +227,8 @@ export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetEle
             {wt === "gift" && <GiftWidget props={props} scale={scale} />}
             {wt === "youtube" && <YouTubeWidget props={props} scale={scale} />}
             {wt === "call" && <CallWidget props={props} scale={scale} />}
+            {wt === "album" && <AlbumWidget props={props} scale={scale} />}
+            {wt === "guestname" && <GuestNameWidget props={props} scale={scale} />}
         </div>
     );
 }

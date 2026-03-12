@@ -826,6 +826,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             type: "widget", emoji: "📞", label: "Nút gọi", desc: "Nút bấm gọi điện cho cô dâu/chú rể",
                                             props: { widgetType: "call", label: "Liên hệ cô/chú rể", phoneNumber: "0909 xxx xxx" }, w: 300, h: 140
                                         },
+                                        {
+                                            type: "widget", emoji: "🖼️", label: "Album ảnh", desc: "Album ảnh cưới dạng lưới/slider",
+                                            props: { widgetType: "album", label: "Album ảnh cưới", albumImages: "" }, w: 300, h: 260
+                                        },
+                                        {
+                                            type: "widget", emoji: "👤", label: "Tên khách mời", desc: "Tên tự động thay đổi khi gửi thiệp hàng loạt",
+                                            props: { widgetType: "guestname", label: "Tên khách mời", guestNameLabel: "Trân trọng kính mời" }, w: 320, h: 140
+                                        },
                                     ] as Array<{ type: string; emoji: string; label: string; desc: string; props: Record<string, string>; w: number; h: number }>).map((w) => (
                                         <button key={w.label}
                                             onClick={() => dispatch({
@@ -990,6 +998,26 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             />
                                             <button onClick={() => setMusicName("Custom")} style={{ padding: "8px 12px", borderRadius: 8, border: "none", background: "#f3f4f6", cursor: "pointer", fontSize: 12 }}>OK</button>
                                         </div>
+                                    </div>
+                                    {/* Sprint 35: Nhạc của tôi — file upload */}
+                                    <div style={{ marginTop: 8, padding: "10px 12px", background: "#faf5ff", borderRadius: 10, border: "1px dashed #d8b4fe" }}>
+                                        <p style={{ fontSize: 11, color: "#7c3aed", margin: "0 0 6px", fontWeight: 600 }}>🎵 Nhạc của tôi</p>
+                                        <label style={{
+                                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                            padding: "10px", borderRadius: 8, border: "1px dashed #c084fc",
+                                            background: "#fff", cursor: "pointer", fontSize: 12, color: "#7c3aed", fontWeight: 600,
+                                        }}>
+                                            📁 Tải file MP3 lên
+                                            <input type="file" accept="audio/mp3,audio/mpeg,audio/*" style={{ display: "none" }} onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const url = URL.createObjectURL(file);
+                                                    setMusicUrl(url);
+                                                    setMusicName(file.name.replace(/\.[^/.]+$/, ""));
+                                                }
+                                            }} />
+                                        </label>
+                                        <p style={{ fontSize: 9, color: "#a78bfa", margin: "4px 0 0", textAlign: "center" }}>Hỗ trợ MP3, WAV — tối đa 10MB</p>
                                     </div>
                                 </div>
                             )}

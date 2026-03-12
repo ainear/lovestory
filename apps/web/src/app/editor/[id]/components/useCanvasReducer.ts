@@ -51,7 +51,7 @@ export interface ImageProps {
 }
 
 export interface WidgetProps {
-    widgetType: "calendar" | "countdown" | "map" | "qr" | "gift" | "rsvp" | "youtube" | "call";
+    widgetType: "calendar" | "countdown" | "map" | "qr" | "gift" | "rsvp" | "youtube" | "call" | "album" | "guestname";
     label: string;
     targetDate?: string;
     lunarDate?: string;
@@ -66,6 +66,8 @@ export interface WidgetProps {
     rsvpTitle?: string;
     rsvpSubtitle?: string;
     phoneNumber?: string;
+    albumImages?: string;
+    guestNameLabel?: string;
 }
 
 export interface ElementAnimation {
