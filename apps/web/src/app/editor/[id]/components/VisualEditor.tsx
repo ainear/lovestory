@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut } from "lucide-react";
 import { Canvas } from "./Canvas";
 import { useCanvasReducer, type CanvasElement, type ParticleEffect } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
@@ -683,12 +683,13 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                 )}
 
                 {/* ── Canvas Area ── */}
-                <div style={{
-                    flex: 1, display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    overflow: "auto", padding: 32,
-                    background: "#e5e7eb",
-                }}>
+                <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                    <div style={{
+                        flex: 1, display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        overflow: "auto", padding: 32,
+                        background: "#e5e7eb",
+                    }}>
                     <div style={{ position: "relative", paddingBottom: 68 }}>
                         <Canvas
                             width={state.width}
@@ -732,6 +733,39 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                 addImage(src);
                             }}
                         />
+                    </div>
+                </div>
+                    
+                {/* ── Floating Zoom Controls ── */}
+                    <div style={{
+                        position: "absolute",
+                        bottom: 24, left: 24, zIndex: 100,
+                        backgroundColor: "#fff",
+                        borderRadius: 20,
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+                        padding: "8px 12px",
+                        display: "flex", alignItems: "center", gap: 12,
+                        border: "1px solid #e5e7eb"
+                    }}>
+                        <button 
+                            onClick={() => dispatch({ type: "SET_ZOOM", zoom: Math.max(25, state.zoom - 25) })}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280", padding: 0, display: "flex", transition: "color 0.2s" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#ff6b9d"}
+                            onMouseLeave={e => e.currentTarget.style.color = "#6b7280"}
+                        >
+                            <ZoomOut size={16} />
+                        </button>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", minWidth: 44, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+                            {state.zoom}%
+                        </span>
+                        <button 
+                            onClick={() => dispatch({ type: "SET_ZOOM", zoom: Math.min(200, state.zoom + 25) })}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280", padding: 0, display: "flex", transition: "color 0.2s" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#ff6b9d"}
+                            onMouseLeave={e => e.currentTarget.style.color = "#6b7280"}
+                        >
+                            <ZoomIn size={16} />
+                        </button>
                     </div>
                 </div>
 
