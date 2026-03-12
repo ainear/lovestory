@@ -151,6 +151,35 @@ export function Canvas({ width, height, background, sections, elements, selected
                 }
                 return null;
             })}
+            {/* Sprint 20: Center alignment guides */}
+            {selectedEl && (() => {
+                const elCenterX = (selectedEl.x + selectedEl.width / 2) * scale;
+                const elCenterY = (selectedEl.y + selectedEl.height / 2) * scale;
+                const canvasCenterX = (width / 2) * scale;
+                const threshold = 3 * scale;
+                const showVertical = Math.abs(elCenterX - canvasCenterX) < threshold;
+                const showHorizontal = Math.abs(selectedEl.x * scale) < threshold || Math.abs((selectedEl.x + selectedEl.width) * scale - canvasW) < threshold;
+                return (
+                    <>
+                        {showVertical && (
+                            <div style={{
+                                position: "absolute", left: canvasCenterX, top: 0,
+                                width: 1, height: "100%",
+                                borderLeft: "1px dashed #06b6d4",
+                                pointerEvents: "none", zIndex: 9990, opacity: 0.7,
+                            }} />
+                        )}
+                        {showHorizontal && (
+                            <div style={{
+                                position: "absolute", left: 0, top: elCenterY,
+                                width: "100%", height: 1,
+                                borderTop: "1px dashed #06b6d4",
+                                pointerEvents: "none", zIndex: 9990, opacity: 0.7,
+                            }} />
+                        )}
+                    </>
+                );
+            })()}
 
             {/* Selection overlay */}
             {selectedEl && !editingId && (

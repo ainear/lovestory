@@ -214,10 +214,21 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             else if (ctrl && e.key === "d" && state.selectedId) { e.preventDefault(); dispatch({ type: "DUPLICATE", id: state.selectedId }); }
             else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) { e.preventDefault(); dispatch({ type: "DELETE_ELEMENT", id: state.selectedId }); }
             else if (e.key === "Escape") { dispatch({ type: "SELECT", id: null }); }
+            // Sprint 20: Arrow key nudge (1px, Shift = 10px)
+            else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) && state.selectedId) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                const sel = state.elements.find(el => el.id === state.selectedId);
+                if (sel && !sel.locked) {
+                    const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+                    const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+                    dispatch({ type: "UPDATE_ELEMENT", id: sel.id, changes: { x: sel.x + dx, y: sel.y + dy } });
+                }
+            }
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, [dispatch, state.selectedId]);
+    }, [dispatch, state.selectedId, state.elements]);
 
     // Sprint 11: Export canvas as PNG
     const handleExportPNG = useCallback(async () => {
