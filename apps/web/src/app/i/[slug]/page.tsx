@@ -1312,24 +1312,30 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             {/* Confetti */}
             {showConfetti && <ConfettiCanvas />}
 
-            {/* Floating Music Player — Cinelove spinning vinyl style */}
+            {/* Floating Music Player — Premium vinyl disc style */}
             {data.musicUrl && (
                 <button
                     onClick={toggleMusic}
                     style={{
-                        position: "fixed", top: 20, right: 16, zIndex: 50,
-                        width: 44, height: 44, borderRadius: "50%",
-                        border: "2px solid rgba(255,255,255,0.3)",
-                        background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
-                        color: "#fff", fontSize: 20,
+                        position: "fixed", top: 16, right: 16, zIndex: 50,
+                        width: 52, height: 52, borderRadius: "50%",
+                        border: "none",
+                        background: "radial-gradient(circle at 30% 30%, #555 0%, #222 40%, #111 100%)",
+                        color: "#fff", fontSize: 14,
                         cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         animation: isPlaying ? "spin 3s linear infinite" : "none",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 0 0 8px rgba(255,255,255,0.08), inset 0 0 0 18px rgba(0,0,0,0.3)",
+                        transition: "box-shadow 0.3s",
                     }}
                     title={isPlaying ? "Tắt nhạc" : "Bật nhạc"}
                 >
-                    {isPlaying ? "🎵" : "🔇"}
+                    <span style={{
+                        width: 12, height: 12, borderRadius: "50%",
+                        background: isPlaying ? "linear-gradient(135deg, #ff6b9d, #c084fc)" : "#666",
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        transition: "background 0.3s",
+                    }} />
                 </button>
             )}
 

@@ -962,6 +962,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             { id: "bg6", label: "Hoa trắng", url: "https://images.unsplash.com/photo-1487530811015-780c5b3ac781?w=800" },
                                             { id: "bg7", label: "Marble", url: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800" },
                                             { id: "bg8", label: "Watercolor", url: "https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=800" },
+                                            { id: "bg9", label: "Hoàng hôn", url: "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=800" },
+                                            { id: "bg10", label: "Vườn hoa", url: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800" },
+                                            { id: "bg11", label: "Biển xanh", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800" },
+                                            { id: "bg12", label: "Rustic gỗ", url: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800" },
+                                            { id: "bg13", label: "Lá xanh", url: "https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?w=800" },
+                                            { id: "bg14", label: "Đêm sao", url: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=800" },
+                                            { id: "bg15", label: "Cherry", url: "https://images.unsplash.com/photo-1522566220397-7127240a0b67?w=800" },
+                                            { id: "bg16", label: "Confetti", url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800" },
                                         ].map(bg => (
                                             <button key={bg.id}
                                                 onClick={() => dispatch({ type: "SET_BACKGROUND", background: `url(${bg.url}) center/cover` })}
