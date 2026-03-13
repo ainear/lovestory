@@ -7,11 +7,8 @@ import { Suspense } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 
 // ════════════════════════════════════════════════
-//  75 Cinelove templates — use long_thumbnail as
-//  canvas background image (proxied via Next.js)
-// ════════════════════════════════════════════════
-
-const CDN = "/cinelove-cdn/";
+// Sprint 55: Self-hosted — no more CDN proxy
+const TEMPLATE_IMG_DIR = "/templates/";
 
 /** Cinelove slug → long_thumbnail path (from templates.json) */
 const CINELOVE_BG: Record<string, string> = {
@@ -293,7 +290,9 @@ function buildTemplateCanvasJson(templateSlug: string): string {
     const elements = TEMPLATE_UNIQUE_PRESETS[templateSlug] ?? FAMILY_ELEMENTS[family];
 
     if (bgPath) {
-        const bgUrl = CDN + bgPath;
+        // Sprint 55: self-hosted — extract filename from long_thumbnail path
+        const filename = bgPath.split("/").pop();
+        const bgUrl = TEMPLATE_IMG_DIR + filename;
         return JSON.stringify({
             version: 1,
             canvas: { width: 390, height: 844, bg: `url(${bgUrl}) center/cover no-repeat` },
