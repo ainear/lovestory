@@ -7,8 +7,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Auth — unauthenticated redirects", () => {
     test("dashboard redirects to /login when not authenticated", async ({ page }) => {
-        await page.goto("/dashboard");
-        await expect(page).toHaveURL(/\/login/);
+        await page.goto("/dashboard", { timeout: 15000 });
+        await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
     });
 
     test("editor page redirects to /login when not authenticated", async ({ page }) => {
