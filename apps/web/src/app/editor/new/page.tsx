@@ -1,4 +1,5 @@
 "use client";
+import { TEMPLATE_UNIQUE_PRESETS } from "@/server/data/template-presets";
 
 import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -282,11 +283,14 @@ const TEMPLATE_FAMILY: Record<string, FamilyKey> = {
     "tiec-tat-nien-1": "luxury-dark",
 };
 
-/** Build canvas_json — Cinelove bg + style-matched rich elements */
+/** Build canvas_json — unique per-template elements (top 8) or family-based fallback */
 function buildTemplateCanvasJson(templateSlug: string): string {
     const bgPath = CINELOVE_BG[templateSlug];
     const family = TEMPLATE_FAMILY[templateSlug] ?? "romantic-pink";
-    const elements = FAMILY_ELEMENTS[family];
+
+    // Sprint 52: Use per-template unique elements if available (top 8 templates)
+    // Falls back to family-based 15-element preset for remaining 67 templates
+    const elements = TEMPLATE_UNIQUE_PRESETS[templateSlug] ?? FAMILY_ELEMENTS[family];
 
     if (bgPath) {
         const bgUrl = CDN + bgPath;
