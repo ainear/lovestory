@@ -910,6 +910,41 @@ export function RightPanel({ selectedEl, allElements, dispatch, background, part
                             ))}
                         </div>
 
+                        {/* Sprint 55 G1: Background image upload — replaces CineLove bg with custom image */}
+                        <div style={{ marginTop: 10, display: "flex", gap: 6 }}>
+                            <label style={{
+                                flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                background: "linear-gradient(135deg, #ff6b9d, #c084fc)", color: "#fff",
+                                cursor: "pointer", textAlign: "center",
+                                boxShadow: "0 2px 8px rgba(255,107,157,.25)",
+                            }}>
+                                📷 Thay ảnh nền
+                                <input type="file" accept="image/*" style={{ display: "none" }}
+                                    onChange={e => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = () => {
+                                            const dataUrl = reader.result as string;
+                                            dispatch({ type: "SET_BACKGROUND", background: `url(${dataUrl}) center/cover no-repeat` });
+                                        };
+                                        reader.readAsDataURL(file);
+                                        e.target.value = "";
+                                    }}
+                                />
+                            </label>
+                            {background.startsWith("url(") && (
+                                <button
+                                    onClick={() => dispatch({ type: "SET_BACKGROUND", background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)" })}
+                                    style={{
+                                        padding: "8px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                        border: "1px solid #fecaca", background: "#fff5f5", color: "#ef4444",
+                                        cursor: "pointer",
+                                    }}
+                                >🗑️ Xoá</button>
+                            )}
+                        </div>
+
                         {/* Custom bg color picker */}
                         <div style={{ marginTop: 8, display: "flex", gap: 6, alignItems: "center" }}>
                             <input type="color" value={background.startsWith("#") ? background : "#ffffff"}

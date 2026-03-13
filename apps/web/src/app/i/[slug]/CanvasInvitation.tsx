@@ -85,6 +85,32 @@ interface CanvasInvitationProps {
     showWatermark?: boolean;
 }
 
+/** Sprint 55: Scroll-in-view reveal for each canvas element */
+function ScrollRevealElement({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+            { threshold: 0.1 }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
+    return (
+        <div ref={ref} style={{
+            ...style,
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(18px)",
+            transition: `opacity 0.65s ease ${delay}s, transform 0.65s ease ${delay}s`,
+        }}>
+            {children}
+        </div>
+    );
+}
+
 function parseCanvasJson(raw: string): CanvasData | null {
     try { return JSON.parse(raw); } catch { return null; }
 }
@@ -311,8 +337,8 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
                     </button>
                 )}
             </div>
-
-            {/* Share bar */}
+            {/* Share bar — Sprint 55: scroll reveal */}
+            <ScrollRevealElement delay={0.2}>
             <div style={{ marginTop: 24, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
                 <button
                     onClick={() => navigator.share?.({ url: window.location.href })}
@@ -337,8 +363,10 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
                     {copied ? "✅ Đã copy!" : "🔗 Sao chép link"}
                 </button>
             </div>
+            </ScrollRevealElement>
 
-            {/* RSVP Section */}
+            {/* RSVP Section — Sprint 55: scroll reveal */}
+            <ScrollRevealElement delay={0.4}>
             <div style={{
                 width: "min(390px, 100%)", marginTop: 32,
                 background: "#fff", borderRadius: 16,
@@ -449,6 +477,7 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
                     </>
                 )}
             </div>
+            </ScrollRevealElement>
         </div>
     );
 }
