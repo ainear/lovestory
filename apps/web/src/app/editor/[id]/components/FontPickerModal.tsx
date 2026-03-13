@@ -33,6 +33,7 @@ export const SYSTEM_FONTS = [
     { name: "Cormorant Infant", label: "Cormorant Infant", category: "Serif" },
     // Sans-serif — hiện đại, tối giản
     { name: "Inter", label: "Inter", category: "Sans-serif" },
+    { name: "Be Vietnam Pro", label: "Be Vietnam Pro", category: "Sans-serif" },
     { name: "Poppins", label: "Poppins", category: "Sans-serif" },
     { name: "Montserrat", label: "Montserrat", category: "Sans-serif" },
     { name: "Raleway", label: "Raleway", category: "Sans-serif" },
@@ -47,6 +48,11 @@ export const SYSTEM_FONTS = [
     { name: "Lobster", label: "Lobster", category: "Display" },
     { name: "Cormorant Unicase", label: "Cormorant Unicase", category: "Display" },
     { name: "Cinzel Decorative", label: "Cinzel Decorative", category: "Display" },
+    // Tiếng Việt — tối ưu dấu
+    { name: "Spectral", label: "Spectral", category: "Tiếng Việt" },
+    { name: "Vollkorn", label: "Vollkorn", category: "Tiếng Việt" },
+    { name: "Source Serif 4", label: "Source Serif 4", category: "Tiếng Việt" },
+    { name: "Noto Serif", label: "Noto Serif", category: "Tiếng Việt" },
 ];
 
 // Load all fonts at startup

@@ -1643,6 +1643,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     dispatch={dispatch}
                     background={state.background}
                     particleEffect={state.particleEffect ?? "none"}
+                    canvasWidth={state.width}
                     onReplaceImage={() => replaceImageInputRef.current?.click()}
                     onShowFontPicker={() => setShowFontPicker(true)}
                     showFontPicker={showFontPicker}

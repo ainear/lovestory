@@ -141,7 +141,8 @@ export type Action =
     | { type: "UPDATE_SECTION"; id: string; changes: Partial<CanvasSection> }
     | { type: "DELETE_SECTION"; id: string }
     | { type: "MOVE_SECTION_UP"; id: string }
-    | { type: "MOVE_SECTION_DOWN"; id: string };
+    | { type: "MOVE_SECTION_DOWN"; id: string }
+    | { type: "SET_CANVAS_SIZE"; width: number; height: number };
 
 function snapshot(state: CanvasState): { elements: CanvasElement[], sections: CanvasSection[] } {
     return JSON.parse(JSON.stringify({ elements: state.elements, sections: state.sections }));
@@ -301,7 +302,8 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
             [newSections[idx], newSections[idx + 1]] = [newSections[idx + 1], newSections[idx]];
             return withHistory(state, state.elements, newSections);
         }
-
+        case "SET_CANVAS_SIZE":
+            return { ...state, width: action.width, height: action.height };
         default:
             return state;
     }

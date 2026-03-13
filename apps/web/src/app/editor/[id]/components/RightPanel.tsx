@@ -33,6 +33,7 @@ interface RightPanelProps {
     dispatch: (action: Action) => void;
     background: string;
     particleEffect: string;
+    canvasWidth: number;
     onReplaceImage: () => void;
     onShowFontPicker: () => void;
     showFontPicker: boolean;
@@ -802,7 +803,7 @@ function TextPanel({ el, dispatch, onShowFontPicker }: { el: CanvasElement; disp
 // ══════════════════════════════════════════
 // MAIN RIGHT PANEL
 // ══════════════════════════════════════════
-export function RightPanel({ selectedEl, allElements, dispatch, background, particleEffect, onReplaceImage, onShowFontPicker, showFontPicker, onCloseFontPicker, onSelectElement }: RightPanelProps) {
+export function RightPanel({ selectedEl, allElements, dispatch, background, particleEffect, canvasWidth, onReplaceImage, onShowFontPicker, showFontPicker, onCloseFontPicker, onSelectElement }: RightPanelProps) {
     const BG_PRESETS = [
         { label: "Hồng nhạt", value: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)" },
         { label: "Be sang", value: "linear-gradient(135deg, #fefde8 0%, #fef3c7 100%)" },
@@ -869,8 +870,28 @@ export function RightPanel({ selectedEl, allElements, dispatch, background, part
 
                         {/* Canvas info */}
                         <div style={{ padding: "10px 14px", borderRadius: 10, background: "#f9fafb", border: "1px solid #f3f4f6" }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: 0.8 }}>Thiệp</p>
-                            <p style={{ fontSize: 13, color: "#374151", margin: 0 }}>390 × 844px</p>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.8 }}>Thiệp</p>
+                            <div style={{ display: "flex", gap: 4 }}>
+                                {([
+                                    { label: "📱 Mobile", w: 390, h: 844 },
+                                    { label: "📱 Tablet", w: 500, h: 844 },
+                                    { label: "🖥️ Desktop", w: 720, h: 1280 },
+                                ] as const).map(sz => (
+                                    <button key={sz.w} onClick={() => dispatch({ type: "SET_CANVAS_SIZE", width: sz.w, height: sz.h })}
+                                        style={{
+                                            flex: 1, padding: "6px 4px", borderRadius: 8,
+                                            border: canvasWidth === sz.w ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
+                                            background: canvasWidth === sz.w ? "#fff0f6" : "#fff",
+                                            cursor: "pointer", fontSize: 10, fontWeight: 600,
+                                            color: canvasWidth === sz.w ? "#be185d" : "#6b7280",
+                                            transition: "all 0.15s", textAlign: "center",
+                                        }}
+                                    >
+                                        <div>{sz.label}</div>
+                                        <div style={{ fontSize: 9, opacity: 0.7 }}>{sz.w}×{sz.h}</div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
