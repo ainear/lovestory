@@ -52,7 +52,7 @@ test.describe("Public Invitation Page", () => {
         await page.waitForTimeout(500);
 
         const wishBtn = page.locator("button:has-text('Gửi lời chúc')").or(
-            page.locator("button:has-text('Send'))")
+            page.locator("button:has-text('Send')")
         );
 
         if (await wishBtn.isVisible()) {
