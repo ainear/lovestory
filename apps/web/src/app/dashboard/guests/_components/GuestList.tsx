@@ -32,6 +32,11 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
     const [adding, setAdding] = useState(false);
     const [copied, setCopied] = useState<string | null>(null);
     const [error, setError] = useState("");
+    // Sprint 43: batch import + bulk copy
+    const [showBatchImport, setShowBatchImport] = useState(false);
+    const [batchText, setBatchText] = useState("");
+    const [batchImporting, setBatchImporting] = useState(false);
+    const [bulkCopied, setBulkCopied] = useState(false);
 
     const selectedProject = projects.find(p => p.id === selectedProjectId);
 
@@ -53,21 +58,89 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
     });
 
     const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
-
         e.preventDefault();
         if (!name.trim()) return;
         if (!selectedProjectId) return;
         addGuest.mutate({ projectId: selectedProjectId, name: name.trim(), email, phone });
     };
 
-    const copyLink = (guestName: string) => {
+    const getGuestLink = (guestName: string) => {
         const slug = selectedProject?.slug;
-        if (!slug) return;
-        const link = `${appUrl}/i/${slug}?guest=${encodeURIComponent(guestName)}`;
+        if (!slug) return "";
+        return `${appUrl}/i/${slug}?guest=${encodeURIComponent(guestName)}`;
+    };
+
+    const copyLink = (guestName: string) => {
+        const link = getGuestLink(guestName);
+        if (!link) return;
         navigator.clipboard.writeText(link).then(() => {
             setCopied(guestName);
             setTimeout(() => setCopied(null), 2000);
         });
+    };
+
+    // Sprint 43: Batch import — one name per line
+    const handleBatchImport = async () => {
+        if (!batchText.trim() || !selectedProjectId) return;
+        setBatchImporting(true);
+        const names = batchText.split("\n").map(n => n.trim()).filter(Boolean);
+        for (const gName of names) {
+            try {
+                await addGuest.mutateAsync({ projectId: selectedProjectId, name: gName, email: "", phone: "" });
+            } catch { /* skip duplicates */ }
+        }
+        setBatchText("");
+        setShowBatchImport(false);
+        setBatchImporting(false);
+        refetch();
+    };
+
+    // Sprint 43: Bulk copy all links
+    const handleBulkCopy = () => {
+        if (!selectedProject?.slug || guests.length === 0) return;
+        const allLinks = guests.map((g: { name: string }) =>
+            `${g.name}: ${getGuestLink(g.name)}`
+        ).join("\n");
+        navigator.clipboard.writeText(allLinks).then(() => {
+            setBulkCopied(true);
+            setTimeout(() => setBulkCopied(false), 3000);
+        });
+    };
+
+    // Sprint 43: Export CSV
+    const handleExportCSV = () => {
+        if (guests.length === 0) return;
+        const header = "Tên,Email,SĐT,Trạng thái,Link thiệp\n";
+        const rows = guests.map((g: { name: string; email?: string | null; phone?: string | null; status: string }) =>
+            `"${g.name}","${g.email || ""}","${g.phone || ""}","${g.status}","${getGuestLink(g.name)}"`
+        ).join("\n");
+        const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `guests_${selectedProject?.slug || "export"}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // Sprint 43: Share via Zalo
+    const shareZalo = (guestName: string) => {
+        const link = getGuestLink(guestName);
+        const text = `Thiệp mời cưới dành riêng cho ${guestName} 💌`;
+        window.open(`https://zalo.me/share?url=${encodeURIComponent(link)}&title=${encodeURIComponent(text)}`, "_blank");
+    };
+
+    // Sprint 43: Share via SMS
+    const shareSMS = (guestName: string, guestPhone?: string | null) => {
+        const link = getGuestLink(guestName);
+        const text = `Thư mời cưới dành cho ${guestName}: ${link}`;
+        window.open(`sms:${guestPhone || ""}?body=${encodeURIComponent(text)}`);
+    };
+
+    // Sprint 43: Share via Facebook
+    const shareFB = (guestName: string) => {
+        const link = getGuestLink(guestName);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`, "_blank");
     };
 
     return (
@@ -99,89 +172,169 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
                 background: "#fff", borderRadius: 16, padding: 24,
                 border: "1px solid #e8e8ec", marginBottom: 24,
             }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1f2937", margin: "0 0 16px" }}>
-                    ➕ Thêm khách mời
-                </h3>
-                <form onSubmit={handleAdd}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
-                                Tên khách mời *
-                            </label>
-                            <input
-                                required
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                placeholder="Nguyễn Văn A"
-                                style={{
-                                    width: "100%", padding: "10px 14px", borderRadius: 10,
-                                    border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
-                                    boxSizing: "border-box",
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
-                                Email (tuỳ chọn)
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                placeholder="guest@email.com"
-                                style={{
-                                    width: "100%", padding: "10px 14px", borderRadius: 10,
-                                    border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
-                                    boxSizing: "border-box",
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
-                                SĐT (tuỳ chọn)
-                            </label>
-                            <input
-                                value={phone}
-                                onChange={e => setPhone(e.target.value)}
-                                placeholder="0901234567"
-                                style={{
-                                    width: "100%", padding: "10px 14px", borderRadius: 10,
-                                    border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
-                                    boxSizing: "border-box",
-                                }}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={addGuest.isPending || !name.trim()}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1f2937", margin: 0 }}>
+                        ➕ Thêm khách mời
+                    </h3>
+                    <button
+                        onClick={() => setShowBatchImport(!showBatchImport)}
+                        style={{
+                            padding: "6px 14px", borderRadius: 8, border: "1px solid #e5e7eb",
+                            background: showBatchImport ? "#fdf2f8" : "#fff",
+                            color: showBatchImport ? "#be185d" : "#6b7280",
+                            fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        }}
+                    >
+                        📋 {showBatchImport ? "Nhập từng người" : "Nhập hàng loạt"}
+                    </button>
+                </div>
+
+                {/* Sprint 43: Batch Import */}
+                {showBatchImport ? (
+                    <div>
+                        <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 8px" }}>
+                            Mỗi dòng một tên khách mời. Ví dụ:
+                        </p>
+                        <textarea
+                            value={batchText}
+                            onChange={e => setBatchText(e.target.value)}
+                            placeholder={"Nguyễn Văn A\nTrần Thị B\nLê Văn C\nPhạm Thị D"}
+                            rows={6}
                             style={{
-                                padding: "10px 20px", borderRadius: 10, border: "none",
-                                background: addGuest.isPending ? "#e5e7eb" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                                color: addGuest.isPending ? "#9ca3af" : "#fff",
-                                fontSize: 14, fontWeight: 700, cursor: addGuest.isPending ? "not-allowed" : "pointer",
-                                whiteSpace: "nowrap",
+                                width: "100%", padding: "12px 14px", borderRadius: 10,
+                                border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
+                                resize: "vertical", fontFamily: "inherit", boxSizing: "border-box",
                             }}
-                        >
-                            {addGuest.isPending ? "Đang thêm..." : "Thêm"}
-                        </button>
+                        />
+                        <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+                            <button
+                                onClick={handleBatchImport}
+                                disabled={batchImporting || !batchText.trim()}
+                                style={{
+                                    padding: "10px 20px", borderRadius: 10, border: "none",
+                                    background: batchImporting ? "#e5e7eb" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                    color: batchImporting ? "#9ca3af" : "#fff",
+                                    fontSize: 14, fontWeight: 700, cursor: batchImporting ? "not-allowed" : "pointer",
+                                }}
+                            >
+                                {batchImporting ? "Đang thêm..." : `📋 Thêm ${batchText.split("\n").filter(l => l.trim()).length} khách`}
+                            </button>
+                            <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                                {batchText.split("\n").filter(l => l.trim()).length} tên
+                            </span>
+                        </div>
                     </div>
-                    {error && <p style={{ color: "#ef4444", fontSize: 13, margin: "8px 0 0" }}>❌ {error}</p>}
-                </form>
+                ) : (
+                    <form onSubmit={handleAdd}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
+                            <div>
+                                <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
+                                    Tên khách mời *
+                                </label>
+                                <input
+                                    required
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                    placeholder="Nguyễn Văn A"
+                                    style={{
+                                        width: "100%", padding: "10px 14px", borderRadius: 10,
+                                        border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
+                                        boxSizing: "border-box",
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
+                                    Email (tuỳ chọn)
+                                </label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="guest@email.com"
+                                    style={{
+                                        width: "100%", padding: "10px 14px", borderRadius: 10,
+                                        border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
+                                        boxSizing: "border-box",
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4 }}>
+                                    SĐT (tuỳ chọn)
+                                </label>
+                                <input
+                                    value={phone}
+                                    onChange={e => setPhone(e.target.value)}
+                                    placeholder="0901234567"
+                                    style={{
+                                        width: "100%", padding: "10px 14px", borderRadius: 10,
+                                        border: "1px solid #e5e7eb", fontSize: 14, outline: "none",
+                                        boxSizing: "border-box",
+                                    }}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={addGuest.isPending || !name.trim()}
+                                style={{
+                                    padding: "10px 20px", borderRadius: 10, border: "none",
+                                    background: addGuest.isPending ? "#e5e7eb" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                                    color: addGuest.isPending ? "#9ca3af" : "#fff",
+                                    fontSize: 14, fontWeight: 700, cursor: addGuest.isPending ? "not-allowed" : "pointer",
+                                    whiteSpace: "nowrap",
+                                }}
+                            >
+                                {addGuest.isPending ? "Đang thêm..." : "Thêm"}
+                            </button>
+                        </div>
+                        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: "8px 0 0" }}>❌ {error}</p>}
+                    </form>
+                )}
             </div>
 
-            {/* Guest count */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            {/* Guest count + Actions */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1f2937", margin: 0 }}>
                     👥 Danh sách ({guests.length} khách)
                 </h3>
-                {selectedProject && (
-                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
-                        Link thiệp: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 4, fontSize: 11 }}>
-                            /i/{selectedProject.slug}?guest=Tên
-                        </code>
-                    </p>
-                )}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {guests.length > 0 && (
+                        <>
+                            <button
+                                onClick={handleBulkCopy}
+                                style={{
+                                    padding: "6px 14px", borderRadius: 8, border: "1px solid #e5e7eb",
+                                    background: bulkCopied ? "#ecfdf5" : "#fff",
+                                    color: bulkCopied ? "#10b981" : "#374151",
+                                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                }}
+                            >
+                                {bulkCopied ? "✅ Đã copy tất cả" : "📋 Copy tất cả link"}
+                            </button>
+                            <button
+                                onClick={handleExportCSV}
+                                style={{
+                                    padding: "6px 14px", borderRadius: 8, border: "1px solid #e5e7eb",
+                                    background: "#fff", color: "#374151",
+                                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                }}
+                            >
+                                📥 Xuất CSV
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
+
+            {/* Link format hint */}
+            {selectedProject && (
+                <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 12px" }}>
+                    Link thiệp: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 4, fontSize: 11 }}>
+                        /i/{selectedProject.slug}?guest=Tên
+                    </code>
+                </p>
+            )}
 
             {/* Empty state */}
             {guests.length === 0 && (
@@ -215,55 +368,24 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
                         </thead>
                         <tbody>
                             {guests.map((guest: { id: string; name: string; email?: string | null; phone?: string | null; status: string; created_at: string }, i: number) => {
-
                                 const s = STATUS_CONFIG[guest.status as GuestStatus] || STATUS_CONFIG.pending;
                                 return (
-                                    <tr
-                                        key={guest.id}
-                                        style={{ borderTop: i > 0 ? "1px solid #f3f4f6" : "none" }}
-                                    >
-                                        <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "#1f2937" }}>
-                                            {guest.name}
-                                        </td>
-                                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280" }}>
-                                            {guest.email || "—"}
-                                        </td>
-                                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280" }}>
-                                            {guest.phone || "—"}
+                                    <tr key={guest.id} style={{ borderTop: i > 0 ? "1px solid #f3f4f6" : "none" }}>
+                                        <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "#1f2937" }}>{guest.name}</td>
+                                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280" }}>{guest.email || "—"}</td>
+                                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280" }}>{guest.phone || "—"}</td>
+                                        <td style={{ padding: "14px 16px" }}>
+                                            <span style={{ fontSize: 11, fontWeight: 600, color: s.color, background: s.bg, padding: "3px 8px", borderRadius: 6 }}>{s.label}</span>
                                         </td>
                                         <td style={{ padding: "14px 16px" }}>
-                                            <span style={{
-                                                fontSize: 11, fontWeight: 600,
-                                                color: s.color, background: s.bg,
-                                                padding: "3px 8px", borderRadius: 6,
-                                            }}>
-                                                {s.label}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: "14px 16px" }}>
-                                            <div style={{ display: "flex", gap: 8 }}>
-                                                <button
-                                                    onClick={() => copyLink(guest.name)}
-                                                    style={{
-                                                        padding: "6px 12px", borderRadius: 8, border: "1px solid #e5e7eb",
-                                                        background: copied === guest.name ? "#ecfdf5" : "#fff",
-                                                        color: copied === guest.name ? "#10b981" : "#374151",
-                                                        fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                                    }}
-                                                >
-                                                    {copied === guest.name ? "✅ Đã copy" : "🔗 Copy link"}
+                                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                                <button onClick={() => copyLink(guest.name)} title="Copy link" style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e5e7eb", background: copied === guest.name ? "#ecfdf5" : "#fff", color: copied === guest.name ? "#10b981" : "#374151", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                                                    {copied === guest.name ? "✅" : "🔗"}
                                                 </button>
-                                                <button
-                                                    onClick={() => deleteGuest.mutate({ guestId: guest.id })}
-                                                    disabled={deleteGuest.isPending}
-                                                    style={{
-                                                        padding: "6px 12px", borderRadius: 8, border: "1px solid #fee2e2",
-                                                        background: "#fff5f5", color: "#ef4444",
-                                                        fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                                    }}
-                                                >
-                                                    🗑️
-                                                </button>
+                                                <button onClick={() => shareZalo(guest.name)} title="Gửi Zalo" style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e5e7eb", background: "#fff", color: "#0068ff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Z</button>
+                                                <button onClick={() => shareSMS(guest.name, guest.phone)} title="Gửi SMS" style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e5e7eb", background: "#fff", color: "#10b981", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>💬</button>
+                                                <button onClick={() => shareFB(guest.name)} title="Facebook" style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e5e7eb", background: "#fff", color: "#1877f2", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>f</button>
+                                                <button onClick={() => deleteGuest.mutate({ guestId: guest.id })} disabled={deleteGuest.isPending} title="Xóa" style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #fee2e2", background: "#fff5f5", color: "#ef4444", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>🗑️</button>
                                             </div>
                                         </td>
                                     </tr>
