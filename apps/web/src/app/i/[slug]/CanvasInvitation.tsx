@@ -18,7 +18,7 @@ export interface ElementAnimationData {
 
 export interface CanvasElementData {
     id: string;
-    type: "text" | "image" | "sticker" | "shape";
+    type: "text" | "image" | "sticker" | "shape" | "widget";
     x: number; y: number;
     width: number; height: number;
     rotation: number; opacity: number;
@@ -188,6 +188,138 @@ function RenderElement({ el, sectionYStart, idx }: { el: CanvasElementData; sect
                 }} />
             </div>
         );
+    }
+
+    /* ── Sprint 57: Widget rendering on published page ── */
+    if (el.type === "widget" || (el.props as Record<string, unknown>).widgetType) {
+        const p = el.props as Record<string, unknown>;
+        const wt = (p.widgetType ?? "countdown") as string;
+        const wrapStyle: React.CSSProperties = {
+            position: "absolute", left: el.x, top: relativeY,
+            width: el.width, height: el.height, zIndex: el.zIndex,
+            opacity: el.opacity,
+            transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+            animation: animStr,
+            fontFamily: "'Inter', sans-serif",
+        };
+
+        if (wt === "countdown") {
+            const target = p.targetDate ? new Date(p.targetDate as string).getTime() : Date.now() + 30 * 86400000;
+            const diff = Math.max(0, target - Date.now());
+            const blocks = [
+                { v: Math.floor(diff / 86400000), l: "Ngày" },
+                { v: Math.floor((diff % 86400000) / 3600000), l: "Giờ" },
+                { v: Math.floor((diff % 3600000) / 60000), l: "Phút" },
+                { v: Math.floor((diff % 60000) / 1000), l: "Giây" },
+            ];
+            return (
+                <div style={{ ...wrapStyle, background: "linear-gradient(135deg, rgba(253,242,248,0.95), rgba(252,231,243,0.95))", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, backdropFilter: "blur(8px)" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#831843", margin: 0, letterSpacing: 2, textTransform: "uppercase" }}>{(p.label as string) || "ĐẾM NGƯỢC"}</p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                        {blocks.map(b => (
+                            <div key={b.l} style={{ textAlign: "center", background: "#fff", borderRadius: 10, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", minWidth: 52 }}>
+                                <p style={{ fontSize: 22, fontWeight: 800, color: "#e11d48", margin: 0 }}>{String(b.v).padStart(2, "0")}</p>
+                                <p style={{ fontSize: 9, color: "#9ca3af", margin: 0 }}>{b.l}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        if (wt === "map") {
+            const venueName = (p.venueName || p.label || "Vị trí tiệc cưới") as string;
+            const venueAddr = (p.venueAddress || "") as string;
+            const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(venueName + " " + venueAddr)}`;
+            return (
+                <div style={{ ...wrapStyle, background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+                    <div style={{ flex: 1, background: "linear-gradient(135deg, #d1fae5, #ecfdf5)", display: "flex", alignItems: "center", justifyContent: "center", height: "60%" }}>
+                        <span style={{ fontSize: 36 }}>📍</span>
+                    </div>
+                    <div style={{ padding: "10px 14px" }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: 0 }}>{venueName}</p>
+                        {venueAddr && <p style={{ fontSize: 11, color: "#9ca3af", margin: "2px 0 8px" }}>{venueAddr}</p>}
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "8px", borderRadius: 10, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 700, textAlign: "center", textDecoration: "none" }}>🗺️ Chỉ đường</a>
+                    </div>
+                </div>
+            );
+        }
+
+        if (wt === "gift") {
+            return (
+                <div style={{ ...wrapStyle, background: "linear-gradient(135deg, #fef3c7, #fefde8)", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid #fcd34d" }}>
+                    <span style={{ fontSize: 28 }}>💰</span>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#92400e", margin: 0 }}>{(p.label as string) || "Phong bì mừng cưới"}</p>
+                    {Boolean(p.bankName) && (
+                        <div style={{ background: "#fff", borderRadius: 10, padding: "8px 16px", textAlign: "center", width: "100%", boxSizing: "border-box" }}>
+                            <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>{String(p.bankName)}</p>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: "#374151", margin: "2px 0", letterSpacing: 1 }}>{(p.accountNumber as string) || "0123456789"}</p>
+                            <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>{(p.accountName as string) || ""}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        if (wt === "qr") {
+            const qrUrl = `https://img.vietqr.io/image/${(p.bankBin || "970422") as string}-${(p.accountNumber || "0123456789") as string}-qr_only.png?amount=${(p.amount || "") as string}&addInfo=${encodeURIComponent((p.message || "") as string)}`;
+            return (
+                <div style={{ ...wrapStyle, background: "#fff", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 }}>{(p.label as string) || "Quét mã QR"}</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrUrl} alt="QR" style={{ width: 120, height: 120, borderRadius: 8 }} />
+                    {Boolean(p.bankName) && <p style={{ fontSize: 10, color: "#6b7280", margin: 0 }}>{String(p.bankName)} — {String(p.accountName || "")}</p>}
+                </div>
+            );
+        }
+
+        if (wt === "calendar") {
+            const targetDate = p.targetDate ? new Date(p.targetDate as string) : new Date();
+            const month = targetDate.toLocaleString("vi-VN", { month: "long" });
+            const year = targetDate.getFullYear();
+            const day = targetDate.getDate();
+            return (
+                <div style={{ ...wrapStyle, background: "#fff", borderRadius: 16, padding: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.08)", textAlign: "center" }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#374151", margin: "0 0 8px", textTransform: "capitalize" }}>{month} {year}</p>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#ff6b9d", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", fontSize: 28, fontWeight: 800 }}>{day}</div>
+                </div>
+            );
+        }
+
+        if (wt === "guestname") {
+            return (
+                <div style={{ ...wrapStyle, background: "linear-gradient(135deg, rgba(253,242,248,0.9), rgba(250,245,255,0.9))", borderRadius: 16, border: "1px dashed #d946ef", padding: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "#9333ea", margin: 0, textTransform: "uppercase", letterSpacing: 2 }}>{(p.guestNameLabel as string) || "Trân trọng kính mời"}</p>
+                    <p style={{ fontSize: 20, fontWeight: 800, color: "#7c3aed", margin: 0, fontStyle: "italic", fontFamily: "'Great Vibes', cursive" }}>Tên khách mời</p>
+                </div>
+            );
+        }
+
+        if (wt === "call") {
+            const phone = (p.phoneNumber || "0909 xxx xxx") as string;
+            return (
+                <div style={{ ...wrapStyle, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", borderRadius: 16, border: "1px solid #6ee7b7", padding: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <span style={{ fontSize: 28 }}>📞</span>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#065f46", margin: 0 }}>{(p.label as string) || "Liên hệ"}</p>
+                    <a href={`tel:${phone.replace(/\s/g, "")}`} style={{ padding: "8px 20px", borderRadius: 99, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>📱 Gọi {phone}</a>
+                </div>
+            );
+        }
+
+        if (wt === "youtube") {
+            const url = (p.youtubeUrl ?? "") as string;
+            const match = url.match(/(?:v=|\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            const videoId = match?.[1];
+            if (!videoId) return <div style={wrapStyle} />;
+            return (
+                <div style={{ ...wrapStyle, borderRadius: 16, overflow: "hidden" }}>
+                    <iframe src={`https://www.youtube.com/embed/${videoId}?rel=0`} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media" loading="lazy" />
+                </div>
+            );
+        }
+
+        // Fallback for unknown widget types
+        return <div style={wrapStyle} />;
     }
 
     return null;
