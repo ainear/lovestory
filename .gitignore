@@ -36,3 +36,4 @@ drizzle/meta
 # Agent/AI
 .agent
 .gemini
+backups/

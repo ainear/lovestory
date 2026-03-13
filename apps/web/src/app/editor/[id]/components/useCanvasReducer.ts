@@ -100,6 +100,7 @@ export interface CanvasElement {
 export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
 export type IntroEffect = "none" | "envelope" | "fade" | "slide";
 export type MusicIconStyle = "vinyl" | "note" | "miniplayer" | "wave";
+export type EntranceAnimation = "none" | "fadeInAll" | "slideUpAll" | "scaleInAll" | "flipInAll" | "slideUpMix" | "fadeInMix";
 
 export interface CanvasState {
     width: number;
@@ -114,6 +115,7 @@ export interface CanvasState {
     particleEffect: ParticleEffect;
     introEffect: IntroEffect;
     musicIconStyle: MusicIconStyle;
+    entranceAnimation: EntranceAnimation;
 }
 
 const MAX_HISTORY = 50;
@@ -137,6 +139,7 @@ export type Action =
     | { type: "SET_PARTICLE_EFFECT"; effect: ParticleEffect }
     | { type: "SET_INTRO_EFFECT"; effect: IntroEffect }
     | { type: "SET_MUSIC_ICON_STYLE"; style: MusicIconStyle }
+    | { type: "SET_ENTRANCE_ANIMATION"; animation: EntranceAnimation }
     | { type: "ADD_SECTION" }
     | { type: "UPDATE_SECTION"; id: string; changes: Partial<CanvasSection> }
     | { type: "DELETE_SECTION"; id: string }
@@ -304,6 +307,8 @@ export function canvasReducer(state: CanvasState, action: Action): CanvasState {
         }
         case "SET_CANVAS_SIZE":
             return { ...state, width: action.width, height: action.height };
+        case "SET_ENTRANCE_ANIMATION":
+            return { ...state, entranceAnimation: action.animation };
         default:
             return state;
     }
@@ -322,6 +327,7 @@ export const initialCanvasState: CanvasState = {
     particleEffect: "none",
     introEffect: "none",
     musicIconStyle: "vinyl",
+    entranceAnimation: "none",
 };
 
 // ── Hook ──

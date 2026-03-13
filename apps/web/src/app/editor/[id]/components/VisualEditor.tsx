@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Type, Image as ImageIcon, Palette, Music, Sparkles, Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate, Grid, Smile, Plus, ZoomIn, ZoomOut, Trash2, Copy, ArrowUp, ArrowDown, Download, Home, Share2, Layers } from "lucide-react";
 import { Canvas } from "./Canvas";
-import { useCanvasReducer, type CanvasElement, type ParticleEffect, type IntroEffect, type MusicIconStyle } from "./useCanvasReducer";
+import { useCanvasReducer, type CanvasElement, type ParticleEffect, type IntroEffect, type MusicIconStyle, type EntranceAnimation } from "./useCanvasReducer";
 import { createBrowserClient } from "@supabase/ssr";
 import { StockPanel } from "./sidebar/StockPanel";
 import { StickerPanel } from "./sidebar/StickerPanel";
@@ -187,6 +187,12 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             canvas: { width: state.width, height: state.height, bg: state.background },
             elements: state.elements,
             meta: { musicUrl, musicName },
+            effects: {
+                particleEffect: state.particleEffect,
+                introEffect: state.introEffect,
+                musicIconStyle: state.musicIconStyle,
+                entranceAnimation: state.entranceAnimation,
+            },
         });
         try {
             await supabase.from("projects").update({
@@ -199,7 +205,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         } catch {
             setSaveStatus("unsaved");
         }
-    }, [state.elements, state.background, state.width, state.height, projectId, supabase, musicUrl, musicName]);
+    }, [state.elements, state.background, state.width, state.height, state.particleEffect, state.introEffect, state.musicIconStyle, state.entranceAnimation, projectId, supabase, musicUrl, musicName]);
 
     // P0 FIX: Publish — save canvas_json AND set status='published' before redirect
     const handlePublish = useCallback(async () => {
@@ -210,6 +216,12 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             canvas: { width: state.width, height: state.height, bg: state.background },
             elements: state.elements,
             meta: { musicUrl, musicName },
+            effects: {
+                particleEffect: state.particleEffect,
+                introEffect: state.introEffect,
+                musicIconStyle: state.musicIconStyle,
+                entranceAnimation: state.entranceAnimation,
+            },
         });
         try {
             await supabase.from("projects").update({
@@ -226,7 +238,7 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
             setPublishStatus("idle");
             alert("Xuất bản thất bại. Vui lòng thử lại.");
         }
-    }, [state.elements, state.background, state.width, state.height, projectId, supabase, musicUrl, musicName, onPublish, publishStatus]);
+    }, [state.elements, state.background, state.width, state.height, state.particleEffect, state.introEffect, state.musicIconStyle, state.entranceAnimation, projectId, supabase, musicUrl, musicName, onPublish, publishStatus]);
 
     // Debounced auto-save on elements/music change
     useEffect(() => {
@@ -1055,6 +1067,36 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             {state.introEffect === fx.effect && <span style={{ color: "#ff6b9d", fontSize: 12 }}>✔</span>}
                                         </button>
                                     ))}
+
+                                    {/* Sprint 41: Entrance Animations — matching Cinelove */}
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "12px 0 4px", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>🎬 Hiệu ứng chuyển động</p>
+                                    <p style={{ fontSize: 10, color: "#9ca3af", margin: "0 0 8px" }}>Chọn 1 mẫu hiệu ứng để áp dụng cho toàn bộ trang</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                                        {([
+                                            { label: "None", animation: "none" as EntranceAnimation, icon: "⊘" },
+                                            { label: "Fade In All", animation: "fadeInAll" as EntranceAnimation, icon: "◐" },
+                                            { label: "Slide Up All", animation: "slideUpAll" as EntranceAnimation, icon: "△" },
+                                            { label: "Scale In All", animation: "scaleInAll" as EntranceAnimation, icon: "◇" },
+                                            { label: "Flip In All", animation: "flipInAll" as EntranceAnimation, icon: "⊡" },
+                                            { label: "Slide Up Mix", animation: "slideUpMix" as EntranceAnimation, icon: "▲" },
+                                            { label: "Fade In Mix", animation: "fadeInMix" as EntranceAnimation, icon: "◑" },
+                                        ]).map(fx => (
+                                            <button key={fx.animation}
+                                                onClick={() => dispatch({ type: "SET_ENTRANCE_ANIMATION", animation: fx.animation })}
+                                                style={{
+                                                    padding: "12px 8px", borderRadius: 10,
+                                                    border: `2px solid ${state.entranceAnimation === fx.animation ? "#ff6b9d" : "#e5e7eb"}`,
+                                                    background: state.entranceAnimation === fx.animation ? "#fdf2f8" : "#fff",
+                                                    cursor: "pointer", fontSize: 11, color: "#374151",
+                                                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                                                    transition: "all 0.15s ease",
+                                                }}>
+                                                <span style={{ fontSize: 20 }}>{fx.icon}</span>
+                                                <span style={{ fontSize: 10, fontWeight: 500 }}>{fx.label}</span>
+                                                {state.entranceAnimation === fx.animation && <span style={{ color: "#ff6b9d", fontSize: 10 }}>✔ Đang chọn</span>}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
