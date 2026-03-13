@@ -1120,6 +1120,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const [particleEffect, setParticleEffect] = useState("petals");
     const [fontFamily, setFontFamily] = useState("'Georgia', serif");
     const [canvasJson, setCanvasJson] = useState<string | null>(null);
+    const [introEffect, setIntroEffect] = useState<string>("envelope");
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
         venueName: "", venueAddress: "", googleMapsUrl: "",
@@ -1152,6 +1153,17 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 // Sprint 7: canvas_json early-return check
                 if (project.canvas_json) {
                     setCanvasJson(project.canvas_json);
+                    // Extract intro effect from canvas_json
+                    try {
+                        const parsed = JSON.parse(project.canvas_json);
+                        if (parsed?.effects?.introEffect) {
+                            setIntroEffect(parsed.effects.introEffect);
+                            // Curtain effects auto-open (no click needed)
+                            if (parsed.effects.introEffect.startsWith("curtain")) {
+                                setTimeout(() => setIsOpen(true), 100);
+                            }
+                        }
+                    } catch { /* ignore parse errors */ }
                     setLoading(false);
                     return;
                 }
@@ -1278,7 +1290,15 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         );
     }
 
+    // Sprint 42: Auto-open for non-envelope intro effects (curtain/fade/slide)
+    useEffect(() => {
+        if (!isOpen && introEffect !== "envelope") {
+            setIsOpen(true);
+        }
+    }, [introEffect, isOpen]);
+
     if (!isOpen) {
+        // Envelope is the default intro animation with click-to-open
         return <EnvelopeAnimation groomName={data.groomName} brideName={data.brideName} guestName={guestName} onOpen={handleOpen} />;
     }
 
@@ -1297,6 +1317,17 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                 color: theme.text,
             }}
         >
+            {/* Sprint 42: Curtain Overlay — auto-dismisses after animation */}
+            {introEffect.startsWith("curtain") && (
+                <div className={`curtain-overlay curtain-${introEffect.replace("curtain", "").toLowerCase()}`}>
+                    <div className="curtain-left">
+                        <span className="curtain-ornament">{introEffect === "curtainGold" ? "✨" : introEffect === "curtainBlue" ? "💎" : "🌸"}</span>
+                    </div>
+                    <div className="curtain-right">
+                        <span className="curtain-ornament">{introEffect === "curtainGold" ? "👑" : introEffect === "curtainBlue" ? "💍" : "🌹"}</span>
+                    </div>
+                </div>
+            )}
             {/* Particle Effect Overlay */}
             <ParticleCanvas effect={particleEffect} />
             {/* Background Music Audio */}

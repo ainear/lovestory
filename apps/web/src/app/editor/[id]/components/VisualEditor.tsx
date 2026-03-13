@@ -1051,6 +1051,9 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                         { label: "✉️ Phong bì mở", effect: "envelope" as IntroEffect, desc: "Hiệu ứng mở phong bì cưới" },
                                         { label: "🌅 Fade In", effect: "fade" as IntroEffect, desc: "Mờ dần hiện ra" },
                                         { label: "📜 Slide Up", effect: "slide" as IntroEffect, desc: "Trượt từ dưới lên" },
+                                        { label: "🎭 Curtain Hồng", effect: "curtainPink" as IntroEffect, desc: "Rèm cửa hồng mở ra" },
+                                        { label: "🎭 Curtain Xanh", effect: "curtainBlue" as IntroEffect, desc: "Rèm cửa xanh mở ra" },
+                                        { label: "🎭 Curtain Vàng", effect: "curtainGold" as IntroEffect, desc: "Rèm cửa vàng kim mở ra" },
                                         { label: "🚫 Không", effect: "none" as IntroEffect, desc: "Không hiệu ứng mở đầu" },
                                     ]).map(fx => (
                                         <button key={fx.effect}

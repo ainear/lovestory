@@ -98,7 +98,7 @@ export interface CanvasElement {
 }
 
 export type ParticleEffect = "petals" | "hearts" | "bokeh" | "snow" | "none";
-export type IntroEffect = "none" | "envelope" | "fade" | "slide";
+export type IntroEffect = "none" | "envelope" | "fade" | "slide" | "curtainPink" | "curtainBlue" | "curtainGold";
 export type MusicIconStyle = "vinyl" | "note" | "miniplayer" | "wave";
 export type EntranceAnimation = "none" | "fadeInAll" | "slideUpAll" | "scaleInAll" | "flipInAll" | "slideUpMix" | "fadeInMix";
 
