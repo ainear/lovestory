@@ -1042,7 +1042,30 @@ export function RightPanel({ selectedEl, allElements, dispatch, background, part
                                         style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
                                     <Label>Phụ đề</Label>
                                     <input type="text" value={wp.rsvpSubtitle ?? ""} onChange={e => updW({ rsvpSubtitle: e.target.value })}
-                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                                    <Label>Nút gửi</Label>
+                                    <input type="text" value={wp.rsvpButtonText ?? ""} onChange={e => updW({ rsvpButtonText: e.target.value })}
+                                        placeholder="Gửi xác nhận 💌"
+                                        style={{ width: "100%", padding: "7px 10px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 12, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+                                    <Label>Trường thông tin</Label>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 4 }}>
+                                        {[
+                                            { key: "rsvpShowPhone", label: "📱 Số điện thoại" },
+                                            { key: "rsvpShowGuestCount", label: "👥 Số người tham dự" },
+                                            { key: "rsvpShowDietary", label: "🍽️ Chế độ ăn" },
+                                            { key: "rsvpShowMessage", label: "💬 Lời nhắn" },
+                                        ].map(field => (
+                                            <label key={field.key} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", cursor: "pointer" }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!(wp as Record<string, unknown>)[field.key]}
+                                                    onChange={e => updW({ [field.key]: e.target.checked })}
+                                                    style={{ accentColor: "#ff6b9d", cursor: "pointer" }}
+                                                />
+                                                {field.label}
+                                            </label>
+                                        ))}
+                                    </div>
                                 </>
                             )}
 

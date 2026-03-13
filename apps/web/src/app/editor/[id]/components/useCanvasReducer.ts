@@ -65,6 +65,13 @@ export interface WidgetProps {
     youtubeUrl?: string;
     rsvpTitle?: string;
     rsvpSubtitle?: string;
+    // Sprint 44: Custom RSVP form fields
+    rsvpFields?: { id: string; label: string; type: "text" | "phone" | "number" | "select" | "textarea"; required: boolean; options?: string }[];
+    rsvpButtonText?: string;
+    rsvpShowDietary?: boolean;
+    rsvpShowGuestCount?: boolean;
+    rsvpShowMessage?: boolean;
+    rsvpShowPhone?: boolean;
     phoneNumber?: string;
     albumImages?: string;
     guestNameLabel?: string;

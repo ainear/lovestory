@@ -10,6 +10,7 @@ import { StickerPanel } from "./sidebar/StickerPanel";
 import { TEMPLATE_PRESETS, TEMPLATE_CATEGORIES } from "./sidebar/templatePresets";
 import { QuickImageBar } from "./QuickImageBar";
 import { RightPanel } from "./RightPanel";
+import { ImageCropModal } from "./ImageCropModal";
 
 // ── Sidebar tab map ──
 const TABS = [
@@ -370,12 +371,29 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         setMusicName(name);
     }, []);
 
-    // Image upload handler
+    // Sprint 44: Image crop state
+    const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+    const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+
+    // Image upload handler — now shows crop modal first
     const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        // Show crop modal with local preview
+        const localUrl = URL.createObjectURL(file);
+        setCropImageUrl(localUrl);
+        setPendingUploadFile(file);
+        e.target.value = "";
+    }, []);
+
+    // Sprint 44: After crop, upload the cropped image
+    const handleCropComplete = useCallback(async (croppedDataUrl: string) => {
+        setCropImageUrl(null);
+        // Convert data URL to blob for upload
+        const response = await fetch(croppedDataUrl);
+        const blob = await response.blob();
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", blob, "cropped-image.jpg");
         formData.append("projectId", projectId);
         try {
             const res = await fetch("/api/upload", { method: "POST", body: formData });
@@ -384,8 +402,26 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
         } catch {
             alert("Upload ảnh thất bại. Vui lòng thử lại.");
         }
-        e.target.value = "";
+        setPendingUploadFile(null);
     }, [addImage, projectId]);
+
+    // Sprint 44: Skip crop — upload original
+    const handleCropCancel = useCallback(async () => {
+        setCropImageUrl(null);
+        if (pendingUploadFile) {
+            const formData = new FormData();
+            formData.append("file", pendingUploadFile);
+            formData.append("projectId", projectId);
+            try {
+                const res = await fetch("/api/upload", { method: "POST", body: formData });
+                const data = await res.json();
+                if (data.url) addImage(data.url, 20, 200);
+            } catch {
+                alert("Upload ảnh thất bại. Vui lòng thử lại.");
+            }
+            setPendingUploadFile(null);
+        }
+    }, [addImage, projectId, pendingUploadFile]);
 
     const selectedEl = state.elements.find(e => e.id === state.selectedId) ?? null;
 
@@ -1782,6 +1818,14 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Sprint 44: Image Crop Modal */}
+            {cropImageUrl && (
+                <ImageCropModal
+                    imageUrl={cropImageUrl}
+                    onCrop={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
             )}
         </div>
     );

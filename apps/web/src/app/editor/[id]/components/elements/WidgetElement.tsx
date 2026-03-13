@@ -85,21 +85,30 @@ function MapWidget({ props, scale }: { props: CanvasElement["props"]; scale: num
     );
 }
 
-// ── RSVP WIDGET ──
+// ── RSVP WIDGET (Sprint 44: Custom Form Builder) ──
 function RSVPWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    const inputStyle = { width: "100%", padding: `${7 * scale}px ${10 * scale}px`, border: "1px solid #e5e7eb", borderRadius: 8 * scale, fontSize: 10 * scale, outline: "none", background: "#f9fafb", boxSizing: "border-box" as const };
     return (
-        <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12 * scale, border: "1px solid #e5e7eb", padding: 14 * scale, display: "flex", flexDirection: "column", gap: 8 * scale, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12 * scale, border: "1px solid #e5e7eb", padding: 14 * scale, display: "flex", flexDirection: "column", gap: 6 * scale, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", overflow: "auto" }}>
             <div style={{ textAlign: "center" }}>
                 <p style={{ fontSize: 13 * scale, fontWeight: 700, color: "#374151", margin: 0 }}>{props.rsvpTitle || "Xác nhận tham dự"}</p>
                 <p style={{ fontSize: 9 * scale, color: "#9ca3af", margin: `${2 * scale}px 0 0` }}>{props.rsvpSubtitle || "Vui lòng xác nhận sự hiện diện của bạn"}</p>
             </div>
-            <input type="text" placeholder="Họ và tên" readOnly style={{ width: "100%", padding: `${7 * scale}px ${10 * scale}px`, border: "1px solid #e5e7eb", borderRadius: 8 * scale, fontSize: 10 * scale, outline: "none", background: "#f9fafb", boxSizing: "border-box" }} />
+            <input type="text" placeholder="Họ và tên *" readOnly style={inputStyle} />
+            {props.rsvpShowPhone && <input type="tel" placeholder="Số điện thoại" readOnly style={inputStyle} />}
+            {props.rsvpShowGuestCount && <input type="number" placeholder="Số người tham dự" readOnly style={inputStyle} />}
+            {props.rsvpShowDietary && (
+                <select disabled style={{ ...inputStyle, color: "#9ca3af", cursor: "default", appearance: "none" as const }}>
+                    <option>Chế độ ăn (Bình thường)</option>
+                </select>
+            )}
+            {props.rsvpShowMessage && <textarea placeholder="Lời nhắn cho cô dâu chú rể..." readOnly rows={2} style={{ ...inputStyle, resize: "none" as const, fontFamily: "inherit" }} />}
             <div style={{ display: "flex", gap: 6 * scale }}>
                 {["Tham dự", "Không thể"].map(opt => (
                     <button key={opt} style={{ flex: 1, padding: `${6 * scale}px`, borderRadius: 8 * scale, border: "1px solid #e5e7eb", background: opt === "Tham dự" ? "#ecfdf5" : "#fff", fontSize: 9 * scale, fontWeight: 600, cursor: "pointer", color: opt === "Tham dự" ? "#10b981" : "#6b7280" }}>{opt}</button>
                 ))}
             </div>
-            <button style={{ width: "100%", padding: `${7 * scale}px`, borderRadius: 8 * scale, border: "none", background: "#ff6b9d", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer" }}>Gửi xác nhận 💌</button>
+            <button style={{ width: "100%", padding: `${7 * scale}px`, borderRadius: 8 * scale, border: "none", background: "#ff6b9d", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer" }}>{props.rsvpButtonText || "Gửi xác nhận 💌"}</button>
         </div>
     );
 }
