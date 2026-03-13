@@ -1120,6 +1120,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
     const [particleEffect, setParticleEffect] = useState("petals");
     const [fontFamily, setFontFamily] = useState("'Georgia', serif");
     const [canvasJson, setCanvasJson] = useState<string | null>(null);
+    const [isPremium, setIsPremium] = useState(false);
     const [introEffect, setIntroEffect] = useState<string>("envelope");
     const [data, setData] = useState<InvitationData>({
         groomName: "", brideName: "", weddingDate: "", weddingTime: "",
@@ -1150,6 +1151,19 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
             if (project) {
                 setProjectId(project.id);
+
+                // Sprint 47: Check owner's subscription plan for watermark
+                if (project.user_id) {
+                    const { data: sub } = await supabase
+                        .from("subscriptions")
+                        .select("plan")
+                        .eq("user_id", project.user_id)
+                        .maybeSingle();
+                    if (sub?.plan === "basic" || sub?.plan === "premium") {
+                        setIsPremium(true);
+                    }
+                }
+
                 // Sprint 7: canvas_json early-return check
                 if (project.canvas_json) {
                     setCanvasJson(project.canvas_json);
@@ -1280,7 +1294,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
 
     // Sprint 7: Canvas editor mode — render from canvas_json
     if (canvasJson) {
-        return <CanvasInvitation canvasJson={canvasJson} guestName={guestName || undefined} projectId={projectId || undefined} />;
+        return <CanvasInvitation canvasJson={canvasJson} guestName={guestName || undefined} projectId={projectId || undefined} showWatermark={!isPremium} />;
     }
 
     if (!projectId) {

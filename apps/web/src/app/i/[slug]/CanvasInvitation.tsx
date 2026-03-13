@@ -40,13 +40,14 @@ interface CanvasInvitationProps {
     canvasJson: string;
     guestName?: string;
     projectId?: string;
+    showWatermark?: boolean;
 }
 
 function parseCanvasJson(raw: string): CanvasData | null {
     try { return JSON.parse(raw); } catch { return null; }
 }
 
-export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInvitationProps) {
+export function CanvasInvitation({ canvasJson, guestName, projectId, showWatermark = true }: CanvasInvitationProps) {
     const data = useMemo(() => parseCanvasJson(canvasJson), [canvasJson]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -223,6 +224,30 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                     }
                     return null;
                 })}
+
+                {/* Sprint 47: Watermark for free-tier */}
+                {showWatermark && (
+                    <a
+                        href="https://7app.online?ref=watermark"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            position: "absolute", bottom: 8, left: "50%",
+                            transform: "translateX(-50%)", zIndex: 998,
+                            padding: "5px 14px", borderRadius: 20,
+                            background: "rgba(255,255,255,0.85)",
+                            backdropFilter: "blur(8px)",
+                            border: "1px solid rgba(0,0,0,0.06)",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                            fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                            color: "#9ca3af", textDecoration: "none",
+                            letterSpacing: 0.3, whiteSpace: "nowrap",
+                            transition: "all 0.2s",
+                        }}
+                    >
+                        Made with LoveStory ❤️
+                    </a>
+                )}
 
                 {/* Floating music button on card */}
                 {musicUrl && (
