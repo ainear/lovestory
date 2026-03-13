@@ -96,69 +96,220 @@ const CINELOVE_BG: Record<string, string> = {
 };
 
 /**
- * ════════════════════════════════════════
- *  RICH TEMPLATE PRESETS (Cinelove-style)
- *  Each preset: ~18 elements = images + text + decorations
- * ════════════════════════════════════════
+ * ════════════════════════════════════════════════════
+ *  6 RICH TEMPLATE PRESET FAMILIES (Cinelove-style)
+ *  Each: ~15 elements = 3 images + 10 text + 2 deco
+ * ════════════════════════════════════════════════════
  */
 
-/** Romantic Pink — pastel pink, flowers, elegant serif fonts */
-const ROMANTIC_PINK_ELEMENTS = [
-    // ── Layer 1-3: Image placeholders (user uploads their photos) ──
+type TemplateElement = {
+    id: string; type: string; x: number; y: number; width: number; height: number;
+    rotation: number; opacity: number; zIndex: number; locked: boolean;
+    animation: { entrance: string; loop: string };
+    props: Record<string, unknown>;
+};
+
+/** ① Romantic Pink — pastel pink, flowers, elegant serif */
+const ROMANTIC_PINK: TemplateElement[] = [
     { id: "img-main", type: "image", x: 45, y: 20, width: 300, height: 220, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 16, borderWidth: 3, borderColor: "#f9a8d4" } },
     { id: "img-groom", type: "image", x: 30, y: 560, width: 150, height: 180, rotation: -3, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 12, borderWidth: 2, borderColor: "#fda4af" } },
     { id: "img-bride", type: "image", x: 210, y: 560, width: 150, height: 180, rotation: 3, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 12, borderWidth: 2, borderColor: "#fda4af" } },
-
-    // ── Layer 4: Top decorative separator ──
     { id: "deco-top", type: "text", x: 20, y: 250, width: 350, height: 30, rotation: 0, opacity: 0.6, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "━━━━  ✿  ━━━━", fontSize: 14, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#f472b6", textAlign: "center", lineHeight: 1.0 } },
-
-    // ── Layer 5-6: Header text ──
     { id: "txt-invite", type: "text", x: 20, y: 280, width: 350, height: 36, rotation: 0, opacity: 0.95, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân trọng kính mời", fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal", fontStyle: "italic", color: "#9f1239", textAlign: "center", lineHeight: 1.4 } },
     { id: "txt-names", type: "text", x: 10, y: 316, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "italic", color: "#831843", textAlign: "center", lineHeight: 1.15 } },
-
-    // ── Layer 7: Middle decorative ──
     { id: "deco-mid", type: "text", x: 20, y: 396, width: 350, height: 24, rotation: 0, opacity: 0.5, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "❀ ━━━━━━━━━━━━ ❀", fontSize: 12, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#fb7185", textAlign: "center", lineHeight: 1.0 } },
-
-    // ── Layer 8-9: Family greeting ──
     { id: "txt-family", type: "text", x: 20, y: 424, width: 350, height: 48, rotation: 0, opacity: 0.9, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#6b2140", textAlign: "center", lineHeight: 1.6 } },
-
-    // ── Layer 10-12: Date & Time ──
     { id: "txt-date-label", type: "text", x: 20, y: 478, width: 350, height: 24, rotation: 0, opacity: 0.7, zIndex: 9, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "VÀO NGÀY", fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#9f1239", textAlign: "center", lineHeight: 1.2 } },
     { id: "txt-date", type: "text", x: 20, y: 498, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.2 } },
     { id: "txt-time", type: "text", x: 20, y: 540, width: 350, height: 24, rotation: 0, opacity: 0.85, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#9f1239", textAlign: "center", lineHeight: 1.4 } },
-
-    // ── Layer 13-14: Groom & Bride labels ──
     { id: "txt-groom-name", type: "text", x: 30, y: 745, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.3 } },
     { id: "txt-bride-name", type: "text", x: 210, y: 745, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.3 } },
-
-    // ── Layer 15: Venue ──
     { id: "txt-venue", type: "text", x: 20, y: 790, width: 350, height: 50, rotation: 0, opacity: 0.9, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#6b2140", textAlign: "center", lineHeight: 1.5 } },
 ];
 
-/** Build canvas_json — Cinelove bg + rich editable elements */
+/** ② Luxury Dark — navy/black, gold accents, premium feel */
+const LUXURY_DARK: TemplateElement[] = [
+    { id: "img-main", type: "image", x: 45, y: 20, width: 300, height: 240, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 8, borderWidth: 2, borderColor: "#d4a574" } },
+    { id: "img-groom", type: "image", x: 30, y: 580, width: 150, height: 170, rotation: 0, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 8, borderWidth: 1, borderColor: "#b8860b" } },
+    { id: "img-bride", type: "image", x: 210, y: 580, width: 150, height: 170, rotation: 0, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 8, borderWidth: 1, borderColor: "#b8860b" } },
+    { id: "deco-top", type: "text", x: 20, y: 270, width: 350, height: 28, rotation: 0, opacity: 0.5, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "╍╍╍╍  ◆  ╍╍╍╍", fontSize: 13, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#d4a574", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-invite", type: "text", x: 20, y: 298, width: 350, height: 36, rotation: 0, opacity: 0.9, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "TRÂN TRỌNG KÍNH MỜI", fontSize: 13, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#d4a574", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 334, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 34, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "italic", color: "#fef3c7", textAlign: "center", lineHeight: 1.15 } },
+    { id: "deco-mid", type: "text", x: 20, y: 414, width: 350, height: 24, rotation: 0, opacity: 0.4, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "◇ ╍╍╍╍╍╍╍╍╍╍╍╍ ◇", fontSize: 11, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#b8860b", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-family", type: "text", x: 20, y: 440, width: 350, height: 48, rotation: 0, opacity: 0.85, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#e5c890", textAlign: "center", lineHeight: 1.6 } },
+    { id: "txt-date", type: "text", x: 20, y: 500, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#fef3c7", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 544, width: 350, height: 24, rotation: 0, opacity: 0.85, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#d4a574", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-groom-name", type: "text", x: 30, y: 755, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "italic", color: "#fef3c7", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 210, y: 755, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "italic", color: "#fef3c7", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-venue", type: "text", x: 20, y: 795, width: 350, height: 46, rotation: 0, opacity: 0.85, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#d4a574", textAlign: "center", lineHeight: 1.5 } },
+];
+
+/** ③ Classic White — clean, minimal, timeless */
+const CLASSIC_WHITE: TemplateElement[] = [
+    { id: "img-main", type: "image", x: 55, y: 25, width: 280, height: 210, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 4, borderWidth: 1, borderColor: "#d1d5db" } },
+    { id: "img-groom", type: "image", x: 40, y: 565, width: 140, height: 170, rotation: 0, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 4, borderWidth: 1, borderColor: "#e5e7eb" } },
+    { id: "img-bride", type: "image", x: 210, y: 565, width: 140, height: 170, rotation: 0, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 4, borderWidth: 1, borderColor: "#e5e7eb" } },
+    { id: "deco-top", type: "text", x: 20, y: 245, width: 350, height: 28, rotation: 0, opacity: 0.4, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "───────  ♡  ───────", fontSize: 12, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#9ca3af", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-invite", type: "text", x: 20, y: 275, width: 350, height: 36, rotation: 0, opacity: 0.9, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân trọng kính mời", fontSize: 15, fontFamily: "'Cormorant Garamond', serif", fontWeight: "normal", fontStyle: "italic", color: "#374151", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 312, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 32, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "normal", color: "#111827", textAlign: "center", lineHeight: 1.15 } },
+    { id: "deco-mid", type: "text", x: 20, y: 392, width: 350, height: 24, rotation: 0, opacity: 0.35, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "♡ ─────────────── ♡", fontSize: 11, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#9ca3af", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-family", type: "text", x: 20, y: 420, width: 350, height: 48, rotation: 0, opacity: 0.85, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#4b5563", textAlign: "center", lineHeight: 1.6 } },
+    { id: "txt-date", type: "text", x: 20, y: 480, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#111827", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 524, width: 350, height: 24, rotation: 0, opacity: 0.8, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#6b7280", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-groom-name", type: "text", x: 40, y: 740, width: 140, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "normal", color: "#111827", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 210, y: 740, width: 140, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "normal", color: "#111827", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-venue", type: "text", x: 20, y: 785, width: 350, height: 50, rotation: 0, opacity: 0.85, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#6b7280", textAlign: "center", lineHeight: 1.5 } },
+];
+
+/** ④ Traditional Red — Vietnamese wedding, red & gold */
+const TRADITIONAL_RED: TemplateElement[] = [
+    { id: "img-main", type: "image", x: 45, y: 20, width: 300, height: 230, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 12, borderWidth: 3, borderColor: "#fbbf24" } },
+    { id: "img-groom", type: "image", x: 30, y: 570, width: 150, height: 175, rotation: -2, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 10, borderWidth: 2, borderColor: "#f59e0b" } },
+    { id: "img-bride", type: "image", x: 210, y: 570, width: 150, height: 175, rotation: 2, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 10, borderWidth: 2, borderColor: "#f59e0b" } },
+    { id: "deco-top", type: "text", x: 20, y: 260, width: 350, height: 28, rotation: 0, opacity: 0.7, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "═══════  囍  ═══════", fontSize: 14, fontFamily: "'Georgia', serif", fontWeight: "bold", fontStyle: "normal", color: "#dc2626", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-invite", type: "text", x: 20, y: 290, width: 350, height: 36, rotation: 0, opacity: 0.95, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân Trọng Kính Mời", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "bold", fontStyle: "normal", color: "#991b1b", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 326, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 34, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "italic", color: "#7f1d1d", textAlign: "center", lineHeight: 1.15 } },
+    { id: "deco-mid", type: "text", x: 20, y: 406, width: 350, height: 24, rotation: 0, opacity: 0.6, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "♦ ═══════════════ ♦", fontSize: 12, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#dc2626", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-family", type: "text", x: 20, y: 434, width: 350, height: 48, rotation: 0, opacity: 0.9, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#7f1d1d", textAlign: "center", lineHeight: 1.6 } },
+    { id: "txt-date", type: "text", x: 20, y: 496, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#7f1d1d", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 540, width: 350, height: 24, rotation: 0, opacity: 0.85, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#991b1b", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-groom-name", type: "text", x: 30, y: 750, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#7f1d1d", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 210, y: 750, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#7f1d1d", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-venue", type: "text", x: 20, y: 795, width: 350, height: 46, rotation: 0, opacity: 0.9, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#7f1d1d", textAlign: "center", lineHeight: 1.5 } },
+];
+
+/** ⑤ Nature Green — botanical, sage green, organic */
+const NATURE_GREEN: TemplateElement[] = [
+    { id: "img-main", type: "image", x: 45, y: 25, width: 300, height: 215, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 20, borderWidth: 3, borderColor: "#86efac" } },
+    { id: "img-groom", type: "image", x: 35, y: 565, width: 145, height: 175, rotation: -2, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 14, borderWidth: 2, borderColor: "#a7f3d0" } },
+    { id: "img-bride", type: "image", x: 215, y: 565, width: 145, height: 175, rotation: 2, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 14, borderWidth: 2, borderColor: "#a7f3d0" } },
+    { id: "deco-top", type: "text", x: 20, y: 250, width: 350, height: 28, rotation: 0, opacity: 0.55, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "─── 🌿 ───", fontSize: 14, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#22c55e", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-invite", type: "text", x: 20, y: 280, width: 350, height: 36, rotation: 0, opacity: 0.95, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân trọng kính mời", fontSize: 15, fontFamily: "'Cormorant Garamond', serif", fontWeight: "normal", fontStyle: "italic", color: "#166534", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 316, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "italic", color: "#14532d", textAlign: "center", lineHeight: 1.15 } },
+    { id: "deco-mid", type: "text", x: 20, y: 396, width: 350, height: 24, rotation: 0, opacity: 0.45, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "🍃 ─────────────── 🍃", fontSize: 11, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#22c55e", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-family", type: "text", x: 20, y: 424, width: 350, height: 48, rotation: 0, opacity: 0.9, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#15803d", textAlign: "center", lineHeight: 1.6 } },
+    { id: "txt-date", type: "text", x: 20, y: 490, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#14532d", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 534, width: 350, height: 24, rotation: 0, opacity: 0.85, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#166534", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-groom-name", type: "text", x: 35, y: 745, width: 145, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#14532d", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 215, y: 745, width: 145, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#14532d", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-venue", type: "text", x: 20, y: 790, width: 350, height: 50, rotation: 0, opacity: 0.9, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#15803d", textAlign: "center", lineHeight: 1.5 } },
+];
+
+/** ⑥ Modern Minimal — B&W, geometric, contemporary */
+const MODERN_MINIMAL: TemplateElement[] = [
+    { id: "img-main", type: "image", x: 50, y: 20, width: 290, height: 220, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 0, borderWidth: 2, borderColor: "#18181b" } },
+    { id: "img-groom", type: "image", x: 35, y: 570, width: 148, height: 175, rotation: 0, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 0, borderWidth: 1, borderColor: "#3f3f46" } },
+    { id: "img-bride", type: "image", x: 210, y: 570, width: 148, height: 175, rotation: 0, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 0, borderWidth: 1, borderColor: "#3f3f46" } },
+    { id: "deco-top", type: "text", x: 20, y: 250, width: 350, height: 28, rotation: 0, opacity: 0.3, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬", fontSize: 10, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#71717a", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-invite", type: "text", x: 20, y: 280, width: 350, height: 32, rotation: 0, opacity: 0.8, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "WE'RE GETTING MARRIED", fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: "bold", fontStyle: "normal", color: "#52525b", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 312, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 34, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#18181b", textAlign: "center", lineHeight: 1.15 } },
+    { id: "deco-mid", type: "text", x: 20, y: 392, width: 350, height: 24, rotation: 0, opacity: 0.25, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬", fontSize: 10, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#71717a", textAlign: "center", lineHeight: 1.0 } },
+    { id: "txt-family", type: "text", x: 20, y: 418, width: 350, height: 48, rotation: 0, opacity: 0.8, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#3f3f46", textAlign: "center", lineHeight: 1.6 } },
+    { id: "txt-date", type: "text", x: 20, y: 478, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "28 . 05 . 2026", fontSize: 28, fontFamily: "'Inter', sans-serif", fontWeight: "bold", fontStyle: "normal", color: "#18181b", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 524, width: 350, height: 24, rotation: 0, opacity: 0.7, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "10:00 AM", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#52525b", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-groom-name", type: "text", x: 35, y: 750, width: 148, height: 32, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "MINH ANH", fontSize: 13, fontFamily: "'Inter', sans-serif", fontWeight: "bold", fontStyle: "normal", color: "#18181b", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 210, y: 750, width: 148, height: 32, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "THUỲ LINH", fontSize: 13, fontFamily: "'Inter', sans-serif", fontWeight: "bold", fontStyle: "normal", color: "#18181b", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-venue", type: "text", x: 20, y: 790, width: 350, height: 50, rotation: 0, opacity: 0.75, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Diamond Palace — 123 Nguyễn Huệ, Q1, TP.HCM", fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#52525b", textAlign: "center", lineHeight: 1.5 } },
+];
+
+// ════════════════════════════════════════
+//  TEMPLATE → FAMILY MAPPING
+//  Visual classification based on Cinelove thumbnail analysis
+// ════════════════════════════════════════
+
+type FamilyKey = "romantic-pink" | "luxury-dark" | "classic-white" | "traditional-red" | "nature-green" | "modern-minimal";
+
+const FAMILY_ELEMENTS: Record<FamilyKey, TemplateElement[]> = {
+    "romantic-pink": ROMANTIC_PINK,
+    "luxury-dark": LUXURY_DARK,
+    "classic-white": CLASSIC_WHITE,
+    "traditional-red": TRADITIONAL_RED,
+    "nature-green": NATURE_GREEN,
+    "modern-minimal": MODERN_MINIMAL,
+};
+
+/** Map each Cinelove slug → style family */
+const TEMPLATE_FAMILY: Record<string, FamilyKey> = {
+    // ── Romantic Pink (~20 templates) ──
+    "thiep-cuoi-42": "romantic-pink", "thiep-cuoi-39": "romantic-pink",
+    "thiep-cuoi-46": "romantic-pink", "thiep-cuoi-38": "romantic-pink",
+    "thiep-cuoi-44": "romantic-pink", "thiep-cuoi-40": "romantic-pink",
+    "thiep-cuoi-16": "romantic-pink", "thiep-cuoi-47": "romantic-pink",
+    "thiep-cuoi-48": "romantic-pink", "thiep-cuoi-19": "romantic-pink",
+    "thiep-cuoi-2": "romantic-pink",  "thiep-cuoi-43": "romantic-pink",
+    "thiep-cuoi-21": "romantic-pink", "thiep-cuoi-14": "romantic-pink",
+    "thiep-cuoi-15": "romantic-pink", "thiep-cuoi-50": "romantic-pink",
+    "thiep-cuoi-24": "romantic-pink", "thiep-cuoi-41": "romantic-pink",
+    "thiep-cuoi-37": "romantic-pink", "thiep-cuoi-35": "romantic-pink",
+    "thiep-cuoi-55": "romantic-pink",
+    // ── Luxury Dark (~10 templates) ──
+    "thiep-cuoi-36": "luxury-dark",  "thiep-cuoi-53": "luxury-dark",
+    "thiep-cuoi-56": "luxury-dark",  "thiep-cuoi-52": "luxury-dark",
+    "thiep-cuoi-49": "luxury-dark",  "thiep-cuoi-57": "luxury-dark",
+    "thiep-cuoi-54": "luxury-dark",  "thiep-cuoi-60": "luxury-dark",
+    "thiep-cuoi-34": "luxury-dark",  "thiep-cuoi-33": "luxury-dark",
+    // ── Classic White (~12 templates) ──
+    "thiep-cuoi-5": "classic-white", "thiep-cuoi-23": "classic-white",
+    "thiep-cuoi-8": "classic-white", "thiep-cuoi-11": "classic-white",
+    "thiep-cuoi-1": "classic-white", "thiep-cuoi-17": "classic-white",
+    "thiep-cuoi-12": "classic-white", "thiep-cuoi-7": "classic-white",
+    "thiep-cuoi-4": "classic-white", "thiep-cuoi-3": "classic-white",
+    "thiep-cuoi-18": "classic-white", "thiep-cuoi-22": "classic-white",
+    // ── Traditional Red/Gold (~10 templates) ──
+    "thiep-cuoi-28": "traditional-red", "thiep-cuoi-31": "traditional-red",
+    "thiep-cuoi-30": "traditional-red", "thiep-cuoi-10": "traditional-red",
+    "thiep-cuoi-6": "traditional-red",  "thiep-cuoi-32": "traditional-red",
+    "thiep-cuoi-20": "traditional-red", "thiep-cuoi-9": "traditional-red",
+    "thiep-cuoi-13": "traditional-red", "thiep-cuoi-29": "traditional-red",
+    "thiep-cuoi-26": "traditional-red", "thiep-cuoi-27": "traditional-red",
+    // ── Nature Green (~5 templates) ──
+    "thiep-cuoi-tone-xanh": "nature-green",
+    "thiep-cuoi-25": "nature-green",
+    // ── Modern Minimal / B&W ──
+    "thiep-bw-1": "modern-minimal",
+    // ── Birthday → romantic-pink (bright, fun) ──
+    "thiep-sinh-nhat-01": "romantic-pink", "thiep-sinh-nhat-06": "romantic-pink",
+    "thiep-sinh-nhat-05": "romantic-pink", "thiep-sinh-nhat-02": "romantic-pink",
+    "thiep-sinh-nhat-04": "romantic-pink", "thiep-sinh-nhat-03": "romantic-pink",
+    // ── Graduation → modern-minimal ──
+    "thiep-tot-nghiep-1": "modern-minimal", "thiep-tot-nghiep-3": "modern-minimal",
+    "thiep-tot-nghiep-2": "modern-minimal",
+    // ── Events → classic-white ──
+    "thiep-ky-yeu-mau1": "classic-white", "thiep-ky-yeu-mau2": "classic-white",
+    "thiep-tan-gia-1": "traditional-red", "thiep-tan-gia-2": "traditional-red",
+    "thiep-valentine-1": "romantic-pink",
+    "tiec-tat-nien-3": "luxury-dark", "thiep-tat-nien-4": "luxury-dark",
+    "tiec-tat-nien-1": "luxury-dark",
+};
+
+/** Build canvas_json — Cinelove bg + style-matched rich elements */
 function buildTemplateCanvasJson(templateSlug: string): string {
     const bgPath = CINELOVE_BG[templateSlug];
+    const family = TEMPLATE_FAMILY[templateSlug] ?? "romantic-pink";
+    const elements = FAMILY_ELEMENTS[family];
 
     if (bgPath) {
         const bgUrl = CDN + bgPath;
         return JSON.stringify({
             version: 1,
-            canvas: {
-                width: 390, height: 844,
-                bg: `url(${bgUrl}) center/cover no-repeat`,
-            },
-            elements: ROMANTIC_PINK_ELEMENTS,
+            canvas: { width: 390, height: 844, bg: `url(${bgUrl}) center/cover no-repeat` },
+            elements,
         });
     }
 
-    // Fallback: gradient + romantic pink elements (no bg image)
+    // Fallback: gradient background (no Cinelove bg image)
+    const gradients: Record<FamilyKey, string> = {
+        "romantic-pink": "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff1f2 60%, #fff 100%)",
+        "luxury-dark": "linear-gradient(180deg, #0f172a 0%, #1e1b4b 40%, #0c0a09 100%)",
+        "classic-white": "linear-gradient(180deg, #f9fafb 0%, #ffffff 50%, #f3f4f6 100%)",
+        "traditional-red": "linear-gradient(180deg, #fef2f2 0%, #fee2e2 30%, #fff 100%)",
+        "nature-green": "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #fff 100%)",
+        "modern-minimal": "linear-gradient(180deg, #fafafa 0%, #ffffff 100%)",
+    };
     return JSON.stringify({
         version: 1,
-        canvas: {
-            width: 390, height: 844,
-            bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff1f2 60%, #fff 100%)",
-        },
-        elements: ROMANTIC_PINK_ELEMENTS,
+        canvas: { width: 390, height: 844, bg: gradients[family] },
+        elements,
     });
 }
 
