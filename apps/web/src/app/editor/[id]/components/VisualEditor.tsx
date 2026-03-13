@@ -11,6 +11,7 @@ import { TEMPLATE_PRESETS, TEMPLATE_CATEGORIES } from "./sidebar/templatePresets
 import { QuickImageBar } from "./QuickImageBar";
 import { RightPanel } from "./RightPanel";
 import { ImageCropModal } from "./ImageCropModal";
+import { AIBgRemoveModal } from "./AIBgRemoveModal";
 
 // ── Sidebar tab map ──
 const TABS = [
@@ -374,6 +375,9 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
     // Sprint 44: Image crop state
     const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
     const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+    // Sprint 44D: AI BG Remove state
+    const [bgRemoveImageUrl, setBgRemoveImageUrl] = useState<string | null>(null);
+    const [bgRemoveElementId, setBgRemoveElementId] = useState<string | null>(null);
 
     // Image upload handler — now shows crop modal first
     const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -462,6 +466,8 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     { label: ctxEl.locked ? "🔓 Mở khóa" : "🔒 Khóa vị trí", action: () => dispatch({ type: "UPDATE_ELEMENT", id: ctxEl.id, changes: { locked: !ctxEl.locked } }) },
                     { label: "⬆️ Lên trước", action: () => dispatch({ type: "BRING_FORWARD", id: ctxEl.id }) },
                     { label: "⬇️ Xuống sau", action: () => dispatch({ type: "SEND_BACKWARD", id: ctxEl.id }) },
+                    // Sprint 44D: AI BG Remove (images only)
+                    ...(ctxEl.type === "image" && ctxEl.props.src ? [{ label: "🪄 Xóa nền AI", action: () => { setBgRemoveImageUrl(ctxEl.props.src!); setBgRemoveElementId(ctxEl.id); } }] : []),
                 ];
                 return (
                     <div style={{
@@ -1825,6 +1831,32 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     imageUrl={cropImageUrl}
                     onCrop={handleCropComplete}
                     onCancel={handleCropCancel}
+                />
+            )}
+            {/* Sprint 44D: AI Background Remove Modal */}
+            {bgRemoveImageUrl && (
+                <AIBgRemoveModal
+                    imageUrl={bgRemoveImageUrl}
+                    onComplete={async (resultDataUrl: string) => {
+                        setBgRemoveImageUrl(null);
+                        // Upload the result and update element src
+                        try {
+                            const response = await fetch(resultDataUrl);
+                            const blob = await response.blob();
+                            const formData = new FormData();
+                            formData.append("file", blob, "bg-removed.png");
+                            formData.append("projectId", projectId);
+                            const res = await fetch("/api/upload", { method: "POST", body: formData });
+                            const data = await res.json();
+                            if (data.url && bgRemoveElementId) {
+                                dispatch({ type: "UPDATE_ELEMENT", id: bgRemoveElementId, changes: { props: { src: data.url } } });
+                            }
+                        } catch {
+                            alert("Upload ảnh thất bại.");
+                        }
+                        setBgRemoveElementId(null);
+                    }}
+                    onCancel={() => { setBgRemoveImageUrl(null); setBgRemoveElementId(null); }}
                 />
             )}
         </div>
