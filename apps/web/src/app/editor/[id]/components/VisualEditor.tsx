@@ -1284,27 +1284,29 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     })()}
                     <div style={{
                         flex: 1, display: "flex",
-                        alignItems: "center", justifyContent: "center",
-                        overflow: "auto", padding: 16,
+                        alignItems: "flex-start", justifyContent: "center",
+                        overflow: "auto", padding: "12px 8px",
                         background: "#f1f5f9",
                     }}>
                     <div style={{ position: "relative", paddingBottom: 68 }} data-canvas-export>
 
-                    {/* Sprint 31: Thay ảnh nhanh — quick image strip like Cinelove */}
+                    {/* Sprint 31 → UX Polish: Thay ảnh nhanh — full-width bottom bar like Cinelove */}
                     {(() => {
                         const imageEls = state.elements.filter(e => e.type === "image");
                         if (imageEls.length === 0) return null;
                         return (
                             <div style={{
-                                position: "absolute", bottom: 70, left: 16, zIndex: 110,
-                                background: "rgba(255,255,255,0.95)", borderRadius: 12,
-                                padding: "8px 12px", display: "flex", gap: 8, alignItems: "center",
-                                boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-                                backdropFilter: "blur(8px)",
+                                position: "fixed", bottom: 0, left: 240, right: 320, zIndex: 110,
+                                background: "rgba(255,255,255,0.97)",
+                                padding: "10px 20px", display: "flex", gap: 12, alignItems: "center",
+                                boxShadow: "0 -4px 20px rgba(0,0,0,0.08)",
+                                backdropFilter: "blur(12px)",
+                                borderTop: "1px solid #e5e7eb",
                             }}>
-                                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap" }}>Thay ảnh nhanh</span>
-                                <div style={{ width: 1, height: 28, background: "#e5e7eb" }} />
-                                {imageEls.slice(0, 6).map(img => (
+                                <span style={{ fontSize: 12, color: "#374151", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: 0.5 }}>📸 Thay ảnh nhanh</span>
+                                <div style={{ width: 1, height: 44, background: "#e5e7eb" }} />
+                                <div style={{ display: "flex", gap: 8, overflowX: "auto", flex: 1, paddingBottom: 2 }}>
+                                {imageEls.map(img => (
                                     <button
                                         key={img.id}
                                         onClick={() => {
@@ -1312,13 +1314,17 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                                             setLastAction(`Chọn ảnh: ${img.id.slice(0, 6)}`);
                                         }}
                                         style={{
-                                            width: 40, height: 40, borderRadius: 8, border: img.id === state.selectedId ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
+                                            width: 56, height: 56, borderRadius: 10, border: img.id === state.selectedId ? "3px solid #ff6b9d" : "2px solid #e5e7eb",
                                             padding: 0, cursor: "pointer", overflow: "hidden", background: "#f3f4f6", flexShrink: 0,
+                                            transition: "border-color 0.2s, transform 0.2s",
                                         }}
+                                        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.borderColor = "#ff6b9d"; }}
+                                        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; if (img.id !== state.selectedId) e.currentTarget.style.borderColor = "#e5e7eb"; }}
                                     >
                                         <img src={img.props.src || ""} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                     </button>
                                 ))}
+                                </div>
                             </div>
                         );
                     })()}
@@ -1371,24 +1377,24 @@ export function VisualEditor({ projectId, initialCanvasJson, projectSlug, onPubl
                     </div>
                 </div>
                     
-                {/* Sprint 26: Welcome onboarding tooltip */}
+                {/* Sprint 26 → UX Polish: Welcome banner — top-right slim auto-dismiss */}
                 {showWelcome && !state.selectedId && (
                     <div style={{
-                        position: "absolute", bottom: 80, left: "50%", transform: "translateX(-50%)",
-                        zIndex: 200, background: "linear-gradient(135deg, #1e293b, #334155)",
-                        borderRadius: 14, padding: "16px 24px", maxWidth: 380,
-                        boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
-                        color: "#fff", fontSize: 13, lineHeight: 1.6,
+                        position: "fixed", top: 56, right: 330, zIndex: 200,
+                        background: "linear-gradient(135deg, #1e293b, #334155)",
+                        borderRadius: 12, padding: "10px 16px", maxWidth: 300,
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                        color: "#fff", fontSize: 12, lineHeight: 1.5,
+                        animation: "fadeInUp 0.4s ease",
                     }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                            <span style={{ fontWeight: 700, fontSize: 14 }}>👋 Chào mừng đến Editor!</span>
-                            <button onClick={() => setShowWelcome(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 16 }}>✕</button>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                            <span style={{ fontWeight: 700, fontSize: 12 }}>👋 Mẹo nhanh</span>
+                            <button onClick={() => setShowWelcome(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4, color: "#cbd5e1" }}>
-                            <span>📌 Click phần tử để chỉnh sửa</span>
-                            <span>🖱️ Kéo thả để di chuyển</span>
-                            <span>⌨️ Nhấn <kbd style={{ background: "#475569", padding: "1px 6px", borderRadius: 3, fontSize: 11 }}>⌘/</kbd> để xem phím tắt</span>
-                            <span>📱 Bấm <strong>QR</strong> để chia sẻ thiệp</span>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#cbd5e1", fontSize: 11 }}>
+                            <span>📌 Click để sửa</span>
+                            <span>🖱️ Kéo thả</span>
+                            <span>📱 QR chia sẻ</span>
                         </div>
                     </div>
                 )}
