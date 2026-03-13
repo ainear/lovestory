@@ -7,7 +7,16 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "img.vietqr.io" },
       { protocol: "https", hostname: "quickchart.io" },
       { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "cinelove.me" },
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/cinelove-cdn/:path*",
+        destination: "https://cinelove.me/:path*",
+      },
+    ];
   },
 };
 

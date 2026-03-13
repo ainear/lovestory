@@ -6,7 +6,7 @@ import Link from "next/link";
 /* ──────────────────────────────────────────────
    CINELOVE CDN BASE — long_thumbnail images
    ────────────────────────────────────────────── */
-const CDN = "https://cinelove.me/";
+const CDN = "/cinelove-cdn/";
 
 /* ──────────────────────────────────────────────
    81 TEMPLATES — Cloned from Cinelove data
