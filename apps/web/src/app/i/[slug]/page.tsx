@@ -1237,6 +1237,14 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
         loadProject();
     }, []);
 
+    // Sprint 42: Auto-open for non-envelope intro effects (curtain/fade/slide)
+    // MUST be before any conditional returns (React Rules of Hooks)
+    useEffect(() => {
+        if (!isOpen && introEffect !== "envelope" && !loading) {
+            setIsOpen(true);
+        }
+    }, [introEffect, isOpen, loading]);
+
     const handleOpen = () => {
         setIsOpen(true);
         setShowConfetti(true);
@@ -1289,13 +1297,6 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
             </div>
         );
     }
-
-    // Sprint 42: Auto-open for non-envelope intro effects (curtain/fade/slide)
-    useEffect(() => {
-        if (!isOpen && introEffect !== "envelope") {
-            setIsOpen(true);
-        }
-    }, [introEffect, isOpen]);
 
     if (!isOpen) {
         // Envelope is the default intro animation with click-to-open
