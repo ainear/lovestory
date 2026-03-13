@@ -1209,7 +1209,7 @@ export default function PublicInvitationPage({ params }: { params: Promise<{ slu
                     story: "Chúng tôi gặp nhau vào một ngày mùa thu Sài Gòn. Ánh nắng chiều xuyên qua tán lá cổ thụ trên con đường Nguyễn Du, và tình yêu bắt đầu từ đó.",
                     message: "Sự hiện diện của bạn là niềm vinh hạnh lớn lao cho chúng tôi.",
                     bankName: "Vietcombank", bankAccount: "1234567890", bankOwner: "NGUYEN VAN MINH",
-                    musicUrl: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+                    musicUrl: "https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3",
                     musicName: "Beautiful Wedding",
                     groomPhone: "0901234567",
                     photos: [
