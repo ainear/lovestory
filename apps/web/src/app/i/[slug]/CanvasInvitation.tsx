@@ -3,9 +3,10 @@
 /**
  * CanvasInvitation — renders canvas_json as a public invitation.
  * Sprint 8: + music autoplay float button, + RSVP form below canvas card.
+ * Sprint 54: + particle effects overlay, + scroll-triggered animations.
  */
 
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 
 export interface ElementAnimationData {
     entrance?: "none" | "fadeIn" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "zoomIn" | "bounceIn";
@@ -26,6 +27,7 @@ export interface CanvasElementData {
         fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; lineHeight?: number;
         src?: string; objectFit?: "cover" | "contain"; borderRadius?: number; opacity?: number;
         filter?: string; boxShadow?: string;
+        borderWidth?: number; borderColor?: string; borderStyle?: string;
     };
 }
 
@@ -34,6 +36,46 @@ export interface CanvasData {
     canvas: { width: number; height: number; bg: string };
     elements: CanvasElementData[];
     meta?: { musicUrl?: string; musicName?: string };
+    effects?: { particleEffect?: string; introEffect?: string };
+}
+
+type ParticleType = "hearts" | "confetti" | "snow" | "petals" | "none";
+
+const PARTICLE_CHARS: Record<string, string[]> = {
+    hearts: ["❤️", "💕", "💗", "💖", "💞"],
+    confetti: ["🎊", "🎉", "✨", "⭐", "🌟"],
+    snow: ["❄️", "❅", "❆", "✦", "·"],
+    petals: ["🌸", "🌺", "🌹", "💮", "🌼"],
+};
+
+/** Particle effects overlay — renders animated floating particles */
+function ParticleOverlay({ effect }: { effect: ParticleType }) {
+    if (effect === "none" || !PARTICLE_CHARS[effect]) return null;
+    const chars = PARTICLE_CHARS[effect];
+    return (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 900 }}>
+            <style>{`
+                @keyframes particleFall {
+                    0% { opacity: 0; transform: translateY(-20px) rotate(0deg); }
+                    10% { opacity: 1; }
+                    90% { opacity: 0.8; }
+                    100% { opacity: 0; transform: translateY(100vh) rotate(360deg); }
+                }
+            `}</style>
+            {Array.from({ length: 18 }).map((_, i) => (
+                <span key={i} style={{
+                    position: "absolute",
+                    left: `${(i * 17 + 3) % 95}%`,
+                    top: -20,
+                    fontSize: 12 + (i % 4) * 4,
+                    animation: `particleFall ${4 + (i % 3) * 2}s linear ${(i * 0.6) % 5}s infinite`,
+                    opacity: 0,
+                }}>
+                    {chars[i % chars.length]}
+                </span>
+            ))}
+        </div>
+    );
 }
 
 interface CanvasInvitationProps {
@@ -61,6 +103,7 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
 
     const musicUrl = data?.meta?.musicUrl || "";
     const musicName = data?.meta?.musicName || "";
+    const particleEffect = (data?.effects?.particleEffect || "none") as ParticleType;
 
     const toggleMusic = useCallback(() => {
         if (!musicUrl) return;
@@ -170,6 +213,9 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
                 background: canvas.bg, boxShadow: "0 8px 40px rgba(0,0,0,.15)",
                 borderRadius: 8, overflow: "visible",
             }}>
+                    {/* Sprint 54: Particle effects overlay */}
+                <ParticleOverlay effect={particleEffect} />
+
                 {sorted.map((el, idx) => {
                     const entranceAnim = el.animation?.entrance && el.animation.entrance !== "none"
                         ? `${el.animation.entrance} 0.6s ease-out ${idx * 0.1}s both`
@@ -203,6 +249,7 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
                     if (el.type === "image") {
                         const p = el.props;
                         if (!p.src) return null;
+                        const imgBorder = p.borderWidth ? `${p.borderWidth}px ${p.borderStyle || "solid"} ${p.borderColor || "transparent"}` : undefined;
                         return (
                             <div key={el.id} style={{
                                 position: "absolute", left: el.x, top: el.y,

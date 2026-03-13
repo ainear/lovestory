@@ -37,6 +37,13 @@ function txt(id: string, x: number, y: number, w: number, h: number, text: strin
     };
 }
 
+/** Placeholder images for template init — users replace with real photos */
+const PLACEHOLDERS: Record<string, string> = {
+    "img-main":  "/placeholder-couple.png",
+    "img-groom": "/placeholder-groom.png",
+    "img-bride": "/placeholder-bride.png",
+};
+
 /** Helper: image placeholder element */
 function img(id: string, x: number, y: number, w: number, h: number, o: {
     radius?: number; borderColor?: string; borderWidth?: number;
@@ -46,7 +53,7 @@ function img(id: string, x: number, y: number, w: number, h: number, o: {
         id, type: "image", x, y, width: w, height: h,
         rotation: o.rotation ?? 0, opacity: 1, zIndex: o.zIndex ?? 1, locked: false,
         animation: { entrance: "fadeIn", loop: "none" },
-        props: { src: null, objectFit: "cover", borderRadius: o.radius ?? 8, borderWidth: o.borderWidth ?? 2, borderColor: o.borderColor ?? "#f9a8d4" }
+        props: { src: PLACEHOLDERS[id] ?? "/placeholder-couple.png", objectFit: "cover", borderRadius: o.radius ?? 8, borderWidth: o.borderWidth ?? 2, borderColor: o.borderColor ?? "#f9a8d4" }
     };
 }
 
