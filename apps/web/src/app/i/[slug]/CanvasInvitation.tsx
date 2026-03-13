@@ -7,6 +7,11 @@
 
 import { useMemo, useState, useRef, useCallback } from "react";
 
+export interface ElementAnimationData {
+    entrance?: "none" | "fadeIn" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "zoomIn" | "bounceIn";
+    loop?: "none" | "pulse" | "float" | "shake";
+}
+
 export interface CanvasElementData {
     id: string;
     type: "text" | "image" | "sticker" | "shape";
@@ -14,12 +19,13 @@ export interface CanvasElementData {
     width: number; height: number;
     rotation: number; opacity: number;
     zIndex: number; locked: boolean;
+    animation?: ElementAnimationData;
     props: {
         text?: string; fontSize?: number; fontFamily?: string;
         color?: string; textAlign?: "left" | "center" | "right";
         fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; lineHeight?: number;
         src?: string; objectFit?: "cover" | "contain"; borderRadius?: number; opacity?: number;
-        filter?: string; // CSS filter for image presets (M4)
+        filter?: string; boxShadow?: string;
     };
 }
 
@@ -131,6 +137,16 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@400;600;700&display=swap');
                 @keyframes spin { to { transform: rotate(360deg) } }
+                @keyframes elPulse { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .7; transform: scale(1.03) } }
+                @keyframes elFloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+                @keyframes elShake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-3px) } 75% { transform: translateX(3px) } }
+                @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: translateY(0) } }
+                @keyframes slideDown { from { opacity: 0; transform: translateY(-30px) } to { opacity: 1; transform: translateY(0) } }
+                @keyframes slideLeft { from { opacity: 0; transform: translateX(40px) } to { opacity: 1; transform: translateX(0) } }
+                @keyframes slideRight { from { opacity: 0; transform: translateX(-40px) } to { opacity: 1; transform: translateX(0) } }
+                @keyframes zoomIn { from { opacity: 0; transform: scale(0.7) } to { opacity: 1; transform: scale(1) } }
+                @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3) } 50% { transform: scale(1.05) } 70% { transform: scale(0.95) } 100% { opacity: 1; transform: scale(1) } }
                 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .6 } }
                 @keyframes bounce { 0%,100% { transform: scale(1) } 50% { transform: scale(1.1) } }
             `}</style>
@@ -153,7 +169,15 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                 background: canvas.bg, boxShadow: "0 8px 40px rgba(0,0,0,.15)",
                 borderRadius: 8, overflow: "visible",
             }}>
-                {sorted.map((el) => {
+                {sorted.map((el, idx) => {
+                    const entranceAnim = el.animation?.entrance && el.animation.entrance !== "none"
+                        ? `${el.animation.entrance} 0.6s ease-out ${idx * 0.1}s both`
+                        : undefined;
+                    const loopAnim = el.animation?.loop && el.animation.loop !== "none"
+                        ? `el${el.animation.loop.charAt(0).toUpperCase() + el.animation.loop.slice(1)} 2s ease-in-out infinite`
+                        : undefined;
+                    const animStr = [entranceAnim, loopAnim].filter(Boolean).join(", ") || undefined;
+
                     if (el.type === "text") {
                         const p = el.props;
                         return (
@@ -168,6 +192,8 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                                 lineHeight: p.lineHeight ?? 1.4, padding: "2px 4px",
                                 whiteSpace: "pre-wrap", wordBreak: "break-word",
                                 boxSizing: "border-box", pointerEvents: "none", userSelect: "none",
+                                animation: animStr,
+                                boxShadow: p.boxShadow || undefined,
                             }}>
                                 {p.text ?? ""}
                             </div>
@@ -181,14 +207,16 @@ export function CanvasInvitation({ canvasJson, guestName, projectId }: CanvasInv
                                 position: "absolute", left: el.x, top: el.y,
                                 width: el.width, height: el.height, zIndex: el.zIndex,
                                 borderRadius: p.borderRadius ?? 12, overflow: "hidden",
-                                opacity: el.opacity, // M1 fix: use el.opacity (not p.opacity)
+                                opacity: el.opacity,
                                 transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                                animation: animStr,
+                                boxShadow: p.boxShadow || undefined,
                             }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={p.src} alt="" style={{
                                     width: "100%", height: "100%",
                                     objectFit: p.objectFit ?? "cover", display: "block",
-                                    filter: p.filter || undefined, // M4 fix: apply CSS filter preset
+                                    filter: p.filter || undefined,
                                 }} />
                             </div>
                         );
