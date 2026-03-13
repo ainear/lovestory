@@ -253,12 +253,12 @@ export default function LandingPage() {
               </span>
             </h2>
             <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, margin: "0 0 32px" }}>
-              Upload 3+ ảnh cưới → AI tự động tạo video có hiệu ứng Ken Burns, chuyển cảnh đẹp, nhạc nền và chữ chý rể cô dâu. Xuất video 1080p về máy chỉ trong vài phút.
+              Upload 3+ ảnh cưới → AI tự động tạo video có hiệu ứng Ken Burns, chuyển cảnh đẹp, nhạc nền và chú thích chú rể cô dâu. Xuất video 1080p về máy chỉ trong vài phút.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
               {[
                 { icon: "🎬", text: "4 phong cách: Cinematic, Romantic, Vintage, Modern" },
-                { icon: "🧠", text: "AI generate lời chú thích tứ thiơ (Gemini AI)" },
+                { icon: "🧠", text: "AI tự động tạo lời chú thích (Gemini AI)" },
                 { icon: "⏱️", text: "Render xong trong 3-5 phút" },
                 { icon: "📹", text: "Xuất 1080p Full HD, tải xuống trực tiếp" },
               ].map((item, i) => (
