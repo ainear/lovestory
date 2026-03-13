@@ -96,27 +96,50 @@ const CINELOVE_BG: Record<string, string> = {
 };
 
 /**
- * Standard editable text overlay elements for ALL templates.
- * These position editable text zones on top of the template background.
- * Users click to edit: names, date, venue, etc.
+ * ════════════════════════════════════════
+ *  RICH TEMPLATE PRESETS (Cinelove-style)
+ *  Each preset: ~18 elements = images + text + decorations
+ * ════════════════════════════════════════
  */
-const STANDARD_OVERLAY_ELEMENTS = [
-    { id: "el-1", type: "text", x: 20, y: 30, width: 350, height: 36, rotation: 0, opacity: 0.9, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "✿ SAVE THE DATE ✿", fontSize: 14, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#ffffff", textAlign: "center", lineHeight: 1.4, textShadow: "0 1px 6px rgba(0,0,0,0.5)" } },
-    { id: "el-2", type: "text", x: 20, y: 80, width: 350, height: 40, rotation: 0, opacity: 0.9, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân trọng kính mời", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: "normal", fontStyle: "italic", color: "#ffffff", textAlign: "center", lineHeight: 1.4, textShadow: "0 1px 6px rgba(0,0,0,0.5)" } },
-    { id: "el-3", type: "text", x: 15, y: 135, width: 360, height: 80, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh & Thuỳ Linh", fontSize: 36, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "italic", color: "#ffffff", textAlign: "center", lineHeight: 1.2, textShadow: "0 2px 8px rgba(0,0,0,0.6)" } },
-    { id: "el-4", type: "text", x: 20, y: 230, width: 350, height: 55, rotation: 0, opacity: 0.85, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời", fontSize: 14, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#ffffff", textAlign: "center", lineHeight: 1.6, textShadow: "0 1px 4px rgba(0,0,0,0.5)" } },
-    { id: "el-5", type: "text", x: 20, y: 310, width: 350, height: 50, rotation: 0, opacity: 1, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#ffffff", textAlign: "center", lineHeight: 1.3, textShadow: "0 2px 8px rgba(0,0,0,0.6)" } },
-    { id: "el-6", type: "text", x: 20, y: 370, width: 350, height: 36, rotation: 0, opacity: 0.9, zIndex: 15, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 16, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#ffffff", textAlign: "center", lineHeight: 1.4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" } },
-    { id: "el-7", type: "text", x: 20, y: 420, width: 350, height: 70, rotation: 0, opacity: 0.85, zIndex: 16, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trung tâm Tiệc cưới Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#ffffff", textAlign: "center", lineHeight: 1.6, textShadow: "0 1px 4px rgba(0,0,0,0.5)" } },
-    { id: "el-8", type: "text", x: 20, y: 510, width: 350, height: 36, rotation: 0, opacity: 0.7, zIndex: 17, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Sự hiện diện của bạn là niềm vui của chúng tôi ♡", fontSize: 13, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "italic", color: "#ffffff", textAlign: "center", lineHeight: 1.4, textShadow: "0 1px 4px rgba(0,0,0,0.4)" } },
+
+/** Romantic Pink — pastel pink, flowers, elegant serif fonts */
+const ROMANTIC_PINK_ELEMENTS = [
+    // ── Layer 1-3: Image placeholders (user uploads their photos) ──
+    { id: "img-main", type: "image", x: 45, y: 20, width: 300, height: 220, rotation: 0, opacity: 1, zIndex: 1, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 16, borderWidth: 3, borderColor: "#f9a8d4" } },
+    { id: "img-groom", type: "image", x: 30, y: 560, width: 150, height: 180, rotation: -3, opacity: 1, zIndex: 2, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 12, borderWidth: 2, borderColor: "#fda4af" } },
+    { id: "img-bride", type: "image", x: 210, y: 560, width: 150, height: 180, rotation: 3, opacity: 1, zIndex: 3, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { src: null, objectFit: "cover", borderRadius: 12, borderWidth: 2, borderColor: "#fda4af" } },
+
+    // ── Layer 4: Top decorative separator ──
+    { id: "deco-top", type: "text", x: 20, y: 250, width: 350, height: 30, rotation: 0, opacity: 0.6, zIndex: 4, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "━━━━  ✿  ━━━━", fontSize: 14, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#f472b6", textAlign: "center", lineHeight: 1.0 } },
+
+    // ── Layer 5-6: Header text ──
+    { id: "txt-invite", type: "text", x: 20, y: 280, width: 350, height: 36, rotation: 0, opacity: 0.95, zIndex: 5, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Trân trọng kính mời", fontSize: 15, fontFamily: "'Playfair Display', serif", fontWeight: "normal", fontStyle: "italic", color: "#9f1239", textAlign: "center", lineHeight: 1.4 } },
+    { id: "txt-names", type: "text", x: 10, y: 316, width: 370, height: 75, rotation: 0, opacity: 1, zIndex: 6, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh\n&\nThuỳ Linh", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "italic", color: "#831843", textAlign: "center", lineHeight: 1.15 } },
+
+    // ── Layer 7: Middle decorative ──
+    { id: "deco-mid", type: "text", x: 20, y: 396, width: 350, height: 24, rotation: 0, opacity: 0.5, zIndex: 7, locked: true, animation: { entrance: "none", loop: "none" }, props: { text: "❀ ━━━━━━━━━━━━ ❀", fontSize: 12, fontFamily: "'Georgia', serif", fontWeight: "normal", fontStyle: "normal", color: "#fb7185", textAlign: "center", lineHeight: 1.0 } },
+
+    // ── Layer 8-9: Family greeting ──
+    { id: "txt-family", type: "text", x: 20, y: 424, width: 350, height: 48, rotation: 0, opacity: 0.9, zIndex: 8, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Cùng gia đình hai bên\nân hạnh kính mời quý khách", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#6b2140", textAlign: "center", lineHeight: 1.6 } },
+
+    // ── Layer 10-12: Date & Time ──
+    { id: "txt-date-label", type: "text", x: 20, y: 478, width: 350, height: 24, rotation: 0, opacity: 0.7, zIndex: 9, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "VÀO NGÀY", fontSize: 11, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#9f1239", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-date", type: "text", x: 20, y: 498, width: 350, height: 44, rotation: 0, opacity: 1, zIndex: 10, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Chủ Nhật, 28 · 05 · 2026", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.2 } },
+    { id: "txt-time", type: "text", x: 20, y: 540, width: 350, height: 24, rotation: 0, opacity: 0.85, zIndex: 11, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Lúc 10:00 sáng", fontSize: 15, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic", color: "#9f1239", textAlign: "center", lineHeight: 1.4 } },
+
+    // ── Layer 13-14: Groom & Bride labels ──
+    { id: "txt-groom-name", type: "text", x: 30, y: 745, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 12, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Minh Anh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.3 } },
+    { id: "txt-bride-name", type: "text", x: 210, y: 745, width: 150, height: 36, rotation: 0, opacity: 1, zIndex: 13, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "Thuỳ Linh", fontSize: 16, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal", color: "#831843", textAlign: "center", lineHeight: 1.3 } },
+
+    // ── Layer 15: Venue ──
+    { id: "txt-venue", type: "text", x: 20, y: 790, width: 350, height: 50, rotation: 0, opacity: 0.9, zIndex: 14, locked: false, animation: { entrance: "fadeIn", loop: "none" }, props: { text: "📍 Diamond Palace\n123 Nguyễn Huệ, Quận 1, TP.HCM", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal", color: "#6b2140", textAlign: "center", lineHeight: 1.5 } },
 ];
 
-/** Build canvas_json — Cinelove bg + editable text overlays */
+/** Build canvas_json — Cinelove bg + rich editable elements */
 function buildTemplateCanvasJson(templateSlug: string): string {
     const bgPath = CINELOVE_BG[templateSlug];
 
     if (bgPath) {
-        // Cinelove template: bg image + editable text overlay elements
         const bgUrl = CDN + bgPath;
         return JSON.stringify({
             version: 1,
@@ -124,21 +147,18 @@ function buildTemplateCanvasJson(templateSlug: string): string {
                 width: 390, height: 844,
                 bg: `url(${bgUrl}) center/cover no-repeat`,
             },
-            elements: STANDARD_OVERLAY_ELEMENTS,
+            elements: ROMANTIC_PINK_ELEMENTS,
         });
     }
 
-    // Fallback: gradient + text for unknown slugs
+    // Fallback: gradient + romantic pink elements (no bg image)
     return JSON.stringify({
         version: 1,
         canvas: {
             width: 390, height: 844,
-            bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+            bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff1f2 60%, #fff 100%)",
         },
-        elements: STANDARD_OVERLAY_ELEMENTS.map(el => ({
-            ...el,
-            props: { ...el.props, color: "#831843", textShadow: "none" },
-        })),
+        elements: ROMANTIC_PINK_ELEMENTS,
     });
 }
 
