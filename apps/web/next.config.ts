@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/cinelove-cdn/:path*",
-        destination: "https://cinelove.me/:path*",
+        destination: "https://assets.cinelove.me/:path*",
       },
     ];
   },
