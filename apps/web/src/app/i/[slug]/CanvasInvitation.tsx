@@ -60,7 +60,7 @@ const PARTICLE_CHARS: Record<string, string[]> = {
 function ParticleOverlay({ effect }: { effect: ParticleType }) {
     if (effect === "none" || !PARTICLE_CHARS[effect]) return null;
     const chars = PARTICLE_CHARS[effect];
-    const count = 28; // More particles for premium feel
+    const count = 28;
     return (
         <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 900 }}>
             <style>{`
@@ -113,6 +113,130 @@ function ScrollSection({ children, delay = 0 }: { children: React.ReactNode; del
             transition: `opacity 0.8s cubic-bezier(.25,.46,.45,.94) ${delay}s, transform 0.8s cubic-bezier(.25,.46,.45,.94) ${delay}s`,
         }}>
             {children}
+        </div>
+    );
+}
+
+/* ═══════ Envelope Intro Animation ═══════ */
+function EnvelopeIntro({ guestName, onOpen }: {
+    groomName?: string; brideName?: string; guestName?: string; onOpen?: () => void;
+}) {
+    const [phase, setPhase] = useState<"closed" | "opening" | "opened">("closed");
+
+    const handleOpen = useCallback(() => {
+        if (phase !== "closed") return;
+        setPhase("opening");
+        onOpen?.();
+        setTimeout(() => setPhase("opened"), 1800);
+    }, [phase, onOpen]);
+
+    if (phase === "opened") return null;
+
+    return (
+        <div
+            onClick={handleOpen}
+            style={{
+                position: "fixed", inset: 0, zIndex: 9999,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "linear-gradient(135deg, #fce4ec 0%, #f8bbd0 30%, #f48fb1 70%, #ec407a 100%)",
+                cursor: "pointer",
+                opacity: phase === "opening" ? 0 : 1,
+                transition: "opacity 0.8s ease-out 1s",
+                fontFamily: "'Playfair Display', serif",
+            }}
+        >
+            <style>{`
+                @keyframes envelopePulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.02); }
+                }
+                @keyframes lidOpen {
+                    0% { transform: rotateX(0deg); }
+                    100% { transform: rotateX(-180deg); }
+                }
+                @keyframes cardSlide {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-60px); }
+                }
+                @keyframes sealBounce {
+                    0%, 100% { transform: scale(1) rotate(0deg); }
+                    25% { transform: scale(1.1) rotate(-5deg); }
+                    75% { transform: scale(0.95) rotate(5deg); }
+                }
+            `}</style>
+
+            <div style={{
+                width: 280, height: 200, position: "relative",
+                perspective: 800,
+                animation: phase === "closed" ? "envelopePulse 2s ease-in-out infinite" : "none",
+            }}>
+                {/* Envelope body */}
+                <div style={{
+                    width: "100%", height: "100%",
+                    background: "linear-gradient(180deg, #fff5f5 0%, #ffe0e6 100%)",
+                    borderRadius: 12,
+                    boxShadow: "0 8px 32px rgba(236,64,122,0.3), 0 2px 8px rgba(0,0,0,0.1)",
+                    position: "relative", overflow: "hidden",
+                    border: "2px solid rgba(236,64,122,0.2)",
+                }}>
+                    {/* Inner card preview */}
+                    <div style={{
+                        position: "absolute", top: 20, left: 20, right: 20, bottom: 20,
+                        background: "#fff", borderRadius: 8,
+                        display: "flex", flexDirection: "column",
+                        alignItems: "center", justifyContent: "center", gap: 4,
+                        animation: phase === "opening" ? "cardSlide 0.8s ease-out 0.3s forwards" : "none",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                    }}>
+                        <span style={{ fontSize: 10, color: "#ec407a", letterSpacing: 2, textTransform: "uppercase" }}>Thiệp mời</span>
+                        {guestName && <span style={{ fontSize: 14, color: "#880e4f", fontStyle: "italic" }}>{guestName}</span>}
+                        <span style={{ fontSize: 20 }}>💒</span>
+                    </div>
+                </div>
+
+                {/* Envelope lid (flap) */}
+                <div style={{
+                    position: "absolute", top: 0, left: 0, right: 0,
+                    height: "50%", transformOrigin: "top center",
+                    animation: phase === "opening" ? "lidOpen 0.8s ease-in-out forwards" : "none",
+                    zIndex: 2,
+                }}>
+                    <div style={{
+                        width: 0, height: 0,
+                        borderLeft: "140px solid transparent",
+                        borderRight: "140px solid transparent",
+                        borderTop: "100px solid #ffe0e6",
+                        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+                    }} />
+                </div>
+
+                {/* Wax seal */}
+                <div style={{
+                    position: "absolute", bottom: -16, left: "50%", transform: "translateX(-50%)",
+                    width: 40, height: 40, borderRadius: "50%",
+                    background: "linear-gradient(135deg, #e91e63, #c2185b)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(233,30,99,0.4)",
+                    animation: phase === "closed" ? "sealBounce 2s ease-in-out infinite" : "none",
+                    opacity: phase === "opening" ? 0 : 1,
+                    transition: "opacity 0.3s",
+                    zIndex: 3,
+                }}>
+                    <span style={{ fontSize: 18 }}>❤️</span>
+                </div>
+            </div>
+
+            {/* Tap to open text */}
+            <p style={{
+                position: "absolute", bottom: 60,
+                fontSize: 14, color: "rgba(255,255,255,0.9)",
+                letterSpacing: 2, textTransform: "uppercase",
+                animation: "envelopePulse 2s ease-in-out infinite",
+                opacity: phase === "opening" ? 0 : 1,
+                transition: "opacity 0.3s",
+            }}>
+                ✉️ Nhấn để mở thiệp
+            </p>
         </div>
     );
 }
@@ -684,8 +808,26 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
     const canvas = data.canvas || { width: 390, height: 5000, bg: canvasBg };
     const sections = elements ? splitIntoSections(elements, canvas.height) : [];
 
+    /* ── Envelope intro effect ── */
+    const introEffect = data?.effects?.introEffect || "envelope"; // "envelope" | "none"
+
     return (
         <div style={{ minHeight: "100vh", background: "#000", fontFamily: "'Inter', sans-serif" }}>
+            {/* Envelope Intro Overlay */}
+            {introEffect === "envelope" && (
+                <EnvelopeIntro
+                    guestName={guestName}
+                    onOpen={() => {
+                        if (musicUrl && !audioRef.current) {
+                            audioRef.current = new Audio(musicUrl);
+                            audioRef.current.loop = true;
+                            audioRef.current.play().catch(() => {});
+                            setIsPlaying(true);
+                        }
+                    }}
+                />
+            )}
+
             {/* Global styles */}
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Great+Vibes&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@400;600;700&display=swap');

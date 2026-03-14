@@ -67,6 +67,22 @@ const PARTICLE_PRESETS = [
     { id: "mixed", label: "Hỗn hợp", emoji: "✨" },
 ];
 
+/* ── Stock image library ── */
+const STOCK_IMAGES: { url: string; thumb: string; label: string }[] = [
+    { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600", thumb: "https://images.unsplash.com/photo-1519741497674-611481863552?w=120", label: "Hoa cưới" },
+    { url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600", thumb: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=120", label: "Nhẫn cưới" },
+    { url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600", thumb: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=120", label: "Hoa hồng" },
+    { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600", thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120", label: "Bàn tiệc" },
+    { url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600", thumb: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=120", label: "Cô dâu" },
+    { url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600", thumb: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=120", label: "Nến" },
+    { url: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600", thumb: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=120", label: "Bánh cưới" },
+    { url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600", thumb: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=120", label: "Lễ cưới" },
+    { url: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=600", thumb: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=120", label: "Hoa lá" },
+    { url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600", thumb: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=120", label: "Confetti" },
+    { url: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=600", thumb: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=120", label: "Đôi tay" },
+    { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600", thumb: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=120", label: "Cổng hoa" },
+];
+
 /* ═══════════════════════════════════════════════
    CraftVisualEditor — Main Editor Component
    Uses craft.js for drag-drop canvas
@@ -123,6 +139,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
     const [musicName, setMusicName] = useState("");
     const [particleEffect, setParticleEffect] = useState("none");
     const [background, setBackground] = useState("linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)");
+    const [showTemplateSwap, setShowTemplateSwap] = useState(false);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -293,6 +310,62 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                     <Redo2 size={16} />
                 </button>
 
+                {/* Template Hot-Swap */}
+                <div style={{ position: "relative" }}>
+                    <button
+                        onClick={() => setShowTemplateSwap(p => !p)}
+                        title="Đổi giao diện"
+                        style={{ ...topBtnStyle(false), padding: "6px 10px", fontSize: 11, gap: 4, display: "flex", alignItems: "center" }}
+                    >
+                        <LayoutTemplate size={14} /> Đổi mẫu
+                    </button>
+                    {showTemplateSwap && (
+                        <div style={{
+                            position: "absolute", top: "100%", left: 0,
+                            background: "#fff", borderRadius: 12, padding: 12,
+                            boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                            border: "1px solid #e5e7eb", width: 220, zIndex: 999,
+                            marginTop: 4,
+                        }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: "0 0 8px", textTransform: "uppercase" }}>
+                                Đổi giao diện nhanh
+                            </p>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                                {BG_PRESETS.map(bg => (
+                                    <button
+                                        key={bg.label}
+                                        onClick={() => {
+                                            setBackground(bg.value);
+                                            const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+                                            if (rootNodeId) {
+                                                actions.setProp(rootNodeId, (props: { background: string }) => {
+                                                    props.background = bg.value;
+                                                });
+                                            }
+                                            triggerAutosave();
+                                            setShowTemplateSwap(false);
+                                        }}
+                                        style={{
+                                            height: 44, borderRadius: 8,
+                                            border: background === bg.value ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
+                                            background: bg.value, cursor: "pointer",
+                                            position: "relative",
+                                        }}
+                                    >
+                                        <span style={{
+                                            position: "absolute", bottom: 1, left: 0, right: 0,
+                                            fontSize: 7, fontWeight: 600, textAlign: "center",
+                                            color: bg.value.includes("0f0825") || bg.value.includes("111827") ? "#fff" : "#374151",
+                                        }}>
+                                            {bg.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Save status */}
                 <div style={{
                     display: "flex", alignItems: "center", gap: 6, fontSize: 12,
@@ -435,6 +508,39 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                                         <span style={{ fontSize: 11, color: "#9ca3af" }}>PNG, JPG, WebP</span>
                                     </button>
                                     <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
+
+                                    {/* Stock Image Library */}
+                                    <p style={panelLabelStyle}>Kho ảnh miễn phí</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
+                                        {STOCK_IMAGES.map((img, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => {
+                                                    const tree = query.parseReactElement(
+                                                        <CraftImage src={img.url} borderRadius={12} objectFit="cover" opacity={1} shadow={false} borderWidth={0} borderColor="transparent" />
+                                                    ).toNodeTree();
+                                                    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+                                                    if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
+                                                    triggerAutosave();
+                                                }}
+                                                title={img.label}
+                                                style={{
+                                                    width: "100%", aspectRatio: "1", borderRadius: 6,
+                                                    border: "1px solid #e5e7eb", cursor: "pointer",
+                                                    background: `url(${img.thumb}) center/cover no-repeat`,
+                                                    overflow: "hidden", position: "relative",
+                                                }}
+                                            >
+                                                <span style={{
+                                                    position: "absolute", bottom: 0, left: 0, right: 0,
+                                                    background: "rgba(0,0,0,0.45)", color: "#fff",
+                                                    fontSize: 7, textAlign: "center", padding: "2px 0",
+                                                }}>
+                                                    {img.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
