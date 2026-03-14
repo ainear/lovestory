@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import {
     Type, Image as ImageIcon, Palette, Music, Sparkles,
     Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate,
@@ -760,6 +760,102 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                     )}
                 </div>
             </div>
+
+            {/* ══ Quick Image Replace Bar (CineLove parity) ══ */}
+            <QuickImageBar projectId={projectId} onReplace={triggerAutosave} />
+        </div>
+    );
+}
+
+/* ── Quick Image Replace Bar ── */
+function QuickImageBar({ projectId, onReplace }: { projectId: string; onReplace: () => void }) {
+    const { actions, query } = useEditor();
+    const replaceRef = useRef<HTMLInputElement>(null);
+    const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
+
+    // Scan all nodes for CraftImage components
+    const imageNodes = useMemo(() => {
+        try {
+            const serialized = query.serialize();
+            const nodes = JSON.parse(serialized);
+            const images: { id: string; src: string }[] = [];
+            for (const [id, node] of Object.entries(nodes)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const n = node as any;
+                if (n?.type?.resolvedName === "CraftImage" && n?.props?.src) {
+                    images.push({ id, src: n.props.src });
+                }
+            }
+            return images;
+        } catch { return []; }
+    }, [query]);
+
+    const handleReplace = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !targetNodeId) return;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("projectId", projectId);
+        try {
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.url) {
+                actions.setProp(targetNodeId, (props: { src: string }) => { props.src = data.url; });
+                onReplace();
+            }
+        } catch { alert("Upload thất bại"); }
+        e.target.value = "";
+        setTargetNodeId(null);
+    }, [targetNodeId, projectId, actions, onReplace]);
+
+    if (imageNodes.length === 0) return null;
+
+    return (
+        <div style={{
+            height: 64, background: "#fff",
+            borderTop: "1px solid #e5e7eb",
+            display: "flex", alignItems: "center",
+            padding: "0 12px", gap: 8,
+            flexShrink: 0, overflow: "hidden",
+        }}>
+            <span style={{
+                fontSize: 11, fontWeight: 700, color: "#6b7280",
+                whiteSpace: "nowrap", letterSpacing: 0.5,
+            }}>
+                🖼️ Thay nhanh ({imageNodes.length})
+            </span>
+            <div style={{
+                display: "flex", gap: 6, overflowX: "auto",
+                flex: 1, padding: "4px 0",
+                scrollbarWidth: "none",
+            }}>
+                {imageNodes.map((img: { id: string; src: string }) => (
+                    <button
+                        key={img.id}
+                        onClick={() => { setTargetNodeId(img.id); replaceRef.current?.click(); }}
+                        title="Click để thay ảnh"
+                        style={{
+                            width: 48, height: 48, borderRadius: 8,
+                            border: "2px solid #e5e7eb",
+                            background: `url(${img.src}) center/cover no-repeat`,
+                            flexShrink: 0, cursor: "pointer",
+                            position: "relative", overflow: "hidden",
+                            transition: "border-color 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.borderColor = "#ff6b9d")}
+                        onMouseLeave={e => (e.currentTarget.style.borderColor = "#e5e7eb")}
+                    >
+                        <span style={{
+                            position: "absolute", bottom: 0, left: 0, right: 0,
+                            background: "rgba(0,0,0,0.5)", color: "#fff",
+                            fontSize: 8, textAlign: "center", padding: "1px 0",
+                        }}>
+                            thay
+                        </span>
+                    </button>
+                ))}
+            </div>
+            <input ref={replaceRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleReplace} />
         </div>
     );
 }

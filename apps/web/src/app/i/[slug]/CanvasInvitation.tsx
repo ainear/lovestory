@@ -42,30 +42,48 @@ export interface CanvasData {
     effects?: { particleEffect?: string; introEffect?: string };
 }
 
-type ParticleType = "hearts" | "confetti" | "snow" | "petals" | "none";
+type ParticleType = "hearts" | "flowers" | "snow" | "stars" | "confetti" | "butterflies" | "petals" | "mixed" | "none";
 
 /* ═══════ Sub-components ═══════ */
 
 const PARTICLE_CHARS: Record<string, string[]> = {
-    hearts: ["❤️", "💕", "💗", "💖", "💞"],
-    confetti: ["🎊", "🎉", "✨", "⭐", "🌟"],
-    snow: ["❄️", "❅", "❆", "✦", "·"],
-    petals: ["🌸", "🌺", "🌹", "💮", "🌼"],
+    hearts: ["❤️", "💕", "💗", "💖", "💞", "💘"],
+    flowers: ["🌸", "🌺", "💮", "🌼", "🏵️", "🌷"],
+    snow: ["❄️", "❅", "❆", "✦", "·", "⊹"],
+    stars: ["⭐", "✨", "🌟", "💫", "⊹", "✦"],
+    confetti: ["🎊", "🎉", "✨", "⭐", "🌟", "🎈"],
+    butterflies: ["🦋", "🦋", "🦋", "🌿", "🍃", "🦋"],
+    petals: ["🌸", "🌺", "🌹", "💮", "🌼", "🌷"],
+    mixed: ["❤️", "🌸", "✨", "🦋", "💫", "🌟"],
 };
 
 function ParticleOverlay({ effect }: { effect: ParticleType }) {
     if (effect === "none" || !PARTICLE_CHARS[effect]) return null;
     const chars = PARTICLE_CHARS[effect];
+    const count = 28; // More particles for premium feel
     return (
         <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 900 }}>
-            {Array.from({ length: 20 }).map((_, i) => (
+            <style>{`
+                @keyframes particleFall {
+                    0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+                    10% { opacity: 0.9; }
+                    90% { opacity: 0.6; }
+                    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+                }
+                @keyframes particleSway {
+                    0%, 100% { transform: translateX(0); }
+                    50% { transform: translateX(20px); }
+                }
+            `}</style>
+            {Array.from({ length: count }).map((_, i) => (
                 <span key={i} style={{
                     position: "absolute",
-                    left: `${(i * 17 + 3) % 95}%`,
-                    top: -20,
-                    fontSize: 12 + (i % 4) * 4,
-                    animation: `particleFall ${4 + (i % 3) * 2}s linear ${(i * 0.6) % 5}s infinite`,
+                    left: `${(i * 13 + 5) % 96}%`,
+                    top: -30,
+                    fontSize: 10 + (i % 5) * 4,
+                    animation: `particleFall ${5 + (i % 4) * 2.5}s linear ${(i * 0.5) % 6}s infinite, particleSway ${3 + (i % 3)}s ease-in-out ${(i * 0.3) % 4}s infinite`,
                     opacity: 0,
+                    filter: i % 3 === 0 ? "blur(0.5px)" : "none",
                 }}>
                     {chars[i % chars.length]}
                 </span>
