@@ -96,6 +96,7 @@ export default function EditorPage() {
         );
     }
 
+    return (
         <CraftVisualEditor
             projectId={project.id}
             initialCanvasJson={project.canvas_json}
@@ -104,4 +105,5 @@ export default function EditorPage() {
                 router.push(`/i/${project.slug}`);
             }}
         />
+    );
 }
