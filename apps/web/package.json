@@ -33,7 +33,8 @@
     "react-dom": "19.2.3",
     "resend": "^6.9.3",
     "superjson": "^2.2.6",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@craftjs/core": "^0.2.12"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
