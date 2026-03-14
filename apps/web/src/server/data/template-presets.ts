@@ -42,6 +42,7 @@ const PLACEHOLDERS: Record<string, string> = {
     "img-main":  "/placeholder-couple.png",
     "img-groom": "/placeholder-groom.png",
     "img-bride": "/placeholder-bride.png",
+    "img-couple2": "/placeholder-couple.png",
 };
 
 /** Helper: image placeholder element */
@@ -58,82 +59,153 @@ function img(id: string, x: number, y: number, w: number, h: number, o: {
 }
 
 // ═══════════════════════════════════════════
-// PRESET FACTORIES — reusable builders
+// PRESET FACTORIES — Sprint 58: Rich 18-20 element layouts (2800px canvas)
+// Section layout: Hero → Names → Date → Gallery → Love Story → Venue
 // ═══════════════════════════════════════════
 
-/** Romantic pink variant with custom accent color */
+/** Romantic pink variant — 18 elements across 2800px */
 function makeRomanticPreset(accent: string, text: string, deco: string, font: string, decoText: string): TemplateElement[] {
     return [
-        img("img-main", 45, 20, 300, 230, { radius: 18, borderColor: accent, borderWidth: 3 }),
-        img("img-groom", 28, 560, 152, 185, { radius: 14, borderColor: deco, rotation: -4, zIndex: 2 }),
-        img("img-bride", 210, 560, 152, 185, { radius: 14, borderColor: deco, rotation: 4, zIndex: 3 }),
-        txt("deco-top", 20, 258, 350, 28, decoText, { size: 13, font: "'Georgia', serif", color: deco, opacity: 0.6, zIndex: 4, locked: true }),
-        txt("txt-invite", 20, 288, 350, 32, "Trân trọng kính mời", { size: 14, font: font, color: text, italic: true, zIndex: 5 }),
-        txt("txt-names", 10, 320, 370, 80, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 34, font: "'Dancing Script', cursive", weight: "bold", italic: true, color: text, zIndex: 6, lineHeight: 1.1 }),
-        txt("deco-mid", 20, 404, 350, 24, "❀ ══════════════ ❀", { size: 12, font: "'Georgia', serif", color: deco, opacity: 0.5, zIndex: 7, locked: true }),
-        txt("txt-family", 20, 432, 350, 50, "Cùng gia đình hai bên\nân hạnh kính mời quý khách", { size: 13, font: "'Lora', serif", color: text, italic: true, opacity: 0.9, zIndex: 8, lineHeight: 1.6 }),
-        txt("txt-date", 20, 490, 350, 46, "Chủ Nhật, 28 · 05 · 2026", { size: 24, font: "'Cormorant Garamond', serif", weight: "bold", color: text, zIndex: 9, lineHeight: 1.2 }),
-        txt("txt-time", 20, 540, 350, 24, "Lúc 10:00 sáng", { size: 14, font: "'Lora', serif", color: text, italic: true, opacity: 0.85, zIndex: 10 }),
-        txt("name-groom", 28, 750, 152, 36, "Tên Chú Rể", { size: 16, font: "'Dancing Script', cursive", weight: "bold", color: text, zIndex: 11 }),
-        txt("name-bride", 210, 750, 152, 36, "Tên Cô Dâu", { size: 16, font: "'Dancing Script', cursive", weight: "bold", color: text, zIndex: 12 }),
-        txt("txt-venue", 20, 792, 350, 50, "📍 Tên Địa Điểm\nĐịa chỉ nhà hàng tiệc cưới", { size: 12, font: "'Inter', sans-serif", color: text, opacity: 0.85, zIndex: 13, lineHeight: 1.5 }),
+        // ── Section 1: Hero (0-450px) ──
+        txt("txt-ceremony", 20, 30, 350, 36, "Lễ Thành Hôn", { size: 18, font: "'Cormorant Garamond', serif", color: deco, italic: true, zIndex: 2, entrance: "fadeIn" }),
+        img("img-main", 30, 80, 330, 340, { radius: 20, borderColor: accent, borderWidth: 3 }),
+        txt("txt-deco1", 20, 430, 350, 24, decoText, { size: 12, font: "'Georgia', serif", color: deco, opacity: 0.5, zIndex: 4, locked: true }),
+
+        // ── Section 2: Names & Invitation (450-850px) ──
+        txt("txt-invite", 20, 470, 350, 32, "Trân trọng kính mời", { size: 15, font: font, color: text, italic: true, zIndex: 5, entrance: "slideUp" }),
+        txt("txt-names", 10, 510, 370, 100, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 38, font: "'Dancing Script', cursive", weight: "bold", italic: true, color: text, zIndex: 6, lineHeight: 1.1, entrance: "zoomIn" }),
+        txt("txt-family", 20, 620, 350, 56, "Cùng gia đình hai bên\ntrân trọng kính mời quý khách\ntới dự buổi lễ Vu Quy", { size: 14, font: "'Lora', serif", color: text, italic: true, opacity: 0.9, zIndex: 7, lineHeight: 1.5 }),
+        txt("deco-mid", 20, 685, 350, 24, "❀ ══════════════ ❀", { size: 12, font: "'Georgia', serif", color: deco, opacity: 0.5, zIndex: 8, locked: true }),
+
+        // ── Section 3: Date & Time (850-1200px) ──
+        txt("txt-weekday", 20, 730, 350, 30, "VÀO NGÀY", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: text, opacity: 0.7, zIndex: 9, entrance: "slideUp" }),
+        txt("txt-date", 20, 760, 350, 64, "Chủ Nhật, 28 · 05 · 2026", { size: 28, font: "'Cormorant Garamond', serif", weight: "bold", color: text, zIndex: 10, lineHeight: 1.2, entrance: "fadeIn" }),
+        txt("txt-time", 20, 830, 350, 30, "Lúc 10:00 sáng", { size: 16, font: "'Lora', serif", color: text, italic: true, opacity: 0.85, zIndex: 11 }),
+        txt("txt-lunar", 20, 865, 350, 24, "(Tức ngày ... tháng ... năm ...)", { size: 12, font: "'Lora', serif", color: deco, italic: true, opacity: 0.65, zIndex: 12 }),
+
+        // ── Section 4: Gallery (1200-1800px) ──
+        img("img-groom", 20, 920, 170, 220, { radius: 14, borderColor: deco, rotation: -3, zIndex: 2 }),
+        img("img-bride", 200, 920, 170, 220, { radius: 14, borderColor: deco, rotation: 3, zIndex: 3 }),
+        txt("name-groom", 20, 1150, 170, 36, "Chú Rể", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: text, zIndex: 14 }),
+        txt("name-bride", 200, 1150, 170, 36, "Cô Dâu", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: text, zIndex: 15 }),
+        img("img-couple2", 55, 1210, 280, 200, { radius: 16, borderColor: accent, borderWidth: 2 }),
+
+        // ── Section 5: Love Story Quote (1800-2200px) ──
+        txt("txt-quote", 30, 1440, 330, 80, "Yeu la hanh phuc khi duoc o ben nhau,\nla niem vui moi ngay.", { size: 15, font: "'Lora', serif", color: text, italic: true, opacity: 0.9, zIndex: 16, lineHeight: 1.6, entrance: "fadeIn" }),
+        txt("txt-hashtag", 20, 1540, 350, 28, "#TenChuRe_TenCoDau", { size: 14, font: "'Inter', sans-serif", weight: "bold", color: accent, zIndex: 17 }),
+
+        // ── Section 6: Venue (2200-2800px) ──
+        txt("txt-venue-label", 20, 1600, 350, 28, "ĐỊA ĐIỂM TỔ CHỨC", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: text, opacity: 0.7, zIndex: 18, entrance: "slideUp" }),
+        txt("txt-venue", 20, 1630, 350, 60, "📍 Tên Nhà Hàng\nĐịa chỉ nhà hàng tiệc cưới\nQuận, Thành phố", { size: 14, font: "'Inter', sans-serif", color: text, opacity: 0.9, zIndex: 19, lineHeight: 1.5 }),
     ];
 }
 
-/** Luxury dark variant */
+/** Luxury dark variant — 18 elements across 2800px */
 function makeLuxuryPreset(gold: string, light: string, midDeco: string): TemplateElement[] {
     return [
-        img("img-main", 45, 20, 300, 240, { radius: 8, borderColor: gold, borderWidth: 2 }),
-        img("img-groom", 30, 578, 150, 172, { radius: 6, borderColor: gold.replace("c9","b8"), zIndex: 2 }),
-        img("img-bride", 210, 578, 150, 172, { radius: 6, borderColor: gold.replace("c9","b8"), zIndex: 3 }),
-        txt("deco-top", 20, 270, 350, 28, "╌╌╌╌  ◆  ╌╌╌╌", { size: 13, font: "'Georgia', serif", color: gold, opacity: 0.55, zIndex: 4, locked: true }),
-        txt("txt-invite", 20, 300, 350, 32, "TRÂN TRỌNG KÍNH MỜI", { size: 12, font: "'Cormorant Garamond', serif", weight: "bold", color: gold, zIndex: 5 }),
-        txt("txt-names", 10, 332, 370, 80, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 34, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 6, lineHeight: 1.15 }),
-        txt("deco-mid", 20, 416, 350, 28, midDeco, { size: 11, font: "'Georgia', serif", color: gold, opacity: 0.4, zIndex: 7, locked: true }),
-        txt("txt-family", 20, 448, 350, 50, "Cùng gia đình hai bên\nân hạnh kính mời quý khách", { size: 13, font: "'Lora', serif", color: light.replace("fef","e5c"), italic: true, opacity: 0.88, zIndex: 8, lineHeight: 1.6 }),
-        txt("txt-date", 20, 504, 350, 46, "Chủ Nhật, 28 · 05 · 2026", { size: 22, font: "'Cormorant Garamond', serif", weight: "bold", color: light, zIndex: 9, lineHeight: 1.2 }),
-        txt("txt-time", 20, 554, 350, 28, "Lúc 10:00 sáng", { size: 14, font: "'Lora', serif", color: gold, italic: true, opacity: 0.85, zIndex: 10 }),
-        txt("name-groom", 30, 757, 150, 36, "Tên Chú Rể", { size: 16, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 11 }),
-        txt("name-bride", 210, 757, 150, 36, "Tên Cô Dâu", { size: 16, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 12 }),
-        txt("txt-venue", 20, 796, 350, 48, "📍 Tên Địa Điểm\nĐịa chỉ nhà hàng tiệc cưới", { size: 12, font: "'Inter', sans-serif", color: gold, opacity: 0.85, zIndex: 13, lineHeight: 1.5 }),
+        // ── Section 1: Hero ──
+        txt("txt-ceremony", 20, 30, 350, 36, "Wedding Invitation", { size: 16, font: "'Cormorant Garamond', serif", color: gold, italic: true, zIndex: 2, entrance: "fadeIn" }),
+        img("img-main", 30, 80, 330, 340, { radius: 8, borderColor: gold, borderWidth: 2 }),
+        txt("txt-deco1", 20, 430, 350, 28, "╌╌╌╌  ◆  ╌╌╌╌", { size: 13, font: "'Georgia', serif", color: gold, opacity: 0.5, zIndex: 4, locked: true }),
+
+        // ── Section 2: Names & Invitation ──
+        txt("txt-invite", 20, 470, 350, 32, "TRÂN TRỌNG KÍNH MỜI", { size: 13, font: "'Cormorant Garamond', serif", weight: "bold", color: gold, zIndex: 5, entrance: "slideUp" }),
+        txt("txt-names", 10, 510, 370, 100, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 38, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 6, lineHeight: 1.1, entrance: "zoomIn" }),
+        txt("txt-family", 20, 620, 350, 56, "Cùng gia đình hai bên\ntrân trọng kính mời quý khách\ntới dự buổi lễ Thành Hôn", { size: 14, font: "'Lora', serif", color: light, italic: true, opacity: 0.85, zIndex: 7, lineHeight: 1.5 }),
+        txt("deco-mid", 20, 685, 350, 28, midDeco, { size: 11, font: "'Georgia', serif", color: gold, opacity: 0.4, zIndex: 8, locked: true }),
+
+        // ── Section 3: Date & Time ──
+        txt("txt-weekday", 20, 730, 350, 30, "VÀO NGÀY", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: gold, opacity: 0.7, zIndex: 9 }),
+        txt("txt-date", 20, 760, 350, 64, "Chủ Nhật, 28 · 05 · 2026", { size: 26, font: "'Cormorant Garamond', serif", weight: "bold", color: light, zIndex: 10, lineHeight: 1.2 }),
+        txt("txt-time", 20, 830, 350, 30, "Lúc 10:00 sáng", { size: 16, font: "'Lora', serif", color: gold, italic: true, opacity: 0.85, zIndex: 11 }),
+        txt("txt-lunar", 20, 865, 350, 24, "(Tức ngày ... tháng ... năm ...)", { size: 12, font: "'Lora', serif", color: gold, italic: true, opacity: 0.55, zIndex: 12 }),
+
+        // ── Section 4: Gallery ──
+        img("img-groom", 20, 920, 170, 220, { radius: 6, borderColor: gold, zIndex: 2 }),
+        img("img-bride", 200, 920, 170, 220, { radius: 6, borderColor: gold, zIndex: 3 }),
+        txt("name-groom", 20, 1150, 170, 36, "Chú Rể", { size: 18, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 14 }),
+        txt("name-bride", 200, 1150, 170, 36, "Cô Dâu", { size: 18, font: "'Playfair Display', serif", weight: "bold", italic: true, color: light, zIndex: 15 }),
+        img("img-couple2", 55, 1210, 280, 200, { radius: 8, borderColor: gold, borderWidth: 1 }),
+
+        // ── Section 5: Quote ──
+        txt("txt-quote", 30, 1440, 330, 80, "Every love story is beautiful,\nbut ours is my favorite.", { size: 16, font: "'Playfair Display', serif", color: light, italic: true, opacity: 0.9, zIndex: 16, lineHeight: 1.6 }),
+        txt("txt-hashtag", 20, 1540, 350, 28, "#TenChuRe_TenCoDau", { size: 14, font: "'Inter', sans-serif", weight: "bold", color: gold, zIndex: 17 }),
+
+        // ── Section 6: Venue ──
+        txt("txt-venue-label", 20, 1600, 350, 28, "ĐỊA ĐIỂM TỔ CHỨC", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: gold, opacity: 0.7, zIndex: 18 }),
+        txt("txt-venue", 20, 1630, 350, 60, "📍 Tên Nhà Hàng\nĐịa chỉ nhà hàng tiệc cưới\nQuận, Thành phố", { size: 14, font: "'Inter', sans-serif", color: light, opacity: 0.85, zIndex: 19, lineHeight: 1.5 }),
     ];
 }
 
-/** Classic white/neutral variant */
+/** Classic white/neutral variant — 18 elements across 2800px */
 function makeClassicPreset(heading: string, body: string, deco: string): TemplateElement[] {
     return [
-        img("img-main", 55, 25, 280, 210, { radius: 4, borderColor: deco, borderWidth: 1 }),
-        img("img-groom", 40, 565, 140, 170, { radius: 4, borderColor: deco, borderWidth: 1, zIndex: 2 }),
-        img("img-bride", 210, 565, 140, 170, { radius: 4, borderColor: deco, borderWidth: 1, zIndex: 3 }),
-        txt("deco-top", 20, 246, 350, 28, "───────  ♡  ───────", { size: 12, font: "'Georgia', serif", color: deco, opacity: 0.4, zIndex: 4, locked: true }),
-        txt("txt-invite", 20, 278, 350, 32, "Trân trọng kính mời", { size: 15, font: "'Cormorant Garamond', serif", color: body, italic: true, zIndex: 5 }),
-        txt("txt-names", 10, 312, 370, 78, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 32, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 6, lineHeight: 1.15 }),
-        txt("deco-mid", 20, 394, 350, 24, "♡ ─────────────── ♡", { size: 11, font: "'Georgia', serif", color: deco, opacity: 0.35, zIndex: 7, locked: true }),
-        txt("txt-family", 20, 422, 350, 50, "Cùng gia đình hai bên\nân hạnh kính mời quý khách", { size: 13, font: "'Lora', serif", color: body, italic: true, opacity: 0.85, zIndex: 8, lineHeight: 1.6 }),
-        txt("txt-date", 20, 480, 350, 44, "Chủ Nhật, 28 · 05 · 2026", { size: 22, font: "'Cormorant Garamond', serif", weight: "bold", color: heading, zIndex: 9, lineHeight: 1.2 }),
-        txt("txt-time", 20, 528, 350, 26, "Lúc 10:00 sáng", { size: 14, font: "'Lora', serif", color: body, italic: true, opacity: 0.8, zIndex: 10 }),
-        txt("name-groom", 40, 740, 140, 36, "Tên Chú Rể", { size: 16, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 11 }),
-        txt("name-bride", 210, 740, 140, 36, "Tên Cô Dâu", { size: 16, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 12 }),
-        txt("txt-venue", 20, 785, 350, 50, "📍 Tên Địa Điểm\nĐịa chỉ nhà hàng tiệc cưới", { size: 12, font: "'Inter', sans-serif", color: body, opacity: 0.85, zIndex: 13, lineHeight: 1.5 }),
+        // ── Section 1: Hero ──
+        txt("txt-ceremony", 20, 30, 350, 36, "Lễ Vu Quy", { size: 20, font: "'Cormorant Garamond', serif", color: deco, italic: true, zIndex: 2, entrance: "fadeIn" }),
+        img("img-main", 40, 80, 310, 330, { radius: 4, borderColor: deco, borderWidth: 1 }),
+        txt("txt-deco1", 20, 420, 350, 28, "───────  ♡  ───────", { size: 12, font: "'Georgia', serif", color: deco, opacity: 0.4, zIndex: 4, locked: true }),
+
+        // ── Section 2: Names & Invitation ──
+        txt("txt-invite", 20, 460, 350, 32, "Trân trọng kính mời", { size: 16, font: "'Cormorant Garamond', serif", color: body, italic: true, zIndex: 5, entrance: "slideUp" }),
+        txt("txt-names", 10, 500, 370, 100, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 36, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 6, lineHeight: 1.15, entrance: "zoomIn" }),
+        txt("txt-family", 20, 610, 350, 56, "Cùng gia đình hai bên\ntrân trọng kính mời quý khách\ntới dự buổi lễ Vu Quy", { size: 14, font: "'Lora', serif", color: body, italic: true, opacity: 0.85, zIndex: 7, lineHeight: 1.5 }),
+        txt("deco-mid", 20, 675, 350, 24, "♡ ─────────────── ♡", { size: 11, font: "'Georgia', serif", color: deco, opacity: 0.35, zIndex: 8, locked: true }),
+
+        // ── Section 3: Date & Time ──
+        txt("txt-weekday", 20, 720, 350, 30, "VÀO NGÀY", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: body, opacity: 0.6, zIndex: 9 }),
+        txt("txt-date", 20, 750, 350, 64, "Chủ Nhật, 28 · 05 · 2026", { size: 26, font: "'Cormorant Garamond', serif", weight: "bold", color: heading, zIndex: 10, lineHeight: 1.2 }),
+        txt("txt-time", 20, 820, 350, 30, "Lúc 10:00 sáng", { size: 16, font: "'Lora', serif", color: body, italic: true, opacity: 0.8, zIndex: 11 }),
+
+        // ── Section 4: Gallery ──
+        img("img-groom", 25, 890, 165, 215, { radius: 4, borderColor: deco, borderWidth: 1, zIndex: 2 }),
+        img("img-bride", 200, 890, 165, 215, { radius: 4, borderColor: deco, borderWidth: 1, zIndex: 3 }),
+        txt("name-groom", 25, 1115, 165, 36, "Chú Rể", { size: 18, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 14 }),
+        txt("name-bride", 200, 1115, 165, 36, "Cô Dâu", { size: 18, font: "'Playfair Display', serif", weight: "bold", color: heading, zIndex: 15 }),
+        img("img-couple2", 55, 1175, 280, 200, { radius: 4, borderColor: deco, borderWidth: 1 }),
+
+        // ── Section 5: Quote ──
+        txt("txt-quote", 30, 1400, 330, 80, "Yeu la hanh phuc khi duoc o ben nhau,\nla niem vui moi ngay.", { size: 15, font: "'Lora', serif", color: body, italic: true, opacity: 0.85, zIndex: 16, lineHeight: 1.6 }),
+
+        // ── Section 6: Venue ──
+        txt("txt-venue-label", 20, 1510, 350, 28, "ĐỊA ĐIỂM TỔ CHỨC", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: body, opacity: 0.6, zIndex: 18 }),
+        txt("txt-venue", 20, 1540, 350, 60, "📍 Tên Nhà Hàng\nĐịa chỉ nhà hàng tiệc cưới\nQuận, Thành phố", { size: 14, font: "'Inter', sans-serif", color: body, opacity: 0.85, zIndex: 19, lineHeight: 1.5 }),
     ];
 }
 
-/** Traditional red/gold Vietnamese wedding */
+/** Traditional red/gold Vietnamese wedding — 20 elements across 2800px */
 function makeTraditionalPreset(red: string, dark: string, gold: string): TemplateElement[] {
     return [
-        img("img-main", 45, 20, 300, 235, { radius: 12, borderColor: gold, borderWidth: 3 }),
-        img("img-groom", 28, 574, 152, 178, { radius: 10, borderColor: gold, rotation: -2, zIndex: 2 }),
-        img("img-bride", 210, 574, 152, 178, { radius: 10, borderColor: gold, rotation: 2, zIndex: 3 }),
-        txt("deco-top", 20, 265, 350, 30, "═══ 囍 ═══ 囍 ═══", { size: 14, font: "'Georgia', serif", color: red, opacity: 0.75, zIndex: 4, locked: true, weight: "bold" }),
-        txt("txt-invite", 20, 298, 350, 34, "Trân Trọng Kính Mời", { size: 16, font: "'Playfair Display', serif", weight: "bold", color: red, zIndex: 5 }),
-        txt("txt-names", 10, 332, 370, 80, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 34, font: "'Dancing Script', cursive", weight: "bold", italic: true, color: dark, zIndex: 6, lineHeight: 1.15 }),
-        txt("deco-mid", 20, 416, 350, 24, "♦ ═════════════ ♦", { size: 12, font: "'Georgia', serif", color: red, opacity: 0.65, zIndex: 7, locked: true }),
-        txt("txt-family", 20, 444, 350, 52, "Cùng gia đình hai bên\nân hạnh kính mời quý khách", { size: 13, font: "'Lora', serif", color: dark, italic: true, opacity: 0.9, zIndex: 8, lineHeight: 1.6 }),
-        txt("txt-date", 20, 500, 350, 46, "Chủ Nhật, 28 · 05 · 2026", { size: 22, font: "'Cormorant Garamond', serif", weight: "bold", color: dark, zIndex: 9, lineHeight: 1.2 }),
-        txt("txt-time", 20, 550, 350, 28, "Lúc 10:00 sáng", { size: 14, font: "'Lora', serif", color: red, italic: true, opacity: 0.85, zIndex: 10 }),
-        txt("name-groom", 28, 757, 152, 36, "Tên Chú Rể", { size: 16, font: "'Dancing Script', cursive", weight: "bold", color: dark, zIndex: 11 }),
-        txt("name-bride", 210, 757, 152, 36, "Tên Cô Dâu", { size: 16, font: "'Dancing Script', cursive", weight: "bold", color: dark, zIndex: 12 }),
-        txt("txt-venue", 20, 800, 350, 48, "📍 Tên Địa Điểm\nĐịa chỉ nhà hàng tiệc cưới", { size: 12, font: "'Inter', sans-serif", color: dark, opacity: 0.9, zIndex: 13, lineHeight: 1.5 }),
+        // ── Section 1: Hero ──
+        txt("txt-ceremony", 20, 25, 350, 40, "Lễ Thành Hôn", { size: 22, font: "'Dancing Script', cursive", color: red, weight: "bold", zIndex: 2, entrance: "fadeIn" }),
+        img("img-main", 30, 75, 330, 340, { radius: 12, borderColor: gold, borderWidth: 3 }),
+        txt("txt-deco1", 20, 425, 350, 30, "═══ 囍 ═══ 囍 ═══", { size: 14, font: "'Georgia', serif", color: red, opacity: 0.75, zIndex: 4, locked: true, weight: "bold" }),
+
+        // ── Section 2: Names & Invitation ──
+        txt("txt-invite", 20, 465, 350, 34, "Trân Trọng Kính Mời", { size: 17, font: "'Playfair Display', serif", weight: "bold", color: red, zIndex: 5, entrance: "slideUp" }),
+        txt("txt-names", 10, 505, 370, 100, "Tên Chú Rể\n&\nTên Cô Dâu", { size: 38, font: "'Dancing Script', cursive", weight: "bold", italic: true, color: dark, zIndex: 6, lineHeight: 1.15, entrance: "zoomIn" }),
+        txt("txt-family", 20, 615, 350, 56, "Cùng gia đình hai bên\ntrân trọng kính mời quý khách\ntới dự buổi lễ Thành Hôn", { size: 14, font: "'Lora', serif", color: dark, italic: true, opacity: 0.9, zIndex: 7, lineHeight: 1.5 }),
+        txt("deco-mid", 20, 680, 350, 24, "♦ ═════════════ ♦", { size: 12, font: "'Georgia', serif", color: red, opacity: 0.65, zIndex: 8, locked: true }),
+
+        // ── Section 3: Date & Time ──
+        txt("txt-weekday", 20, 725, 350, 30, "VÀO NGÀY", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: dark, opacity: 0.7, zIndex: 9 }),
+        txt("txt-date", 20, 755, 350, 64, "Chủ Nhật, 28 · 05 · 2026", { size: 26, font: "'Cormorant Garamond', serif", weight: "bold", color: dark, zIndex: 10, lineHeight: 1.2 }),
+        txt("txt-time", 20, 825, 350, 30, "Lúc 10:00 sáng", { size: 16, font: "'Lora', serif", color: red, italic: true, opacity: 0.85, zIndex: 11 }),
+        txt("txt-lunar", 20, 860, 350, 24, "(Tức ngày ... tháng ... năm Ất Tỵ)", { size: 12, font: "'Lora', serif", color: red, italic: true, opacity: 0.6, zIndex: 12 }),
+
+        // ── Section 4: Gallery ──
+        img("img-groom", 20, 915, 170, 220, { radius: 10, borderColor: gold, rotation: -2, zIndex: 2 }),
+        img("img-bride", 200, 915, 170, 220, { radius: 10, borderColor: gold, rotation: 2, zIndex: 3 }),
+        txt("name-groom", 20, 1145, 170, 36, "Chú Rể", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: dark, zIndex: 14 }),
+        txt("name-bride", 200, 1145, 170, 36, "Cô Dâu", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: dark, zIndex: 15 }),
+        img("img-couple2", 45, 1200, 300, 210, { radius: 12, borderColor: gold, borderWidth: 2 }),
+
+        // ── Section 5: Quote ──
+        txt("txt-quote", 25, 1440, 340, 80, "Tinh yeu la cung nhin ve mot huong.", { size: 16, font: "'Dancing Script', cursive", color: red, italic: true, opacity: 0.9, zIndex: 16, lineHeight: 1.6 }),
+        txt("txt-hashtag", 20, 1540, 350, 28, "#TenChuRe_TenCoDau", { size: 14, font: "'Inter', sans-serif", weight: "bold", color: red, zIndex: 17 }),
+
+        // ── Section 6: Venue ──
+        txt("txt-venue-label", 20, 1600, 350, 28, "TƯ GIA NHÀ GÁI", { size: 13, font: "'Inter', sans-serif", weight: "bold", color: dark, opacity: 0.7, zIndex: 18 }),
+        txt("txt-venue", 20, 1630, 350, 60, "📍 Tên Nhà Hàng\nĐịa chỉ nhà hàng tiệc cưới\nQuận, Thành phố", { size: 14, font: "'Inter', sans-serif", color: dark, opacity: 0.9, zIndex: 19, lineHeight: 1.5 }),
     ];
 }
 

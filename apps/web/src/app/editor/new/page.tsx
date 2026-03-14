@@ -295,7 +295,7 @@ function buildTemplateCanvasJson(templateSlug: string): string {
         const bgUrl = TEMPLATE_IMG_DIR + filename;
         return JSON.stringify({
             version: 1,
-            canvas: { width: 390, height: 844, bg: `url(${bgUrl}) center/cover no-repeat` },
+            canvas: { width: 390, height: 2800, bg: `url(${bgUrl}) center/cover no-repeat` },
             elements,
         });
     }
@@ -311,7 +311,7 @@ function buildTemplateCanvasJson(templateSlug: string): string {
     };
     return JSON.stringify({
         version: 1,
-        canvas: { width: 390, height: 844, bg: gradients[family] },
+        canvas: { width: 390, height: 2800, bg: gradients[family] },
         elements,
     });
 }
