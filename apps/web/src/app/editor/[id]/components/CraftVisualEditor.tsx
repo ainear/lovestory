@@ -842,8 +842,8 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
 
                                 {/* Photo Section */}
                                 <Element canvas is={CraftContainer} background="transparent" padding={16} minHeight={280} gap={12} flexDirection="row" alignItems="center" justifyContent="center">
-                                    <CraftImage src="/placeholder-groom.png" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
-                                    <CraftImage src="/placeholder-bride.png" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
+                                    <CraftImage src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=500&fit=crop" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
+                                    <CraftImage src="https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
                                 </Element>
 
                                 {/* Date Section */}
@@ -868,8 +868,8 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
 
                                 {/* Gallery Section */}
                                 <Element canvas is={CraftContainer} background="transparent" padding={16} minHeight={300} gap={8} flexDirection="row" alignItems="center" justifyContent="center">
-                                    <CraftImage src="/placeholder-couple.png" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
-                                    <CraftImage src="/placeholder-couple.png" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
+                                    <CraftImage src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
+                                    <CraftImage src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
                                 </Element>
 
                                 {/* Quote Section */}
