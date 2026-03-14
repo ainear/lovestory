@@ -5,6 +5,7 @@ import {
     Type, Image as ImageIcon, Palette, Music, Sparkles,
     Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate,
     Grid, Smile, Plus, Download, Home, Share2, Layers,
+    ZoomIn, ZoomOut,
 } from "lucide-react";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
@@ -22,6 +23,7 @@ const TABS = [
     { key: "image", icon: <ImageIcon size={18} />, label: "Hình ảnh" },
     { key: "bg", icon: <Palette size={18} />, label: "Nền" },
     { key: "plugins", icon: <Grid size={18} />, label: "Tiện ích" },
+    { key: "templates", icon: <LayoutTemplate size={18} />, label: "Mẫu" },
     { key: "effects", icon: <Sparkles size={18} />, label: "Hiệu ứng" },
     { key: "music", icon: <Music size={18} />, label: "Âm nhạc" },
 ];
@@ -83,6 +85,16 @@ const STOCK_IMAGES: { url: string; thumb: string; label: string }[] = [
     { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600", thumb: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=120", label: "Cổng hoa" },
 ];
 
+/* ── Template style presets ── */
+const TEMPLATE_STYLES: { name: string; bg: string; textColor: string; font: string; desc: string }[] = [
+    { name: "Hoa hồng", bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)", textColor: "#831843", font: "'Dancing Script', cursive", desc: "Lãng mạn, nhẹ nhàng" },
+    { name: "Đêm tím", bg: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)", textColor: "#e9d5ff", font: "'Cormorant Garamond', serif", desc: "Sang trọng, huyền bí" },
+    { name: "Hoàng hôn", bg: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)", textColor: "#92400e", font: "'Playfair Display', serif", desc: "Ấm áp, rực rỡ" },
+    { name: "Anh đào", bg: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)", textColor: "#9f1239", font: "'Lora', serif", desc: "Ngọt ngào, dịu dàng" },
+    { name: "Trắng tinh", bg: "#ffffff", textColor: "#1f2937", font: "'Inter', sans-serif", desc: "Tối giản, hiện đại" },
+    { name: "Đen sang trọng", bg: "linear-gradient(180deg, #111827 0%, #1f2937 100%)", textColor: "#f9a8d4", font: "'Cormorant Garamond', serif", desc: "Luxury, premium" },
+];
+
 /* ═══════════════════════════════════════════════
    CraftVisualEditor — Main Editor Component
    Uses craft.js for drag-drop canvas
@@ -140,6 +152,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
     const [particleEffect, setParticleEffect] = useState("none");
     const [background, setBackground] = useState("linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)");
     const [showTemplateSwap, setShowTemplateSwap] = useState(false);
+    const [zoom, setZoom] = useState(100);
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -659,6 +672,62 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                                 </div>
                             )}
 
+                            {/* TEMPLATES TAB — Style presets (CineLove parity) */}
+                            {activeTab === "templates" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <p style={panelLabelStyle}>Chọn phong cách</p>
+                                    {TEMPLATE_STYLES.map(t => (
+                                        <button
+                                            key={t.name}
+                                            onClick={() => {
+                                                setBackground(t.bg);
+                                                const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+                                                if (rootNodeId) {
+                                                    actions.setProp(rootNodeId, (props: { background: string }) => {
+                                                        props.background = t.bg;
+                                                    });
+                                                }
+                                                // Update text colors for all CraftText nodes
+                                                const nodes = query.getSerializedNodes();
+                                                Object.keys(nodes).forEach(nodeId => {
+                                                    const node = nodes[nodeId];
+                                                    if ((node?.type as any)?.resolvedName === "CraftText") {
+                                                        actions.setProp(nodeId, (props: { color: string }) => {
+                                                            props.color = t.textColor;
+                                                        });
+                                                    }
+                                                });
+                                                triggerAutosave();
+                                            }}
+                                            style={{
+                                                display: "flex", alignItems: "center", gap: 10,
+                                                padding: "10px 12px", borderRadius: 10,
+                                                border: background === t.bg ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
+                                                background: "#fff", cursor: "pointer",
+                                                transition: "all 0.15s",
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: 40, height: 56, borderRadius: 6,
+                                                background: t.bg, border: "1px solid #e5e7eb",
+                                                flexShrink: 0, position: "relative", overflow: "hidden",
+                                            }}>
+                                                <span style={{
+                                                    position: "absolute", top: "50%", left: "50%",
+                                                    transform: "translate(-50%,-50%)",
+                                                    fontSize: 14, color: t.textColor,
+                                                    fontFamily: t.font,
+                                                }}>A</span>
+                                            </div>
+                                            <div style={{ textAlign: "left" }}>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 }}>{t.name}</p>
+                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0, fontFamily: t.font }}>{t.desc}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
                             {/* EFFECTS TAB — Particle picker (CineLove parity) */}
                             {activeTab === "effects" && (
                                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -741,6 +810,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                     display: "flex", justifyContent: "center",
                     padding: "24px 0",
                     background: "#e5e7eb",
+                    position: "relative",
                 }}>
                     <div style={{
                         width: 390,
@@ -748,6 +818,9 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                         boxShadow: "0 4px 32px rgba(0,0,0,0.12)",
                         borderRadius: 8,
                         overflow: "hidden",
+                        transform: `scale(${zoom / 100})`,
+                        transformOrigin: "top center",
+                        transition: "transform 0.2s ease",
                     }}>
                         <Frame>
                             <Element
@@ -806,6 +879,27 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                             </Element>
                         </Frame>
                     </div>
+
+                    {/* Zoom Controls Overlay */}
+                    <div style={{
+                        position: "sticky", bottom: 12, right: 12,
+                        display: "flex", alignItems: "center", gap: 4,
+                        background: "rgba(255,255,255,0.95)",
+                        borderRadius: 10, padding: "4px 8px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                        marginLeft: "auto", marginRight: 12, marginTop: -44,
+                        zIndex: 10, width: "fit-content",
+                    }}>
+                        <button onClick={() => setZoom(z => Math.max(50, z - 10))} title="Thu nhỏ" style={{ width: 28, height: 28, border: "none", borderRadius: 6, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}>
+                            <ZoomOut size={14} />
+                        </button>
+                        <button onClick={() => setZoom(100)} title="Reset 100%" style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", border: "none", background: "transparent", cursor: "pointer", padding: "2px 6px", minWidth: 36, textAlign: "center" }}>
+                            {zoom}%
+                        </button>
+                        <button onClick={() => setZoom(z => Math.min(200, z + 10))} title="Phóng to" style={{ width: 28, height: 28, border: "none", borderRadius: 6, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}>
+                            <ZoomIn size={14} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* ══ Right Settings Panel ══ */}
@@ -854,14 +948,56 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                             )}
                         </div>
                     ) : (
-                        <div style={{ textAlign: "center", paddingTop: 40 }}>
-                            <p style={{ fontSize: 32, margin: "0 0 8px" }}>👆</p>
-                            <p style={{ fontSize: 13, color: "#9ca3af", fontStyle: "italic" }}>
+                        <div style={{ paddingTop: 16 }}>
+                            <p style={{ fontSize: 32, margin: "0 0 8px", textAlign: "center" }}>👆</p>
+                            <p style={{ fontSize: 13, color: "#9ca3af", fontStyle: "italic", textAlign: "center" }}>
                                 Click vào phần tử trên canvas để chỉnh sửa
                             </p>
-                            <p style={{ fontSize: 11, color: "#d1d5db", marginTop: 4 }}>
+                            <p style={{ fontSize: 11, color: "#d1d5db", marginTop: 4, textAlign: "center" }}>
                                 Kéo thả, thêm text/image, thay đổi nền từ sidebar
                             </p>
+
+                            {/* SEO / Status section — CineLove parity */}
+                            <div style={{ marginTop: 24, borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
+                                <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                                    Cài đặt chung
+                                </p>
+
+                                {/* Status */}
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#6b7280" }}>
+                                    <span>Trạng thái</span>
+                                    <span style={{ background: "#dcfce7", color: "#16a34a", fontSize: 10, padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
+                                        Công khai
+                                    </span>
+                                </div>
+
+                                {/* Slug */}
+                                <div style={{ marginBottom: 8 }}>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px" }}>Link thiệp</p>
+                                    <a
+                                        href={`/i/${projectSlug}`}
+                                        target="_blank"
+                                        rel="noopener"
+                                        style={{ fontSize: 11, color: "#3b82f6", wordBreak: "break-all", textDecoration: "none" }}
+                                    >
+                                        7app.online/i/{projectSlug}
+                                    </a>
+                                </div>
+
+                                {/* Watermark */}
+                                <div style={{
+                                    marginTop: 16, padding: 12, borderRadius: 10,
+                                    background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+                                    border: "1px solid #fde68a",
+                                }}>
+                                    <p style={{ fontSize: 11, fontWeight: 700, color: "#92400e", margin: "0 0 4px" }}>
+                                        ✨ Tính năng nâng cao
+                                    </p>
+                                    <p style={{ fontSize: 10, color: "#a16207", margin: 0, lineHeight: 1.5 }}>
+                                        Nâng cấp lên Basic+ để xóa watermark và mở khóa template premium.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
