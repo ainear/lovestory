@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { VisualEditor } from "./components/VisualEditor";
+import { CraftVisualEditor } from "./components/CraftVisualEditor";
 
 interface Project {
     id: string;
@@ -96,8 +96,7 @@ export default function EditorPage() {
         );
     }
 
-    return (
-        <VisualEditor
+        <CraftVisualEditor
             projectId={project.id}
             initialCanvasJson={project.canvas_json}
             projectSlug={project.slug}
@@ -105,5 +104,4 @@ export default function EditorPage() {
                 router.push(`/i/${project.slug}`);
             }}
         />
-    );
 }
