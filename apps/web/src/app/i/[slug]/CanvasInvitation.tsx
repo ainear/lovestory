@@ -325,6 +325,96 @@ function RenderElement({ el, sectionYStart, idx }: { el: CanvasElementData; sect
     return null;
 }
 
+/* ═══════ Published Page Widget Renderers ═══════ */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CountdownRenderer({ props: p }: { props: Record<string, any> }) {
+    const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    useEffect(() => {
+        function calc() {
+            const diff = new Date(p.targetDate || "2026-05-28").getTime() - Date.now();
+            if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            return {
+                days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+                minutes: Math.floor((diff / (1000 * 60)) % 60),
+                seconds: Math.floor((diff / 1000) % 60),
+            };
+        }
+        setTime(calc());
+        const timer = setInterval(() => setTime(calc()), 1000);
+        return () => clearInterval(timer);
+    }, [p.targetDate]);
+
+    const boxes = [
+        { value: time.days, unit: "Ngày" },
+        { value: time.hours, unit: "Giờ" },
+        { value: time.minutes, unit: "Phút" },
+        { value: time.seconds, unit: "Giây" },
+    ];
+
+    return (
+        <div style={{ padding: 20, background: p.background || "rgba(255,255,255,0.6)", borderRadius: p.borderRadius ?? 16, textAlign: "center", width: "100%", boxSizing: "border-box" }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: p.labelColor || "#9f1239", margin: "0 0 12px", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>
+                {p.label || "Đếm ngược đến ngày cưới"}
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                {boxes.map(b => (
+                    <div key={b.unit} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: p.fontSize ?? 28, fontWeight: 700, color: p.color || "#831843", fontFamily: "'Cormorant Garamond', serif", minWidth: 48, lineHeight: 1 }}>
+                            {String(b.value).padStart(2, "0")}
+                        </span>
+                        <span style={{ fontSize: 10, color: p.labelColor || "#9f1239", fontWeight: 500, textTransform: "uppercase", letterSpacing: 1 }}>
+                            {b.unit}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+const WEEKDAYS_VI = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const MONTHS_VI = ["", "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CalendarRenderer({ props: p }: { props: Record<string, any> }) {
+    const d = new Date(p.targetDate || "2026-05-28");
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    const days: (number | null)[] = [];
+    for (let i = 0; i < offset; i++) days.push(null);
+    for (let dd = 1; dd <= daysInMonth; dd++) days.push(dd);
+
+    return (
+        <div style={{ padding: 16, background: p.background || "rgba(255,255,255,0.7)", borderRadius: p.borderRadius ?? 16, width: "100%", boxSizing: "border-box", maxWidth: 320, margin: "0 auto" }}>
+            <p style={{ textAlign: "center", margin: "0 0 12px", fontSize: 16, fontWeight: 700, color: p.accentColor || "#ff6b9d", fontFamily: "'Playfair Display', serif" }}>
+                {MONTHS_VI[month]} {year}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+                {WEEKDAYS_VI.map(w => (
+                    <div key={w} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: p.accentColor || "#ff6b9d", padding: "4px 0" }}>{w}</div>
+                ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+                {days.map((dd, i) => {
+                    const isTarget = dd === day;
+                    return (
+                        <div key={i} style={{ textAlign: "center", padding: "6px 0", fontSize: 12, color: isTarget ? "#fff" : dd ? (p.textColor || "#374151") : "transparent", fontWeight: isTarget ? 700 : 400, background: isTarget ? (p.accentColor || "#ff6b9d") : "transparent", borderRadius: isTarget ? "50%" : 0, position: "relative" }}>
+                            {dd ?? ""}
+                            {isTarget && <span style={{ position: "absolute", top: -6, right: -2, fontSize: 10 }}>❤️</span>}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 /* ═══════ Craft.js v2 Static Renderer ═══════ */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -410,6 +500,47 @@ function CraftV2Renderer({ craftState, background }: { craftState: string; backg
             return (
                 <div key={nodeId} style={containerStyle}>
                     {allChildIds.map(cid => renderNode(cid))}
+                </div>
+            );
+        }
+
+        if (name === "CraftCountdown") {
+            return <CountdownRenderer key={nodeId} props={p} />;
+        }
+
+        if (name === "CraftCalendar") {
+            return <CalendarRenderer key={nodeId} props={p} />;
+        }
+
+        if (name === "CraftMap") {
+            const embedUrl = `https://www.google.com/maps?q=${p.lat ?? 10.7769},${p.lng ?? 106.7009}&z=${p.zoom ?? 15}&output=embed`;
+            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat ?? 10.7769},${p.lng ?? 106.7009}`;
+            return (
+                <div key={nodeId} style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, boxSizing: "border-box" }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: "#374151", margin: 0, fontFamily: "'Playfair Display', serif" }}>📍 {p.venueName || "Nhà hàng"}</p>
+                    <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>{p.address || ""}</p>
+                    <div style={{ width: "100%", height: p.height ?? 200, borderRadius: p.borderRadius ?? 12, overflow: "hidden", border: "1px solid #e5e7eb" }}>
+                        <iframe src={embedUrl} width="100%" height={p.height ?? 200} style={{ border: 0 }} loading="lazy" title="Wedding venue map" />
+                    </div>
+                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" style={{
+                        display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 24px", borderRadius: 24,
+                        background: p.accentColor || "#ff6b9d", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    }}>🧭 Chỉ đường</a>
+                </div>
+            );
+        }
+
+        if (name === "CraftRSVP") {
+            return (
+                <div key={nodeId} style={{ padding: 20, background: p.background || "rgba(255,255,255,0.7)", borderRadius: p.borderRadius ?? 16, width: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: p.accentColor || "#ff6b9d", margin: 0, textAlign: "center", fontFamily: "'Playfair Display', serif" }}>💌 {p.title || "Xác nhận tham dự"}</p>
+                    <p style={{ fontSize: 12, color: p.textColor || "#374151", margin: 0, textAlign: "center", opacity: 0.7 }}>{p.subtitle || ""}</p>
+                    <input type="text" placeholder="Họ và tên" style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 13, width: "100%", boxSizing: "border-box" }} />
+                    <div style={{ display: "flex", gap: 8 }}>
+                        <button style={{ flex: 1, padding: "10px 8px", borderRadius: 10, border: "none", background: p.accentColor || "#ff6b9d", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>✅ Tham dự</button>
+                        <button style={{ flex: 1, padding: "10px 8px", borderRadius: 10, border: "none", background: "#f3f4f6", color: p.textColor || "#374151", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>❌ Vắng mặt</button>
+                    </div>
+                    <button style={{ padding: "12px 20px", borderRadius: 24, border: "none", background: p.accentColor || "#ff6b9d", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Gửi xác nhận</button>
                 </div>
             );
         }

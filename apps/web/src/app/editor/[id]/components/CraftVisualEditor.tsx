@@ -10,6 +10,10 @@ import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
 import { CraftImage } from "./craft/CraftImage";
 import { CraftContainer, RootContainer } from "./craft/CraftContainer";
+import { CraftCountdown } from "./craft/CraftCountdown";
+import { CraftCalendar } from "./craft/CraftCalendar";
+import { CraftMap } from "./craft/CraftMap";
+import { CraftRSVP } from "./craft/CraftRSVP";
 import { createBrowserClient } from "@supabase/ssr";
 
 /* ── Tab config (same as old VisualEditor) ── */
@@ -17,6 +21,7 @@ const TABS = [
     { key: "text", icon: <Type size={18} />, label: "Văn bản" },
     { key: "image", icon: <ImageIcon size={18} />, label: "Hình ảnh" },
     { key: "bg", icon: <Palette size={18} />, label: "Nền" },
+    { key: "plugins", icon: <Grid size={18} />, label: "Tiện ích" },
     { key: "effects", icon: <Sparkles size={18} />, label: "Hiệu ứng" },
     { key: "music", icon: <Music size={18} />, label: "Âm nhạc" },
 ];
@@ -77,7 +82,7 @@ interface CraftVisualEditorProps {
 export function CraftVisualEditor({ projectId, initialCanvasJson, projectSlug, onPublish }: CraftVisualEditorProps) {
     return (
         <Editor
-            resolver={{ CraftText, CraftImage, CraftContainer, RootContainer }}
+            resolver={{ CraftText, CraftImage, CraftContainer, RootContainer, CraftCountdown, CraftCalendar, CraftMap, CraftRSVP }}
             enabled={true}
         >
             <CraftEditorInner
@@ -510,6 +515,41 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                                     >
                                         📁 Upload ảnh nền
                                     </button>
+                                </div>
+                            )}
+
+                            {/* PLUGINS TAB — Widget add buttons */}
+                            {activeTab === "plugins" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <p style={panelLabelStyle}>Thêm tiện ích</p>
+                                    {[
+                                        { label: "⏱️ Đếm ngược", desc: "Live countdown đến ngày cưới", component: <CraftCountdown targetDate="2026-05-28" label="Đếm ngược đến ngày cưới" color="#831843" labelColor="#9f1239" background="rgba(255,255,255,0.6)" borderRadius={16} fontSize={28} /> },
+                                        { label: "📅 Lịch cưới", desc: "Lịch tháng đánh dấu ngày cưới", component: <CraftCalendar targetDate="2026-05-28" accentColor="#ff6b9d" textColor="#374151" background="rgba(255,255,255,0.7)" borderRadius={16} /> },
+                                        { label: "📍 Bản đồ", desc: "Google Maps + nút chỉ đường", component: <CraftMap address="123 Nguyễn Huệ, Quận 1, TP.HCM" venueName="Diamond Palace" lat={10.7769} lng={106.7009} zoom={15} height={200} borderRadius={12} accentColor="#ff6b9d" /> },
+                                        { label: "💌 RSVP", desc: "Form xác nhận tham dự", component: <CraftRSVP title="Xác nhận tham dự" subtitle="Vui lòng xác nhận sự hiện diện của bạn" accentColor="#ff6b9d" textColor="#374151" background="rgba(255,255,255,0.7)" borderRadius={16} /> },
+                                    ].map(widget => (
+                                        <button
+                                            key={widget.label}
+                                            onClick={() => {
+                                                const tree = query.parseReactElement(widget.component).toNodeTree();
+                                                const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+                                                if (rootNodeId) {
+                                                    actions.addNodeTree(tree, rootNodeId);
+                                                }
+                                                triggerAutosave();
+                                            }}
+                                            style={{
+                                                padding: "12px 14px", borderRadius: 12,
+                                                border: "1px solid #e5e7eb", background: "#fff",
+                                                cursor: "pointer", textAlign: "left",
+                                                display: "flex", flexDirection: "column", gap: 4,
+                                                transition: "all 0.15s",
+                                            }}
+                                        >
+                                            <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>{widget.label}</span>
+                                            <span style={{ fontSize: 11, color: "#9ca3af" }}>{widget.desc}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
 
