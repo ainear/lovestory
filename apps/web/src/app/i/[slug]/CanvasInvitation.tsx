@@ -325,6 +325,102 @@ function RenderElement({ el, sectionYStart, idx }: { el: CanvasElementData; sect
     return null;
 }
 
+/* ═══════ Craft.js v2 Static Renderer ═══════ */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface CraftNode { type: { resolvedName: string }; props: Record<string, any>; nodes?: string[]; linkedNodes?: Record<string, string>; }
+interface CraftState { [nodeId: string]: CraftNode; }
+
+/** Parse craft.js serialized state and render statically (no drag-drop, view only) */
+function CraftV2Renderer({ craftState, background }: { craftState: string; background: string }) {
+    const nodes: CraftState = useMemo(() => {
+        try { return JSON.parse(craftState); } catch { return {}; }
+    }, [craftState]);
+
+    /** Recursively render a craft.js node tree */
+    function renderNode(nodeId: string): React.ReactNode {
+        const node = nodes[nodeId];
+        if (!node) return null;
+        const name = node.type?.resolvedName || "";
+        const p = node.props || {};
+        const childIds = node.nodes || [];
+
+        if (name === "CraftText") {
+            return (
+                <div key={nodeId} style={{
+                    padding: "4px 8px",
+                    fontSize: p.fontSize ?? 16,
+                    fontFamily: p.fontFamily ?? "serif",
+                    fontWeight: p.fontWeight ?? "normal",
+                    fontStyle: p.fontStyle ?? "normal",
+                    color: p.color ?? "#1f2937",
+                    textAlign: p.textAlign ?? "center",
+                    lineHeight: p.lineHeight ?? 1.5,
+                    letterSpacing: p.letterSpacing ?? 0,
+                    opacity: p.opacity ?? 1,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                }}>
+                    {p.text ?? ""}
+                </div>
+            );
+        }
+
+        if (name === "CraftImage") {
+            return (
+                <div key={nodeId} style={{ padding: 4, display: "flex", justifyContent: "center" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={p.src || "/placeholder-couple.png"}
+                        alt="Wedding"
+                        style={{
+                            width: "100%",
+                            maxWidth: 320,
+                            height: "auto",
+                            objectFit: p.objectFit ?? "cover",
+                            borderRadius: p.borderRadius ?? 12,
+                            border: (p.borderWidth || 0) > 0 ? `${p.borderWidth}px solid ${p.borderColor || "transparent"}` : undefined,
+                            opacity: p.opacity ?? 1,
+                            boxShadow: p.shadow ? "0 4px 16px rgba(0,0,0,0.15)" : "none",
+                            display: "block",
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        if (name === "CraftContainer" || name === "RootContainer") {
+            const isRoot = name === "RootContainer";
+            const bg = isRoot ? background : (p.background || "transparent");
+            const containerStyle: React.CSSProperties = {
+                background: bg,
+                padding: p.padding ?? (isRoot ? 0 : 16),
+                minHeight: isRoot ? undefined : (p.minHeight ?? 100),
+                display: "flex",
+                flexDirection: (p.flexDirection as React.CSSProperties["flexDirection"]) ?? "column",
+                alignItems: p.alignItems ?? "center",
+                justifyContent: p.justifyContent ?? "center",
+                gap: p.gap ?? 8,
+                width: "100%",
+                boxSizing: "border-box",
+            };
+            // Also render linked nodes (sections inside root)
+            const linkedIds = Object.values(node.linkedNodes || {}) as string[];
+            const allChildIds = [...childIds, ...linkedIds];
+            return (
+                <div key={nodeId} style={containerStyle}>
+                    {allChildIds.map(cid => renderNode(cid))}
+                </div>
+            );
+        }
+
+        // Fallback: render children
+        return <div key={nodeId}>{childIds.map(cid => renderNode(cid))}</div>;
+    }
+
+    return <>{renderNode("ROOT")}</>;
+}
+
 /* ═══════ Main Component ═══════ */
 
 interface CanvasInvitationProps {
@@ -334,7 +430,8 @@ interface CanvasInvitationProps {
     showWatermark?: boolean;
 }
 
-function parseCanvasJson(raw: string): CanvasData | null {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseCanvasJson(raw: string): any | null {
     try { return JSON.parse(raw); } catch { return null; }
 }
 
@@ -350,9 +447,13 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
     const [rsvpSending, setRsvpSending] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    const musicUrl = data?.meta?.musicUrl || "";
-    const musicName = data?.meta?.musicName || "";
-    const particleEffect = (data?.effects?.particleEffect || "none") as ParticleType;
+    // Detect v2 craft.js format
+    const isCraftV2 = data?.engine === "craftjs" && data?.craftState;
+
+    const musicUrl = isCraftV2 ? (data?.meta?.musicUrl || "") : (data?.meta?.musicUrl || "");
+    const musicName = isCraftV2 ? (data?.meta?.musicName || "") : (data?.meta?.musicName || "");
+    const particleEffect = ((data?.effects?.particleEffect || "none")) as ParticleType;
+    const canvasBg = data?.canvas?.bg || "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)";
 
     const toggleMusic = useCallback(() => {
         if (!musicUrl) return;
@@ -429,8 +530,10 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
 
     if (!data) return null;
 
-    const { canvas, elements } = data;
-    const sections = splitIntoSections(elements, canvas.height);
+    /* ── V1 branch: old format with flat elements array ── */
+    const elements: CanvasElementData[] | undefined = !isCraftV2 ? data.elements : undefined;
+    const canvas = data.canvas || { width: 390, height: 5000, bg: canvasBg };
+    const sections = elements ? splitIntoSections(elements, canvas.height) : [];
 
     return (
         <div style={{ minHeight: "100vh", background: "#000", fontFamily: "'Inter', sans-serif" }}>
@@ -485,29 +588,45 @@ export function CanvasInvitation({ canvasJson, guestName, projectId, showWaterma
             )}
 
             {/* ═══ Multi-section scrollable invitation ═══ */}
-            {sections.map((section, sIdx) => {
-                const sectionHeight = section.yEnd - section.yStart;
-                return (
-                    <ScrollSection key={sIdx} delay={sIdx * 0.15}>
-                        <div style={{
-                            position: "relative",
-                            width: "100%",
-                            maxWidth: 420,
-                            minHeight: Math.max(sectionHeight, 200),
-                            margin: "0 auto",
-                            background: canvas.bg,
-                            overflow: "hidden",
-                            // Seamless section join (no gap between sections)
-                            ...(sIdx === 0 ? { borderRadius: "16px 16px 0 0", paddingTop: guestName ? 0 : 24 } : {}),
-                            ...(sIdx === sections.length - 1 ? { borderRadius: "0 0 16px 16px", paddingBottom: 24 } : {}),
-                        }}>
-                            {section.elements.sort((a, b) => a.zIndex - b.zIndex).map((el, eIdx) => (
-                                <RenderElement key={el.id} el={el} sectionYStart={section.yStart} idx={eIdx} />
-                            ))}
-                        </div>
-                    </ScrollSection>
-                );
-            })}
+            {isCraftV2 ? (
+                /* V2: craft.js static renderer */
+                <ScrollSection delay={0.15}>
+                    <div style={{
+                        width: "100%",
+                        maxWidth: 420,
+                        margin: "0 auto",
+                        borderRadius: 16,
+                        overflow: "hidden",
+                        boxShadow: "0 4px 32px rgba(0,0,0,0.12)",
+                    }}>
+                        <CraftV2Renderer craftState={data.craftState} background={canvasBg} />
+                    </div>
+                </ScrollSection>
+            ) : (
+                /* V1: old absolute positioning sections */
+                sections.map((section, sIdx) => {
+                    const sectionHeight = section.yEnd - section.yStart;
+                    return (
+                        <ScrollSection key={sIdx} delay={sIdx * 0.15}>
+                            <div style={{
+                                position: "relative",
+                                width: "100%",
+                                maxWidth: 420,
+                                minHeight: Math.max(sectionHeight, 200),
+                                margin: "0 auto",
+                                background: canvas.bg,
+                                overflow: "hidden",
+                                ...(sIdx === 0 ? { borderRadius: "16px 16px 0 0", paddingTop: guestName ? 0 : 24 } : {}),
+                                ...(sIdx === sections.length - 1 ? { borderRadius: "0 0 16px 16px", paddingBottom: 24 } : {}),
+                            }}>
+                                {section.elements.sort((a, b) => a.zIndex - b.zIndex).map((el, eIdx) => (
+                                    <RenderElement key={el.id} el={el} sectionYStart={section.yStart} idx={eIdx} />
+                                ))}
+                            </div>
+                        </ScrollSection>
+                    );
+                })
+            )}
 
             {/* ═══ Share Bar ═══ */}
             <ScrollSection delay={0.2}>

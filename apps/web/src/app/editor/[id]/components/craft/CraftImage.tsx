@@ -34,10 +34,21 @@ export const CraftImage: UserComponent<CraftImageProps> = ({
     const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        // Create local preview immediately
+        // Show local preview immediately
         const localUrl = URL.createObjectURL(file);
         setProp((p: CraftImageProps) => { p.src = localUrl; });
-        // TODO: Upload to S3/Supabase storage and replace with permanent URL
+        // Upload to permanent storage
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("projectId", "editor");
+        try {
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.url) {
+                setProp((p: CraftImageProps) => { p.src = data.url; });
+            }
+        } catch { /* keep local preview as fallback */ }
+        URL.revokeObjectURL(localUrl);
         e.target.value = "";
     }, [setProp]);
 
