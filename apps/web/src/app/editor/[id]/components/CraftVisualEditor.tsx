@@ -50,6 +50,18 @@ const MUSIC_PRESETS = [
     { id: "m6", label: "Love Strings", emoji: "🎼", url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3" },
 ];
 
+/* ── Particle effect presets (CineLove parity: 7 effects) ── */
+const PARTICLE_PRESETS = [
+    { id: "none", label: "Không hiệu ứng", emoji: "🚫" },
+    { id: "hearts", label: "Trái tim", emoji: "❤️" },
+    { id: "flowers", label: "Hoa anh đào", emoji: "🌸" },
+    { id: "snow", label: "Tuyết rơi", emoji: "❄️" },
+    { id: "stars", label: "Ngôi sao", emoji: "⭐" },
+    { id: "confetti", label: "Confetti", emoji: "🎉" },
+    { id: "butterflies", label: "Bướm", emoji: "🦋" },
+    { id: "mixed", label: "Hỗn hợp", emoji: "✨" },
+];
+
 /* ═══════════════════════════════════════════════
    CraftVisualEditor — Main Editor Component
    Uses craft.js for drag-drop canvas
@@ -104,6 +116,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
     const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
     const [musicUrl, setMusicUrl] = useState("");
     const [musicName, setMusicName] = useState("");
+    const [particleEffect, setParticleEffect] = useState("none");
     const [background, setBackground] = useState("linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)");
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,6 +133,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                 const parsed = JSON.parse(initialCanvasJson);
                 if (parsed.canvas?.bg) setBackground(parsed.canvas.bg);
                 if (parsed.meta?.musicUrl) { setMusicUrl(parsed.meta.musicUrl); setMusicName(parsed.meta.musicName || ""); }
+                if (parsed.effects?.particleEffect) setParticleEffect(parsed.effects.particleEffect);
             } catch { /* ignore */ }
         }
     }, [initialCanvasJson]);
@@ -134,6 +148,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
             canvas: { width: 390, height: 5000, bg: background },
             craftState: craftJson,
             meta: { musicUrl, musicName },
+            effects: { particleEffect },
         });
         try {
             await supabase.from("projects").update({
@@ -159,6 +174,7 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
             canvas: { width: 390, height: 5000, bg: background },
             craftState: craftJson,
             meta: { musicUrl, musicName },
+            effects: { particleEffect },
         });
         try {
             await supabase.from("projects").update({
@@ -497,12 +513,33 @@ function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish
                                 </div>
                             )}
 
-                            {/* EFFECTS TAB (placeholder for particle/intro effects) */}
+                            {/* EFFECTS TAB — Particle picker (CineLove parity) */}
                             {activeTab === "effects" && (
                                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Hiệu ứng hạt</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>
-                                        Tính năng sẽ có ở Phase 3 — particles, intro effects, entrance animations
+                                    <p style={panelLabelStyle}>Hiệu ứng rơi</p>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                                        {PARTICLE_PRESETS.map(p => (
+                                            <button
+                                                key={p.id}
+                                                onClick={() => { setParticleEffect(p.id); triggerAutosave(); }}
+                                                style={{
+                                                    padding: "10px 8px", borderRadius: 10,
+                                                    border: `2px solid ${particleEffect === p.id ? "#ff6b9d" : "#e5e7eb"}`,
+                                                    background: particleEffect === p.id ? "#fdf2f8" : "#fff",
+                                                    cursor: "pointer", fontSize: 12,
+                                                    display: "flex", flexDirection: "column",
+                                                    alignItems: "center", gap: 4,
+                                                    transition: "all 0.15s",
+                                                }}
+                                            >
+                                                <span style={{ fontSize: 20 }}>{p.emoji}</span>
+                                                <span style={{ fontSize: 10, color: "#374151" }}>{p.label}</span>
+                                                {particleEffect === p.id && <span style={{ fontSize: 10, color: "#ff6b9d" }}>✔</span>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 4 }}>
+                                        Hiệu ứng hiển thị trên thiệp khi khách mở link mời
                                     </p>
                                 </div>
                             )}

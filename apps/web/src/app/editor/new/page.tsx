@@ -280,39 +280,244 @@ const TEMPLATE_FAMILY: Record<string, FamilyKey> = {
     "tiec-tat-nien-1": "luxury-dark",
 };
 
-/** Build canvas_json — unique per-template elements (top 8) or family-based fallback */
+/** Convert v1 TemplateElement[] → craft.js node tree JSON string */
+function convertElementsToCraftState(elements: TemplateElement[]): string {
+    let nodeIdx = 1;
+    const uid = () => `node-${nodeIdx++}`;
+
+    // Group elements into sections by y-position bands
+    const textEls = elements.filter(e => e.type === "text");
+    const imgEls = elements.filter(e => e.type === "image");
+
+    // Build craft.js node tree
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nodes: Record<string, any> = {};
+    const sectionIds: string[] = [];
+
+    // Helper: create a CraftText node
+    function addTextNode(el: TemplateElement, parentId: string) {
+        const id = uid();
+        const p = el.props as Record<string, unknown>;
+        nodes[id] = {
+            type: { resolvedName: "CraftText" },
+            isCanvas: false,
+            props: {
+                text: (p.text as string) || "",
+                fontSize: (p.fontSize as number) || 14,
+                fontFamily: (p.fontFamily as string) || "'Playfair Display', serif",
+                fontWeight: (p.fontWeight as string) || "normal",
+                fontStyle: (p.fontStyle as string) || "normal",
+                color: (p.color as string) || "#1f2937",
+                textAlign: (p.textAlign as string) || "center",
+                lineHeight: (p.lineHeight as number) || 1.4,
+                letterSpacing: 0,
+                opacity: el.opacity ?? 1,
+            },
+            displayName: "CraftText",
+            custom: {},
+            parent: parentId,
+            nodes: [],
+            linkedNodes: {},
+        };
+        return id;
+    }
+
+    // Helper: create a CraftImage node
+    function addImageNode(el: TemplateElement, parentId: string) {
+        const id = uid();
+        const p = el.props as Record<string, unknown>;
+        nodes[id] = {
+            type: { resolvedName: "CraftImage" },
+            isCanvas: false,
+            props: {
+                src: (p.src as string) || "/placeholder-couple.png",
+                objectFit: (p.objectFit as string) || "cover",
+                borderRadius: (p.borderRadius as number) || 12,
+                borderWidth: (p.borderWidth as number) || 2,
+                borderColor: (p.borderColor as string) || "#f9a8d4",
+                opacity: el.opacity ?? 1,
+                shadow: false,
+            },
+            displayName: "CraftImage",
+            custom: {},
+            parent: parentId,
+            nodes: [],
+            linkedNodes: {},
+        };
+        return id;
+    }
+
+    // Helper: create a CraftContainer section
+    function addSection(childIds: string[], opts: { direction?: string; bg?: string } = {}) {
+        const id = uid();
+        nodes[id] = {
+            type: { resolvedName: "CraftContainer" },
+            isCanvas: true,
+            props: {
+                background: opts.bg || "transparent",
+                padding: 16,
+                minHeight: 100,
+                gap: 8,
+                flexDirection: opts.direction || "column",
+                alignItems: "center",
+                justifyContent: "center",
+            },
+            displayName: "CraftContainer",
+            custom: {},
+            parent: "ROOT",
+            nodes: childIds,
+            linkedNodes: {},
+        };
+        // Set parent for children
+        childIds.forEach(cid => { if (nodes[cid]) nodes[cid].parent = id; });
+        sectionIds.push(id);
+        return id;
+    }
+
+    // Build sections based on element IDs
+    // Hero image
+    const heroImg = imgEls.find(e => e.id === "img-main");
+    if (heroImg) {
+        const imgId = addImageNode(heroImg, "");
+        addSection([imgId]);
+    }
+
+    // Names section
+    const inviteTxt = textEls.find(e => e.id === "txt-invite");
+    const namesTxt = textEls.find(e => e.id === "txt-names");
+    const familyTxt = textEls.find(e => e.id === "txt-family");
+    const nameChildIds: string[] = [];
+    if (inviteTxt) nameChildIds.push(addTextNode(inviteTxt, ""));
+    if (namesTxt) nameChildIds.push(addTextNode(namesTxt, ""));
+    if (familyTxt) nameChildIds.push(addTextNode(familyTxt, ""));
+    if (nameChildIds.length) addSection(nameChildIds);
+
+    // Family section (Nhà Trai / Nhà Gái)
+    const nhaTraiLabel = textEls.find(e => e.id === "txt-nhatrai-label");
+    const nhaTraiTxt = textEls.find(e => e.id === "txt-nhatrai");
+    const nhaGaiLabel = textEls.find(e => e.id === "txt-nhagai-label");
+    const nhaGaiTxt = textEls.find(e => e.id === "txt-nhagai");
+    const famChildIds: string[] = [];
+    if (nhaTraiLabel) famChildIds.push(addTextNode(nhaTraiLabel, ""));
+    if (nhaTraiTxt) famChildIds.push(addTextNode(nhaTraiTxt, ""));
+    if (nhaGaiLabel) famChildIds.push(addTextNode(nhaGaiLabel, ""));
+    if (nhaGaiTxt) famChildIds.push(addTextNode(nhaGaiTxt, ""));
+    if (famChildIds.length) addSection(famChildIds);
+
+    // Groom & Bride photos
+    const groomImg = imgEls.find(e => e.id === "img-groom");
+    const brideImg = imgEls.find(e => e.id === "img-bride");
+    const groomName = textEls.find(e => e.id === "name-groom" || e.id === "txt-groom-name");
+    const brideName = textEls.find(e => e.id === "name-bride" || e.id === "txt-bride-name");
+    const photoChildIds: string[] = [];
+    if (groomImg) photoChildIds.push(addImageNode(groomImg, ""));
+    if (brideImg) photoChildIds.push(addImageNode(brideImg, ""));
+    if (photoChildIds.length) addSection(photoChildIds, { direction: "row" });
+    const namesBelowIds: string[] = [];
+    if (groomName) namesBelowIds.push(addTextNode(groomName, ""));
+    if (brideName) namesBelowIds.push(addTextNode(brideName, ""));
+    if (namesBelowIds.length) addSection(namesBelowIds, { direction: "row" });
+
+    // Date section
+    const dateTxt = textEls.find(e => e.id === "txt-date");
+    const timeTxt = textEls.find(e => e.id === "txt-time");
+    const dateChildIds: string[] = [];
+    if (dateTxt) dateChildIds.push(addTextNode(dateTxt, ""));
+    if (timeTxt) dateChildIds.push(addTextNode(timeTxt, ""));
+    if (dateChildIds.length) addSection(dateChildIds);
+
+    // Events section
+    const ev1Label = textEls.find(e => e.id === "txt-event1-label");
+    const ev1 = textEls.find(e => e.id === "txt-event1");
+    const ev2Label = textEls.find(e => e.id === "txt-event2-label");
+    const ev2 = textEls.find(e => e.id === "txt-event2");
+    const evChildIds: string[] = [];
+    if (ev1Label) evChildIds.push(addTextNode(ev1Label, ""));
+    if (ev1) evChildIds.push(addTextNode(ev1, ""));
+    if (ev2Label) evChildIds.push(addTextNode(ev2Label, ""));
+    if (ev2) evChildIds.push(addTextNode(ev2, ""));
+    if (evChildIds.length) addSection(evChildIds);
+
+    // Gallery
+    const galleryImgs = imgEls.filter(e => e.id.startsWith("img-gallery") || e.id === "img-couple2");
+    if (galleryImgs.length) {
+        const galChildIds = galleryImgs.map(el => addImageNode(el, ""));
+        addSection(galChildIds, { direction: "row" });
+    }
+
+    // Quote
+    const quoteTxt = textEls.find(e => e.id === "txt-quote");
+    if (quoteTxt) {
+        addSection([addTextNode(quoteTxt, "")]);
+    }
+
+    // Venue
+    const venueTxt = textEls.find(e => e.id === "txt-venue");
+    if (venueTxt) {
+        addSection([addTextNode(venueTxt, "")]);
+    }
+
+    // Root canvas node
+    const canvasId = uid();
+    nodes[canvasId] = {
+        type: { resolvedName: "RootContainer" },
+        isCanvas: true,
+        props: { background: "transparent" },
+        displayName: "RootContainer",
+        custom: {},
+        parent: "ROOT",
+        nodes: sectionIds,
+        linkedNodes: {},
+    };
+    // Update section parents
+    sectionIds.forEach(sid => { nodes[sid].parent = canvasId; });
+
+    // ROOT node
+    nodes["ROOT"] = {
+        type: { resolvedName: "div" },
+        isCanvas: true,
+        props: {},
+        displayName: "div",
+        custom: {},
+        parent: null,
+        nodes: [canvasId],
+        linkedNodes: {},
+    };
+
+    return JSON.stringify(nodes);
+}
+
+/** Build canvas_json — v2 craft.js format for all 75 templates */
 function buildTemplateCanvasJson(templateSlug: string): string {
     const bgPath = CINELOVE_BG[templateSlug];
     const family = TEMPLATE_FAMILY[templateSlug] ?? "romantic-pink";
-
-    // Sprint 52: Use per-template unique elements if available (top 8 templates)
-    // Falls back to family-based 15-element preset for remaining 67 templates
     const elements = TEMPLATE_UNIQUE_PRESETS[templateSlug] ?? FAMILY_ELEMENTS[family];
 
+    let bgCss: string;
     if (bgPath) {
-        // Sprint 55: self-hosted — extract filename from long_thumbnail path
         const filename = bgPath.split("/").pop();
-        const bgUrl = TEMPLATE_IMG_DIR + filename;
-        return JSON.stringify({
-            version: 1,
-            canvas: { width: 390, height: 5000, bg: `url(${bgUrl}) center/cover no-repeat` },
-            elements,
-        });
+        bgCss = `url(${TEMPLATE_IMG_DIR}${filename}) center/cover no-repeat`;
+    } else {
+        const gradients: Record<FamilyKey, string> = {
+            "romantic-pink": "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff1f2 60%, #fff 100%)",
+            "luxury-dark": "linear-gradient(180deg, #0f172a 0%, #1e1b4b 40%, #0c0a09 100%)",
+            "classic-white": "linear-gradient(180deg, #f9fafb 0%, #ffffff 50%, #f3f4f6 100%)",
+            "traditional-red": "linear-gradient(180deg, #fef2f2 0%, #fee2e2 30%, #fff 100%)",
+            "nature-green": "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #fff 100%)",
+            "modern-minimal": "linear-gradient(180deg, #fafafa 0%, #ffffff 100%)",
+        };
+        bgCss = gradients[family];
     }
 
-    // Fallback: gradient background (no Cinelove bg image)
-    const gradients: Record<FamilyKey, string> = {
-        "romantic-pink": "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff1f2 60%, #fff 100%)",
-        "luxury-dark": "linear-gradient(180deg, #0f172a 0%, #1e1b4b 40%, #0c0a09 100%)",
-        "classic-white": "linear-gradient(180deg, #f9fafb 0%, #ffffff 50%, #f3f4f6 100%)",
-        "traditional-red": "linear-gradient(180deg, #fef2f2 0%, #fee2e2 30%, #fff 100%)",
-        "nature-green": "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #fff 100%)",
-        "modern-minimal": "linear-gradient(180deg, #fafafa 0%, #ffffff 100%)",
-    };
+    const craftState = convertElementsToCraftState(elements);
+
     return JSON.stringify({
-        version: 1,
-        canvas: { width: 390, height: 5000, bg: gradients[family] },
-        elements,
+        version: 2,
+        engine: "craftjs",
+        canvas: { width: 390, height: 5000, bg: bgCss },
+        craftState,
+        meta: { musicUrl: "", musicName: "" },
+        effects: { particleEffect: "none" },
     });
 }
 
