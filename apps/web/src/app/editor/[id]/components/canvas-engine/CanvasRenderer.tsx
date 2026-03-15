@@ -1,13 +1,48 @@
 "use client";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorContext } from "./useEditorState";
 import type { CanvasElement, TextProps, ImageProps } from "./types";
 
 /** Render a single text element */
-function TextElement({ el }: { el: CanvasElement }) {
+function TextElement({
+  el,
+  isEditing,
+  onStartEdit,
+}: {
+  el: CanvasElement;
+  isEditing: boolean;
+  onStartEdit: () => void;
+}) {
   const p = el.props as TextProps;
+  const { dispatch } = useEditorContext();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isEditing && ref.current) {
+      ref.current.focus();
+      // Place cursor at end of text
+      const sel = window.getSelection();
+      if (sel && ref.current.childNodes.length > 0) {
+        sel.selectAllChildren(ref.current);
+        sel.collapseToEnd();
+      }
+    }
+  }, [isEditing]);
+
+  const handleBlur = useCallback(() => {
+    if (!ref.current) return;
+    const newText = ref.current.innerText;
+    dispatch({ type: "SNAPSHOT" });
+    dispatch({ type: "UPDATE_PROPS", id: el.id, props: { text: newText } });
+  }, [dispatch, el.id]);
+
   return (
     <div
+      ref={ref}
+      contentEditable={isEditing}
+      suppressContentEditableWarning
+      onBlur={isEditing ? handleBlur : undefined}
+      onDoubleClick={onStartEdit}
       style={{
         width: "100%",
         height: "100%",
@@ -22,7 +57,9 @@ function TextElement({ el }: { el: CanvasElement }) {
         letterSpacing: p.letterSpacing,
         whiteSpace: "pre-wrap",
         wordBreak: "break-word",
-        userSelect: "none",
+        userSelect: isEditing ? "text" : "none",
+        outline: "none",
+        cursor: isEditing ? "text" : "inherit",
       }}
     >
       {p.text}
@@ -61,6 +98,20 @@ function CanvasElementWrapper({
   isSelected: boolean;
   onSelect: (id: string) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleStartEdit = useCallback(() => {
+    if (el.locked || el.type !== "text") return;
+    setIsEditing(true);
+  }, [el.locked, el.type]);
+
+  // Exit editing when element is deselected
+  useEffect(() => {
+    if (!isSelected) {
+      setIsEditing(false);
+    }
+  }, [isSelected]);
+
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (el.locked) return;
@@ -93,15 +144,23 @@ function CanvasElementWrapper({
             : "none",
         boxShadow: shadow,
         transform: `rotate(${el.rotation}deg) scale(${el.scaleX}, ${el.scaleY})`,
-        cursor: el.locked ? "default" : "move",
+        cursor: isEditing ? "text" : el.locked ? "default" : "move",
         outline: isSelected ? "2px dashed #3b82f6" : "none",
         outlineOffset: 2,
         boxSizing: "border-box",
         display: el.visible ? "block" : "none",
       }}
     >
-      {el.type === "text" && <TextElement el={el} />}
-      {(el.type === "image" || el.type === "sticker") && <ImageElement el={el} />}
+      {el.type === "text" && (
+        <TextElement
+          el={el}
+          isEditing={isEditing}
+          onStartEdit={handleStartEdit}
+        />
+      )}
+      {(el.type === "image" || el.type === "sticker") && (
+        <ImageElement el={el} />
+      )}
     </div>
   );
 }
