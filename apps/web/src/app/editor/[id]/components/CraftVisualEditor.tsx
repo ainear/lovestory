@@ -31,6 +31,10 @@ import {
   Flower2,
   HelpCircle,
   Pentagon,
+  Copy,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
@@ -816,6 +820,122 @@ function CraftEditorInner({
     }
   }, [projectId]);
 
+  // ── Clipboard for copy/paste ──
+  const clipboardRef = useRef<string | null>(null);
+
+  // ── Keyboard shortcuts ──
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      // Don't intercept keyboard events from input/textarea
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      )
+        return;
+
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const ctrl = isMac ? e.metaKey : e.ctrlKey;
+
+      // Undo: Ctrl+Z
+      if (ctrl && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        actions.history.undo();
+        return;
+      }
+      // Redo: Ctrl+Shift+Z or Ctrl+Y
+      if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault();
+        actions.history.redo();
+        return;
+      }
+
+      if (!selected) return;
+
+      // Delete / Backspace: remove selected element
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        selected.isDeletable
+      ) {
+        e.preventDefault();
+        actions.delete(selected.id);
+        return;
+      }
+
+      // Copy: Ctrl+C
+      if (ctrl && e.key === "c") {
+        e.preventDefault();
+        try {
+          const serialized = query.serialize();
+          const nodes = JSON.parse(serialized);
+          const nodeData = nodes[selected.id];
+          if (nodeData) {
+            clipboardRef.current = JSON.stringify({
+              node: nodeData,
+              id: selected.id,
+            });
+          }
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+
+      // Duplicate: Ctrl+D
+      if (ctrl && e.key === "d") {
+        e.preventDefault();
+        try {
+          const freshSerialized = query.serialize();
+          const freshNodes = JSON.parse(freshSerialized);
+          const currentNode = freshNodes[selected.id];
+          if (!currentNode) return;
+          // Use CraftJS clone approach via parseSerializedNode
+          const parentId = currentNode.parent;
+          if (!parentId) return;
+          const tree = query.node(selected.id).toNodeTree();
+          actions.addNodeTree(tree, parentId);
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+
+      // Arrow key nudge (1px, Shift=10px)
+      const step = e.shiftKey ? 10 : 1;
+      let dx = 0;
+      let dy = 0;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        dx = -step;
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        dx = step;
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        dy = -step;
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        dy = step;
+      }
+      if (dx !== 0 || dy !== 0) {
+        actions.setProp(
+          selected.id,
+          (props: { x?: number; y?: number; left?: number; top?: number }) => {
+            if (props.x !== undefined) props.x = (props.x || 0) + dx;
+            else if (props.left !== undefined)
+              props.left = (props.left || 0) + dx;
+            if (props.y !== undefined) props.y = (props.y || 0) + dy;
+            else if (props.top !== undefined) props.top = (props.top || 0) + dy;
+          },
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [actions, query, selected]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Save ──
   const save = useCallback(async () => {
     setSaveStatus("saving");
@@ -998,6 +1118,20 @@ function CraftEditorInner({
         overflow: "hidden",
       }}
     >
+      {/* ══ Selection overlay CSS ══ */}
+      <style>{`
+        /* CraftJS selected element — blue dashed border */
+        [data-cy="craft-selected"],
+        .craft-selected-indicator {
+          outline: 2px dashed #3b82f6 !important;
+          outline-offset: 2px !important;
+        }
+        /* CraftJS hover highlight */
+        [data-cy="craft-hovered"] {
+          outline: 1px solid #93c5fd !important;
+          outline-offset: 2px !important;
+        }
+      `}</style>
       {/* ══ Top Bar ══ */}
       <div
         style={{
@@ -3282,6 +3416,138 @@ function CraftEditorInner({
             position: "relative",
           }}
         >
+          {/* ── Floating Element Toolbar ── */}
+          {selected && (
+            <div
+              style={{
+                position: "sticky",
+                top: 8,
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 50,
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                background: "#1f2937",
+                borderRadius: 10,
+                padding: "4px 6px",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+                width: "fit-content",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              {/* Element name badge */}
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#9ca3af",
+                  padding: "0 6px",
+                  borderRight: "1px solid #374151",
+                  marginRight: 2,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {selected.name}
+              </span>
+
+              {/* Duplicate */}
+              <button
+                title="Nhân đôi (Ctrl+D)"
+                onClick={() => {
+                  try {
+                    const freshSerialized = query.serialize();
+                    const freshNodes = JSON.parse(freshSerialized);
+                    const currentNode = freshNodes[selected.id];
+                    if (!currentNode) return;
+                    const parentId = currentNode.parent;
+                    if (!parentId) return;
+                    const tree = query.node(selected.id).toNodeTree();
+                    actions.addNodeTree(tree, parentId);
+                    triggerAutosave();
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+                style={floatBtnStyle}
+              >
+                <Copy size={13} />
+              </button>
+
+              {/* Move Up (forward in z-order within parent) */}
+              <button
+                title="Lên trên"
+                onClick={() => {
+                  try {
+                    const serialized = query.serialize();
+                    const nodes = JSON.parse(serialized);
+                    const node = nodes[selected.id];
+                    if (!node || !node.parent) return;
+                    const parent = nodes[node.parent];
+                    if (!parent || !parent.nodes) return;
+                    const idx = parent.nodes.indexOf(selected.id);
+                    if (idx < parent.nodes.length - 1) {
+                      actions.move(selected.id, node.parent, idx + 2);
+                    }
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+                style={floatBtnStyle}
+              >
+                <ArrowUp size={13} />
+              </button>
+
+              {/* Move Down (back in z-order) */}
+              <button
+                title="Xuống dưới"
+                onClick={() => {
+                  try {
+                    const serialized = query.serialize();
+                    const nodes = JSON.parse(serialized);
+                    const node = nodes[selected.id];
+                    if (!node || !node.parent) return;
+                    const parent = nodes[node.parent];
+                    if (!parent || !parent.nodes) return;
+                    const idx = parent.nodes.indexOf(selected.id);
+                    if (idx > 0) {
+                      actions.move(selected.id, node.parent, idx - 1);
+                    }
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+                style={floatBtnStyle}
+              >
+                <ArrowDown size={13} />
+              </button>
+
+              {/* Divider */}
+              <span
+                style={{
+                  width: 1,
+                  height: 18,
+                  background: "#374151",
+                  margin: "0 2px",
+                }}
+              />
+
+              {/* Delete */}
+              {selected.isDeletable && (
+                <button
+                  title="Xóa (Delete)"
+                  onClick={() => {
+                    actions.delete(selected.id);
+                    triggerAutosave();
+                  }}
+                  style={{ ...floatBtnStyle, color: "#f87171" }}
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
+          )}
           <div
             style={{
               width: 390,
@@ -4390,3 +4656,18 @@ function topBtnStyle(disabled: boolean): React.CSSProperties {
     color: disabled ? "#d1d5db" : "#374151",
   };
 }
+
+/* ── Floating toolbar button style ── */
+const floatBtnStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  border: "none",
+  borderRadius: 6,
+  background: "transparent",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#e5e7eb",
+  transition: "background 0.1s",
+};
