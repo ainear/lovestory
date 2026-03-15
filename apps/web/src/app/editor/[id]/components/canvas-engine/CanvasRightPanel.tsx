@@ -4,8 +4,9 @@ import { useEditorContext } from "./useEditorState";
 import { LayersPanel } from "./LayersPanel";
 import { PremiumFeaturesPanel } from "./PremiumFeaturesPanel";
 import { ProjectSettingsPanel } from "./ProjectSettingsPanel";
-import type { TextProps, ImageProps } from "./types";
+import type { TextProps, ImageProps, WidgetProps } from "./types";
 import { ColorPicker } from "./ColorPicker";
+import { VIETNAM_BANKS } from "./vietnam-banks";
 
 /** Only allow safe URL schemes for image src */
 function isValidImageUrl(url: string): boolean {
@@ -120,8 +121,11 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
 
   const isText = el.type === "text";
   const isImage = el.type === "image" || el.type === "sticker";
+  const isWidget = el.type === "widget";
   const textProps = isText ? (el.props as TextProps) : null;
   const imageProps = isImage ? (el.props as ImageProps) : null;
+  const widgetProps = isWidget ? (el.props as WidgetProps) : null;
+  const isQrBox = widgetProps?.widgetType === "qrbox";
 
   const updateProp = (props: Record<string, unknown>) => {
     dispatch({ type: "UPDATE_PROPS", id: el.id, props });
@@ -795,6 +799,168 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
               Xóa nền
             </button>
           )}
+        </PanelSection>
+      )}
+
+      {/* ── QR Box Config ── */}
+      {isQrBox && widgetProps && (
+        <PanelSection title="QR Chuyển khoản" icon="📱">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Ngân hàng</label>
+              <select
+                value={String(widgetProps.config.bankBin ?? "")}
+                onChange={(e) => {
+                  const bank = VIETNAM_BANKS.find(
+                    (b) => b.bin === e.target.value,
+                  );
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({
+                    type: "UPDATE_PROPS",
+                    id: el.id,
+                    props: {
+                      config: {
+                        ...widgetProps.config,
+                        bankBin: e.target.value,
+                        bankName: bank?.name ?? "",
+                      },
+                    },
+                  });
+                }}
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  background: "#fff",
+                }}
+              >
+                <option value="">-- Chọn ngân hàng --</option>
+                {VIETNAM_BANKS.map((b) => (
+                  <option key={b.bin} value={b.bin}>
+                    {b.name} ({b.shortName})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Số tài khoản</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.accountNumber ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({
+                    type: "UPDATE_PROPS",
+                    id: el.id,
+                    props: {
+                      config: {
+                        ...widgetProps.config,
+                        accountNumber: e.target.value,
+                      },
+                    },
+                  });
+                }}
+                placeholder="VD: 1234567890"
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  boxSizing: "border-box" as const,
+                }}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Tên tài khoản</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.accountName ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({
+                    type: "UPDATE_PROPS",
+                    id: el.id,
+                    props: {
+                      config: {
+                        ...widgetProps.config,
+                        accountName: e.target.value,
+                      },
+                    },
+                  });
+                }}
+                placeholder="NGUYEN VAN A"
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  boxSizing: "border-box" as const,
+                }}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Số tiền (tùy chọn)</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.amount ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({
+                    type: "UPDATE_PROPS",
+                    id: el.id,
+                    props: {
+                      config: {
+                        ...widgetProps.config,
+                        amount: e.target.value,
+                      },
+                    },
+                  });
+                }}
+                placeholder="500000"
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  boxSizing: "border-box" as const,
+                }}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Nội dung chuyển khoản</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.note ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({
+                    type: "UPDATE_PROPS",
+                    id: el.id,
+                    props: {
+                      config: {
+                        ...widgetProps.config,
+                        note: e.target.value,
+                      },
+                    },
+                  });
+                }}
+                placeholder="Mung cuoi"
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                  boxSizing: "border-box" as const,
+                }}
+              />
+            </div>
+          </div>
         </PanelSection>
       )}
 
