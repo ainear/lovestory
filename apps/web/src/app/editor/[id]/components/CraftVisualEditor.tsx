@@ -695,6 +695,8 @@ function CraftEditorInner({
           CraftEnvelope={CraftEnvelope}
           CraftSticker={CraftSticker}
           CraftShape={CraftShape}
+          editorDispatch={editorDispatch}
+          editorState={editorState}
         />
 
         {/* ══ Canvas Area ══ */}

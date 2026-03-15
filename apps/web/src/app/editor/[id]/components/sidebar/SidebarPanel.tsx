@@ -13,6 +13,7 @@ import { EffectsTab } from "./EffectsTab";
 import { MusicTab } from "./MusicTab";
 import { ComponentsTab } from "./ComponentsTab";
 import type { TEXT_PRESETS } from "../editor-constants";
+import type { EditorAction, EditorState } from "../canvas-engine/types";
 
 interface UploadedImage {
   url: string;
@@ -69,6 +70,9 @@ interface SidebarPanelProps {
   /* Components tab */
   sectionCat: string;
   setSectionCat: (val: string) => void;
+  /* Canvas-engine state for section presets */
+  editorDispatch?: React.Dispatch<EditorAction>;
+  editorState?: EditorState;
   /* Common */
   triggerAutosave: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,9 +174,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-        {activeTab === "text" && (
-          <TextTab addCraftText={props.addCraftText} />
-        )}
+        {activeTab === "text" && <TextTab addCraftText={props.addCraftText} />}
 
         {activeTab === "image" && (
           <ImageTab
@@ -296,6 +298,8 @@ export function SidebarPanel(props: SidebarPanelProps) {
             CraftText={props.CraftText}
             CraftImage={props.CraftImage}
             CraftContainer={props.CraftContainer}
+            editorDispatch={props.editorDispatch}
+            editorState={props.editorState}
           />
         )}
       </div>
