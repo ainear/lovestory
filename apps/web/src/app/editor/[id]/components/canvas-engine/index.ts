@@ -2,6 +2,7 @@ export { CanvasRenderer } from "./CanvasRenderer";
 export { SelectionOverlay } from "./SelectionOverlay";
 export { CanvasContextMenu } from "./CanvasContextMenu";
 export { ElementToolbar } from "./ElementToolbar";
+export { CanvasRightPanel } from "./CanvasRightPanel";
 export {
   useEditorContext,
   EditorContext,

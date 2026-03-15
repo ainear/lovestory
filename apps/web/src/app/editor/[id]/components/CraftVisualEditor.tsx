@@ -64,6 +64,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import {
   CanvasRenderer,
   CanvasContextMenu,
+  CanvasRightPanel,
   EditorContext,
   editorReducer,
   initialState,
@@ -4520,7 +4521,11 @@ function CraftEditorInner({
             </h3>
           </div>
           <div style={{ padding: 16 }}>
-            {selected ? (
+            {useCustomCanvas ? (
+              <EditorContext.Provider value={editorCtx}>
+                <CanvasRightPanel />
+              </EditorContext.Provider>
+            ) : selected ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 {/* Element tag — CineLove style */}
                 <div
