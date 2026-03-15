@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MUSIC_PRESETS, MUSIC_WIDGET_STYLES } from "../editor-constants";
+import { ColorPicker } from "../canvas-engine/ColorPicker";
 
 interface MusicTabProps {
   musicUrl: string;
@@ -364,19 +365,11 @@ export function MusicTab({
             marginTop: 8,
           }}
         >
-          <input
-            type="color"
+          <ColorPicker
             value={musicWidgetColor}
-            onChange={(e) => {
-              setMusicWidgetColor(e.target.value);
+            onChange={(color) => {
+              setMusicWidgetColor(color);
               triggerAutosave();
-            }}
-            style={{
-              width: 28,
-              height: 28,
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
             }}
           />
           <span style={{ fontSize: 11, color: "#6b7280" }}>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { BG_PRESETS, GRADIENT_PRESETS } from "../editor-constants";
+import { ColorPicker } from "../canvas-engine/ColorPicker";
 
 interface BgTabProps {
   background: string;
@@ -129,17 +130,9 @@ export function BgTab({
               gap: 8,
             }}
           >
-            <input
-              type="color"
+            <ColorPicker
               value={background.startsWith("#") ? background : "#ffffff"}
-              onChange={(e) => applyBg(e.target.value)}
-              style={{
-                width: 32,
-                height: 32,
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
+              onChange={(color) => applyBg(color)}
             />
             <span style={{ fontSize: 11, color: "#6b7280" }}>
               Chọn màu tùy chỉnh

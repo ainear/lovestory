@@ -5,6 +5,7 @@ import { LayersPanel } from "./LayersPanel";
 import { PremiumFeaturesPanel } from "./PremiumFeaturesPanel";
 import { ProjectSettingsPanel } from "./ProjectSettingsPanel";
 import type { TextProps, ImageProps } from "./types";
+import { ColorPicker } from "./ColorPicker";
 
 /** Only allow safe URL schemes for image src */
 function isValidImageUrl(url: string): boolean {
@@ -261,25 +262,19 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
           <div style={{ marginTop: 8 }}>
             <label style={labelStyle}>Màu chữ</label>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                type="color"
+              <ColorPicker
                 value={textProps.color}
-                onChange={(e) => updateProp({ color: e.target.value })}
+                onChange={(color) => updateProp({ color })}
+              />
+              <span
                 style={{
-                  width: 32,
-                  height: 32,
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  padding: 0,
+                  fontSize: 11,
+                  color: "#6b7280",
+                  fontFamily: "monospace",
                 }}
-              />
-              <input
-                type="text"
-                value={textProps.color}
-                onChange={(e) => updateProp({ color: e.target.value })}
-                style={{ ...inputStyle, flex: 1 }}
-              />
+              >
+                {textProps.color}
+              </span>
             </div>
           </div>
 
@@ -599,34 +594,24 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
         <div style={{ marginTop: 8 }}>
           <label style={labelStyle}>Màu viền</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <input
-              type="color"
+            <ColorPicker
               value={el.border.color}
-              onChange={(e) => {
+              onChange={(color) => {
                 dispatch({ type: "SNAPSHOT" });
                 updateElement({
-                  border: { ...el.border, color: e.target.value },
+                  border: { ...el.border, color },
                 });
               }}
+            />
+            <span
               style={{
-                width: 32,
-                height: 32,
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                cursor: "pointer",
-                padding: 0,
+                fontSize: 11,
+                color: "#6b7280",
+                fontFamily: "monospace",
               }}
-            />
-            <input
-              type="text"
-              value={el.border.color}
-              onChange={(e) =>
-                updateElement({
-                  border: { ...el.border, color: e.target.value },
-                })
-              }
-              style={{ ...inputStyle, flex: 1 }}
-            />
+            >
+              {el.border.color}
+            </span>
           </div>
         </div>
       </PanelSection>
@@ -778,26 +763,20 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
       {isText && textProps && (
         <PanelSection title="Nền văn bản" icon="🎨">
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <input
-              type="color"
+            <ColorPicker
               value={textProps.backgroundColor || "#ffffff"}
-              onChange={(e) => updateProp({ backgroundColor: e.target.value })}
+              onChange={(color) => updateProp({ backgroundColor: color })}
+              showOpacity
+            />
+            <span
               style={{
-                width: 32,
-                height: 32,
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                cursor: "pointer",
-                padding: 0,
+                fontSize: 11,
+                color: "#6b7280",
+                fontFamily: "monospace",
               }}
-            />
-            <input
-              type="text"
-              value={textProps.backgroundColor || ""}
-              onChange={(e) => updateProp({ backgroundColor: e.target.value })}
-              style={{ ...inputStyle, flex: 1 }}
-              placeholder="transparent"
-            />
+            >
+              {textProps.backgroundColor || "transparent"}
+            </span>
           </div>
           {textProps.backgroundColor && (
             <button
