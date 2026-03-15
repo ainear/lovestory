@@ -1,6 +1,7 @@
 "use client";
 import { useState, useCallback } from "react";
 import { useEditorContext } from "./useEditorState";
+import { LayersPanel } from "./LayersPanel";
 import type { TextProps, ImageProps } from "./types";
 
 /** Only allow safe URL schemes for image src */
@@ -57,20 +58,7 @@ export function CanvasRightPanel() {
   const { state, dispatch, selectedElement: el } = useEditorContext();
 
   if (!el) {
-    return (
-      <div style={{ padding: 16 }}>
-        <p
-          style={{
-            fontSize: 13,
-            color: "#9ca3af",
-            fontStyle: "italic",
-            textAlign: "center",
-          }}
-        >
-          Click vào phần tử trên canvas để chỉnh sửa
-        </p>
-      </div>
-    );
+    return <LayersPanel />;
   }
 
   const isText = el.type === "text";

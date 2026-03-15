@@ -20,6 +20,7 @@ const initialState: EditorState = {
   zoom: 1,
   undoStack: [],
   redoStack: [],
+  activeGuides: [],
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -121,6 +122,9 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 
     case "SET_ZOOM":
       return { ...state, zoom: action.zoom };
+
+    case "SET_GUIDES":
+      return { ...state, activeGuides: action.guides };
 
     default:
       return state;

@@ -11,6 +11,7 @@ import type {
   WidgetProps,
 } from "./types";
 import { useDrag } from "./useDrag";
+import { SnapGuideLines } from "./SnapGuideLines";
 import {
   ENTRANCE_KEYFRAMES,
   getEntranceAnimation,
@@ -826,6 +827,7 @@ export function CanvasRenderer() {
             isSelected={state.selectedId === el.id}
           />
         ))}
+        <SnapGuideLines guides={state.activeGuides} />
         <SelectionOverlay />
         <ElementToolbar />
       </div>

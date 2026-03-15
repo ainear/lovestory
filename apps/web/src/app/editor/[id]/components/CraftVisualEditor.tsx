@@ -8,7 +8,9 @@ import React, {
   useMemo,
   useReducer,
 } from "react";
-import { ZoomIn, ZoomOut } from "lucide-react";
+import { ZoomIn, ZoomOut, Smartphone, Tablet, Monitor } from "lucide-react";
+import { DevicePreviewBar } from "./sidebar/DevicePreviewBar";
+import type { DeviceMode } from "./sidebar/DevicePreviewBar";
 // html2canvas loaded dynamically to avoid large static bundle (PERF-02)
 import { createBrowserClient } from "@supabase/ssr";
 import {
@@ -169,7 +171,18 @@ function CraftEditorInner({
   const thumbnailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoomLocal] = useState(100);
+  const [previewDevice, setPreviewDevice] = useState<DeviceMode>("mobile");
+  // Sync zoom with canvas engine state
+  const setZoom = useCallback(
+    (updater: number | ((prev: number) => number)) => {
+      setZoomLocal((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        return next;
+      });
+    },
+    [],
+  );
   const [projectCategory, setProjectCategory] = useState("wedding");
   const [projectStatus, setProjectStatus] = useState("draft");
   const [uploadedImages, setUploadedImages] = useState<
@@ -196,6 +209,11 @@ function CraftEditorInner({
     }),
     [editorState, selectedCanvasElement],
   );
+  // Sync zoom state with canvas engine
+  useEffect(() => {
+    editorDispatch({ type: "SET_ZOOM", zoom: zoom / 100 });
+  }, [zoom]);
+
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -704,7 +722,7 @@ function CraftEditorInner({
             <CanvasKeyboardHandler />
           </EditorContext.Provider>
 
-          {/* Zoom Controls Overlay */}
+          {/* Zoom + Device Preview Controls */}
           <div
             style={{
               position: "sticky",
@@ -712,11 +730,7 @@ function CraftEditorInner({
               right: 12,
               display: "flex",
               alignItems: "center",
-              gap: 4,
-              background: "rgba(255,255,255,0.95)",
-              borderRadius: 10,
-              padding: "4px 8px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              gap: 8,
               marginLeft: "auto",
               marginRight: 12,
               marginTop: -44,
@@ -724,59 +738,75 @@ function CraftEditorInner({
               width: "fit-content",
             }}
           >
-            <button
-              onClick={() => setZoom((z) => Math.max(50, z - 10))}
-              title="Thu nhỏ"
+            <DevicePreviewBar
+              activeDevice={previewDevice}
+              onDeviceChange={setPreviewDevice}
+            />
+            <div
               style={{
-                width: 28,
-                height: 28,
-                border: "none",
-                borderRadius: 6,
-                background: "transparent",
-                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                color: "#374151",
+                gap: 4,
+                background: "rgba(255,255,255,0.95)",
+                borderRadius: 10,
+                padding: "4px 8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
               }}
             >
-              <ZoomOut size={14} />
-            </button>
-            <button
-              onClick={() => setZoom(100)}
-              title="Reset 100%"
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#6b7280",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                padding: "2px 6px",
-                minWidth: 36,
-                textAlign: "center",
-              }}
-            >
-              {zoom}%
-            </button>
-            <button
-              onClick={() => setZoom((z) => Math.min(200, z + 10))}
-              title="Phóng to"
-              style={{
-                width: 28,
-                height: 28,
-                border: "none",
-                borderRadius: 6,
-                background: "transparent",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#374151",
-              }}
-            >
-              <ZoomIn size={14} />
-            </button>
+              <button
+                onClick={() => setZoom((z) => Math.max(50, z - 10))}
+                title="Thu nhỏ"
+                style={{
+                  width: 28,
+                  height: 28,
+                  border: "none",
+                  borderRadius: 6,
+                  background: "transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#374151",
+                }}
+              >
+                <ZoomOut size={14} />
+              </button>
+              <button
+                onClick={() => setZoom(100)}
+                title="Reset 100%"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#6b7280",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  padding: "2px 6px",
+                  minWidth: 36,
+                  textAlign: "center",
+                }}
+              >
+                {zoom}%
+              </button>
+              <button
+                onClick={() => setZoom((z) => Math.min(200, z + 10))}
+                title="Phóng to"
+                style={{
+                  width: 28,
+                  height: 28,
+                  border: "none",
+                  borderRadius: 6,
+                  background: "transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#374151",
+                }}
+              >
+                <ZoomIn size={14} />
+              </button>
+            </div>
           </div>
         </div>
 

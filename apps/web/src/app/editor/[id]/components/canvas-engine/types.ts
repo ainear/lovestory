@@ -69,6 +69,11 @@ export interface WidgetProps {
   config: Record<string, unknown>;
 }
 
+export interface GuideLine {
+  orientation: "horizontal" | "vertical";
+  position: number;
+}
+
 export type EditorAction =
   | { type: "SET_ELEMENTS"; elements: CanvasElement[] }
   | { type: "SELECT"; id: string | null }
@@ -82,7 +87,8 @@ export type EditorAction =
   | { type: "REDO" }
   | { type: "SET_CANVAS"; width: number; height: number; background: string }
   | { type: "SET_ZOOM"; zoom: number }
-  | { type: "SNAPSHOT" };
+  | { type: "SNAPSHOT" }
+  | { type: "SET_GUIDES"; guides: GuideLine[] };
 
 export interface EditorState {
   elements: CanvasElement[];
@@ -94,6 +100,7 @@ export interface EditorState {
   zoom: number;
   undoStack: CanvasElement[][];
   redoStack: CanvasElement[][];
+  activeGuides: GuideLine[];
 }
 
 /** Factory: create default text element */

@@ -11,6 +11,8 @@ export {
 } from "./useEditorState";
 export { useKeyboard } from "./useKeyboard";
 export { useDrag } from "./useDrag";
+export { useSnapGuides } from "./useSnapGuides";
+export { SnapGuideLines } from "./SnapGuideLines";
 export { convertTemplateToCanvas } from "./convertTemplate";
 export * from "./types";
 export {

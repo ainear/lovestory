@@ -1,9 +1,15 @@
 "use client";
 import { useCallback, useRef } from "react";
 import { useEditorContext } from "./useEditorState";
+import { useSnapGuides } from "./useSnapGuides";
 
 export function useDrag(elementId: string) {
   const { state, dispatch } = useEditorContext();
+  const { calcSnap } = useSnapGuides(
+    state.elements,
+    state.canvasWidth,
+    state.canvasHeight,
+  );
   const dragRef = useRef<{
     startX: number;
     startY: number;
@@ -47,21 +53,28 @@ export function useDrag(elementId: string) {
       const dx = (e.clientX - dragRef.current.startX) / zoom;
       const dy = (e.clientY - dragRef.current.startY) / zoom;
 
+      const rawTop = dragRef.current.origTop + dy;
+      const rawLeft = dragRef.current.origLeft + dx;
+
+      const { top, left, guides } = calcSnap(elementId, rawTop, rawLeft);
+
       dispatch({
         type: "UPDATE_ELEMENT",
         id: elementId,
-        patch: {
-          top: dragRef.current.origTop + dy,
-          left: dragRef.current.origLeft + dx,
-        },
+        patch: { top, left },
       });
+
+      dispatch({ type: "SET_GUIDES", guides });
     },
-    [elementId, state.zoom, dispatch],
+    [elementId, state.zoom, dispatch, calcSnap],
   );
 
   const onPointerUp = useCallback(() => {
+    if (dragRef.current) {
+      dispatch({ type: "SET_GUIDES", guides: [] });
+    }
     dragRef.current = null;
-  }, []);
+  }, [dispatch]);
 
   return { onPointerDown, onPointerMove, onPointerUp };
 }
