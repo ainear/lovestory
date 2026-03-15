@@ -54,11 +54,24 @@ export const ENTRANCE_KEYFRAMES = `
 }
 `;
 
+const VALID_ENTRANCE = new Set([
+  "fadeIn",
+  "slideUp",
+  "slideLeft",
+  "slideRight",
+  "scaleIn",
+  "bounceIn",
+  "flipIn",
+]);
+
+const VALID_CONTINUOUS = new Set(["float", "pulse", "shake", "spin", "bounce"]);
+
 /** Get CSS animation string for entrance animation */
 export function getEntranceAnimation(
   entrance: { type: string; duration: number; delay: number } | null,
 ): string | undefined {
   if (!entrance || entrance.type === "none") return undefined;
+  if (!VALID_ENTRANCE.has(entrance.type)) return undefined;
   const name = `ce-${entrance.type}`;
   return `${name} ${entrance.duration}ms ease-out ${entrance.delay}ms both`;
 }
@@ -68,6 +81,7 @@ export function getContinuousAnimation(
   continuous: { type: string; duration: number } | null,
 ): string | undefined {
   if (!continuous || continuous.type === "none") return undefined;
+  if (!VALID_CONTINUOUS.has(continuous.type)) return undefined;
   const name = `ce-${continuous.type}`;
   return `${name} ${continuous.duration}ms ease-in-out infinite`;
 }

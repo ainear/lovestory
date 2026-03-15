@@ -22,6 +22,7 @@ import {
   initialState,
   useKeyboard,
 } from "./canvas-engine";
+import { sanitizeElements } from "./canvas-engine/types";
 import type { CanvasElement } from "./canvas-engine/types";
 import { TEXT_PRESETS } from "./editor-constants";
 import { SidebarPanel } from "./sidebar/SidebarPanel";
@@ -255,7 +256,8 @@ function CraftEditorInner({
           setUploadedImages(parsed.meta.uploadedImages);
         // Load custom canvas format
         if (parsed.elements) {
-          editorDispatch({ type: "SET_ELEMENTS", elements: parsed.elements });
+          const validElements = sanitizeElements(parsed.elements);
+          editorDispatch({ type: "SET_ELEMENTS", elements: validElements });
           if (parsed.canvas?.width && parsed.canvas?.height) {
             editorDispatch({
               type: "SET_CANVAS",
@@ -526,6 +528,22 @@ function CraftEditorInner({
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      const ALLOWED_TYPES = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+      ];
+      const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        alert("Chỉ hỗ trợ file ảnh (JPEG, PNG, GIF, WebP, SVG).");
+        return;
+      }
+      if (file.size > MAX_SIZE) {
+        alert("File quá lớn. Giới hạn 10MB.");
+        return;
+      }
       const formData = new FormData();
       formData.append("file", file);
       formData.append("projectId", projectId);

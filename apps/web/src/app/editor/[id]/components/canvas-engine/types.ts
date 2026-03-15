@@ -103,6 +103,59 @@ export interface EditorState {
   activeGuides: GuideLine[];
 }
 
+const VALID_TYPES = new Set(["text", "image", "shape", "sticker", "widget"]);
+
+/** Sanitize elements loaded from JSON — ensures required fields exist */
+export function sanitizeElements(raw: unknown[]): CanvasElement[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((el): el is Record<string, unknown> => {
+      if (!el || typeof el !== "object") return false;
+      const e = el as Record<string, unknown>;
+      return (
+        typeof e.id === "string" &&
+        typeof e.type === "string" &&
+        VALID_TYPES.has(e.type) &&
+        typeof e.top === "number" &&
+        typeof e.left === "number" &&
+        typeof e.width === "number"
+      );
+    })
+    .map((e) => ({
+      id: e.id as string,
+      type: e.type as CanvasElement["type"],
+      top: e.top as number,
+      left: e.left as number,
+      width: e.width as number,
+      height: typeof e.height === "number" ? e.height : "auto",
+      rotation: typeof e.rotation === "number" ? e.rotation : 0,
+      scaleX: typeof e.scaleX === "number" ? e.scaleX : 1,
+      scaleY: typeof e.scaleY === "number" ? e.scaleY : 1,
+      zIndex: typeof e.zIndex === "number" ? e.zIndex : 0,
+      locked: typeof e.locked === "boolean" ? e.locked : false,
+      visible: typeof e.visible === "boolean" ? e.visible : true,
+      opacity: typeof e.opacity === "number" ? e.opacity : 1,
+      borderRadius: typeof e.borderRadius === "number" ? e.borderRadius : 0,
+      border:
+        e.border && typeof e.border === "object"
+          ? (e.border as CanvasElement["border"])
+          : { width: 0, color: "transparent", style: "solid" },
+      shadow:
+        e.shadow && typeof e.shadow === "object"
+          ? (e.shadow as CanvasElement["shadow"])
+          : null,
+      entrance:
+        e.entrance && typeof e.entrance === "object"
+          ? (e.entrance as CanvasElement["entrance"])
+          : null,
+      continuous:
+        e.continuous && typeof e.continuous === "object"
+          ? (e.continuous as CanvasElement["continuous"])
+          : null,
+      props: (e.props || {}) as CanvasElement["props"],
+    })) as CanvasElement[];
+}
+
 /** Factory: create default text element */
 export function createTextElement(
   id: string,

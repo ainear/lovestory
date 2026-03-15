@@ -136,9 +136,34 @@ function ShapeElement({ el }: { el: CanvasElement }) {
   );
 }
 
+/** Validate image URL — only allow https and data URIs */
+function isValidImageSrc(src: string): boolean {
+  if (!src || typeof src !== "string") return false;
+  return src.startsWith("https://") || src.startsWith("data:image/");
+}
+
 /** Render a single image element */
 function ImageElement({ el }: { el: CanvasElement }) {
   const p = el.props as ImageProps;
+  if (!isValidImageSrc(p.src)) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f3f4f6",
+          color: "#9ca3af",
+          fontSize: 12,
+          borderRadius: "inherit",
+        }}
+      >
+        Invalid image
+      </div>
+    );
+  }
   return (
     <img
       src={p.src}
