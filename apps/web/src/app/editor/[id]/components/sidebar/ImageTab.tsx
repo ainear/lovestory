@@ -1,8 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Image as ImageIcon } from "lucide-react";
-import { STOCK_IMAGES, panelLabelStyle } from "../editor-constants";
+import {
+  STOCK_IMAGES,
+  STOCK_CATEGORIES,
+  panelLabelStyle,
+} from "../editor-constants";
+import type { StockCategory } from "../editor-constants";
 import type { EditorAction } from "../canvas-engine/types";
 
 interface UploadedImage {
@@ -210,6 +215,51 @@ export function ImageTab({
 
       {/* Stock Image Library */}
       <p style={panelLabelStyle}>Kho ảnh miễn phí</p>
+      <StockImageGrid onSelect={addStockImage} />
+    </div>
+  );
+}
+
+function StockImageGrid({ onSelect }: { onSelect: (url: string) => void }) {
+  const [category, setCategory] = useState<StockCategory | "all">("all");
+
+  const filtered =
+    category === "all"
+      ? STOCK_IMAGES
+      : STOCK_IMAGES.filter((img) => img.category === category);
+
+  return (
+    <div>
+      {/* Category pills */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          marginBottom: 8,
+        }}
+      >
+        {STOCK_CATEGORIES.map((cat) => (
+          <button
+            key={cat.key}
+            onClick={() => setCategory(cat.key)}
+            style={{
+              padding: "3px 10px",
+              borderRadius: 12,
+              border: "1px solid",
+              borderColor: category === cat.key ? "#3b82f6" : "#e5e7eb",
+              background: category === cat.key ? "#eff6ff" : "#fff",
+              color: category === cat.key ? "#3b82f6" : "#6b7280",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+      {/* Grid */}
       <div
         style={{
           display: "grid",
@@ -217,10 +267,10 @@ export function ImageTab({
           gap: 4,
         }}
       >
-        {STOCK_IMAGES.map((img, i) => (
+        {filtered.map((img, i) => (
           <button
             key={i}
-            onClick={() => addStockImage(img.url)}
+            onClick={() => onSelect(img.url)}
             title={img.label}
             style={{
               width: "100%",

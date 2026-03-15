@@ -25,8 +25,8 @@ export type { PageAnimPreset } from "./animation-presets";
 export { CURTAIN_PRESETS } from "./curtain-presets";
 export type { CurtainPreset } from "./curtain-presets";
 
-export { STOCK_IMAGES } from "./stock-images";
-export type { StockImage } from "./stock-images";
+export { STOCK_IMAGES, STOCK_CATEGORIES } from "./stock-images";
+export type { StockImage, StockCategory } from "./stock-images";
 
 export { TEMPLATE_STYLES } from "./template-styles";
 export type { TemplateStyle } from "./template-styles";
