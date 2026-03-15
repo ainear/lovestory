@@ -1,14 +1,21 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEditorContext } from "./useEditorState";
 
 export function useKeyboard() {
   const { state, dispatch } = useEditorContext();
+  const nudgeSnapshotRef = useRef(false);
+  const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      )
+        return;
 
       const el = state.elements.find((el) => el.id === state.selectedId);
 
@@ -27,18 +34,35 @@ export function useKeyboard() {
         return;
       }
 
-      // Redo: Ctrl+Shift+Z
-      if (e.key === "z" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      // Redo: Ctrl+Shift+Z or Ctrl+Y
+      if (
+        ((e.key === "z" && e.shiftKey) || e.key === "y") &&
+        (e.ctrlKey || e.metaKey)
+      ) {
         e.preventDefault();
         dispatch({ type: "REDO" });
         return;
       }
 
-      // Arrow key nudge (1px, Shift = 10px)
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) && el && !el.locked) {
+      // Arrow key nudge (1px, Shift = 10px) — snapshot only once per burst
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
+        el &&
+        !el.locked
+      ) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
-        dispatch({ type: "SNAPSHOT" });
+
+        if (!nudgeSnapshotRef.current) {
+          dispatch({ type: "SNAPSHOT" });
+          nudgeSnapshotRef.current = true;
+        }
+        // Reset snapshot flag after 500ms of no arrow keys
+        if (nudgeTimerRef.current) clearTimeout(nudgeTimerRef.current);
+        nudgeTimerRef.current = setTimeout(() => {
+          nudgeSnapshotRef.current = false;
+        }, 500);
+
         const patch: Record<string, number> = {};
         if (e.key === "ArrowUp") patch.top = el.top - step;
         if (e.key === "ArrowDown") patch.top = el.top + step;

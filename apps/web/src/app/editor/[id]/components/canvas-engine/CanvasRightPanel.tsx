@@ -1,7 +1,26 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useEditorContext } from "./useEditorState";
 import type { TextProps, ImageProps } from "./types";
+
+/** Only allow safe URL schemes for image src */
+function isValidImageUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return true; // empty is ok (clearing)
+  return (
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("blob:") ||
+    trimmed.startsWith("data:image/")
+  );
+}
+
+/** Parse number safely — returns fallback if NaN */
+function safeNumber(value: string, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 const FONT_FAMILIES = [
   { label: "Dancing Script", value: "'Dancing Script', cursive" },
@@ -40,7 +59,14 @@ export function CanvasRightPanel() {
   if (!el) {
     return (
       <div style={{ padding: 16 }}>
-        <p style={{ fontSize: 13, color: "#9ca3af", fontStyle: "italic", textAlign: "center" }}>
+        <p
+          style={{
+            fontSize: 13,
+            color: "#9ca3af",
+            fontStyle: "italic",
+            textAlign: "center",
+          }}
+        >
           Click vào phần tử trên canvas để chỉnh sửa
         </p>
       </div>
@@ -63,17 +89,43 @@ export function CanvasRightPanel() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
       {/* Element tag */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <span style={{
-          background: "#3b82f6", color: "#fff", fontSize: 10,
-          padding: "3px 10px", borderRadius: 4, fontWeight: 600,
-        }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 12,
+        }}
+      >
+        <span
+          style={{
+            background: "#3b82f6",
+            color: "#fff",
+            fontSize: 10,
+            padding: "3px 10px",
+            borderRadius: 4,
+            fontWeight: 600,
+          }}
+        >
           {el.type.charAt(0).toUpperCase() + el.type.slice(1)}
         </span>
-        <span style={{ fontSize: 10, color: "#9ca3af" }}>ID: {el.id.slice(0, 8)}</span>
+        <span style={{ fontSize: 10, color: "#9ca3af" }}>
+          ID: {el.id.slice(0, 8)}
+        </span>
         <button
-          onClick={() => { dispatch({ type: "SNAPSHOT" }); dispatch({ type: "DELETE_ELEMENT", id: el.id }); }}
-          style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#dc2626", padding: "2px 6px" }}
+          onClick={() => {
+            dispatch({ type: "SNAPSHOT" });
+            dispatch({ type: "DELETE_ELEMENT", id: el.id });
+          }}
+          style={{
+            marginLeft: "auto",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 14,
+            color: "#dc2626",
+            padding: "2px 6px",
+          }}
           title="Xóa phần tử"
         >
           🗑️
@@ -91,7 +143,9 @@ export function CanvasRightPanel() {
             style={selectStyle}
           >
             {FONT_FAMILIES.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
             ))}
           </select>
 
@@ -102,8 +156,14 @@ export function CanvasRightPanel() {
               <input
                 type="number"
                 value={textProps.fontSize}
-                onChange={(e) => updateProp({ fontSize: Number(e.target.value) })}
-                min={8} max={200} step={1}
+                onChange={(e) =>
+                  updateProp({
+                    fontSize: safeNumber(e.target.value, textProps.fontSize),
+                  })
+                }
+                min={8}
+                max={200}
+                step={1}
                 style={inputStyle}
               />
             </div>
@@ -161,7 +221,14 @@ export function CanvasRightPanel() {
                 type="color"
                 value={textProps.color}
                 onChange={(e) => updateProp({ color: e.target.value })}
-                style={{ width: 32, height: 32, border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer", padding: 0 }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
               />
               <input
                 type="text"
@@ -179,8 +246,17 @@ export function CanvasRightPanel() {
               <input
                 type="number"
                 value={textProps.lineHeight}
-                onChange={(e) => updateProp({ lineHeight: Number(e.target.value) })}
-                min={0.5} max={5} step={0.1}
+                onChange={(e) =>
+                  updateProp({
+                    lineHeight: safeNumber(
+                      e.target.value,
+                      textProps.lineHeight,
+                    ),
+                  })
+                }
+                min={0.5}
+                max={5}
+                step={0.1}
                 style={inputStyle}
               />
             </div>
@@ -189,8 +265,17 @@ export function CanvasRightPanel() {
               <input
                 type="number"
                 value={textProps.letterSpacing}
-                onChange={(e) => updateProp({ letterSpacing: Number(e.target.value) })}
-                min={-5} max={50} step={0.5}
+                onChange={(e) =>
+                  updateProp({
+                    letterSpacing: safeNumber(
+                      e.target.value,
+                      textProps.letterSpacing,
+                    ),
+                  })
+                }
+                min={-5}
+                max={50}
+                step={0.5}
                 style={inputStyle}
               />
             </div>
@@ -205,7 +290,12 @@ export function CanvasRightPanel() {
           <input
             type="text"
             value={imageProps.src}
-            onChange={(e) => updateProp({ src: e.target.value })}
+            onChange={(e) => {
+              const url = e.target.value;
+              if (isValidImageUrl(url)) {
+                updateProp({ src: url });
+              }
+            }}
             style={inputStyle}
             placeholder="https://..."
           />
@@ -227,8 +317,14 @@ export function CanvasRightPanel() {
               <input
                 type="number"
                 value={el.borderRadius}
-                onChange={(e) => updateElement({ borderRadius: Number(e.target.value) })}
-                min={0} max={999} step={1}
+                onChange={(e) =>
+                  updateElement({
+                    borderRadius: safeNumber(e.target.value, el.borderRadius),
+                  })
+                }
+                min={0}
+                max={999}
+                step={1}
                 style={inputStyle}
               />
             </div>
@@ -238,38 +334,89 @@ export function CanvasRightPanel() {
 
       {/* ── Position & Size ── */}
       <PanelSection title="Vị trí & Kích thước" icon="📐">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+        >
           <div>
             <label style={labelStyle}>X (left)</label>
-            <input type="number" value={Math.round(el.left)} onChange={(e) => updateElement({ left: Number(e.target.value) })} style={inputStyle} />
+            <input
+              type="number"
+              value={Math.round(el.left)}
+              onChange={(e) =>
+                updateElement({ left: safeNumber(e.target.value, el.left) })
+              }
+              style={inputStyle}
+            />
           </div>
           <div>
             <label style={labelStyle}>Y (top)</label>
-            <input type="number" value={Math.round(el.top)} onChange={(e) => updateElement({ top: Number(e.target.value) })} style={inputStyle} />
+            <input
+              type="number"
+              value={Math.round(el.top)}
+              onChange={(e) =>
+                updateElement({ top: safeNumber(e.target.value, el.top) })
+              }
+              style={inputStyle}
+            />
           </div>
           <div>
             <label style={labelStyle}>Rộng</label>
-            <input type="number" value={Math.round(el.width)} onChange={(e) => updateElement({ width: Number(e.target.value) })} min={10} style={inputStyle} />
+            <input
+              type="number"
+              value={Math.round(el.width)}
+              onChange={(e) =>
+                updateElement({ width: safeNumber(e.target.value, el.width) })
+              }
+              min={10}
+              style={inputStyle}
+            />
           </div>
           <div>
             <label style={labelStyle}>Cao</label>
             <input
               type={el.height === "auto" ? "text" : "number"}
-              value={el.height === "auto" ? "auto" : Math.round(el.height as number)}
+              value={
+                el.height === "auto" ? "auto" : Math.round(el.height as number)
+              }
               onChange={(e) => {
                 const v = e.target.value;
-                updateElement({ height: v === "auto" ? "auto" : Number(v) });
+                if (v === "auto") {
+                  updateElement({ height: "auto" });
+                } else {
+                  const n = safeNumber(
+                    v,
+                    typeof el.height === "number" ? el.height : 100,
+                  );
+                  updateElement({ height: n });
+                }
               }}
               style={inputStyle}
             />
           </div>
           <div>
             <label style={labelStyle}>Xoay (°)</label>
-            <input type="number" value={Math.round(el.rotation)} onChange={(e) => updateElement({ rotation: Number(e.target.value) })} style={inputStyle} />
+            <input
+              type="number"
+              value={Math.round(el.rotation)}
+              onChange={(e) =>
+                updateElement({
+                  rotation: safeNumber(e.target.value, el.rotation),
+                })
+              }
+              style={inputStyle}
+            />
           </div>
           <div>
             <label style={labelStyle}>Lớp (z)</label>
-            <input type="number" value={el.zIndex} onChange={(e) => updateElement({ zIndex: Number(e.target.value) })} min={0} style={inputStyle} />
+            <input
+              type="number"
+              value={el.zIndex}
+              onChange={(e) =>
+                updateElement({ zIndex: safeNumber(e.target.value, el.zIndex) })
+              }
+              min={0}
+              style={inputStyle}
+            />
           </div>
         </div>
       </PanelSection>
@@ -279,7 +426,9 @@ export function CanvasRightPanel() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <input
             type="range"
-            min={0} max={1} step={0.01}
+            min={0}
+            max={1}
+            step={0.01}
             value={el.opacity}
             onChange={(e) => updateElement({ opacity: Number(e.target.value) })}
             style={{ flex: 1 }}
@@ -301,14 +450,19 @@ export function CanvasRightPanel() {
                 onClick={() => {
                   dispatch({ type: "SNAPSHOT" });
                   updateElement({
-                    entrance: a.id === "none" ? null : { type: a.id, duration: 600, delay: 0 },
+                    entrance:
+                      a.id === "none"
+                        ? null
+                        : { type: a.id, duration: 600, delay: 0 },
                   });
                 }}
                 style={{
-                  padding: "6px 10px", borderRadius: 8,
+                  padding: "6px 10px",
+                  borderRadius: 8,
                   border: isActive ? "2px solid #3b82f6" : "1px solid #e5e7eb",
                   background: isActive ? "#eff6ff" : "#fff",
-                  cursor: "pointer", fontSize: 11,
+                  cursor: "pointer",
+                  fontSize: 11,
                   color: isActive ? "#1d4ed8" : "#374151",
                   textAlign: "left" as const,
                   fontWeight: isActive ? 600 : 400,
@@ -332,14 +486,17 @@ export function CanvasRightPanel() {
                 onClick={() => {
                   dispatch({ type: "SNAPSHOT" });
                   updateElement({
-                    continuous: a.id === "none" ? null : { type: a.id, duration: 2000 },
+                    continuous:
+                      a.id === "none" ? null : { type: a.id, duration: 2000 },
                   });
                 }}
                 style={{
-                  padding: "6px 10px", borderRadius: 8,
+                  padding: "6px 10px",
+                  borderRadius: 8,
                   border: isActive ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
                   background: isActive ? "#fdf2f8" : "#fff",
-                  cursor: "pointer", fontSize: 11,
+                  cursor: "pointer",
+                  fontSize: 11,
                   color: isActive ? "#be185d" : "#374151",
                   textAlign: "left" as const,
                   fontWeight: isActive ? 600 : 400,
@@ -352,9 +509,284 @@ export function CanvasRightPanel() {
         </div>
       </PanelSection>
 
+      {/* ── Border ── */}
+      <PanelSection title="Viền" icon="🔲">
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+        >
+          <div>
+            <label style={labelStyle}>Độ dày</label>
+            <input
+              type="number"
+              value={el.border.width}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                updateElement({
+                  border: {
+                    ...el.border,
+                    width: safeNumber(e.target.value, el.border.width),
+                  },
+                });
+              }}
+              min={0}
+              max={20}
+              step={1}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Kiểu</label>
+            <select
+              value={el.border.style}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                updateElement({
+                  border: { ...el.border, style: e.target.value },
+                });
+              }}
+              style={selectStyle}
+            >
+              <option value="solid">Nét liền</option>
+              <option value="dashed">Nét đứt</option>
+              <option value="dotted">Chấm</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label style={labelStyle}>Màu viền</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="color"
+              value={el.border.color}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                updateElement({
+                  border: { ...el.border, color: e.target.value },
+                });
+              }}
+              style={{
+                width: 32,
+                height: 32,
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                cursor: "pointer",
+                padding: 0,
+              }}
+            />
+            <input
+              type="text"
+              value={el.border.color}
+              onChange={(e) =>
+                updateElement({
+                  border: { ...el.border, color: e.target.value },
+                })
+              }
+              style={{ ...inputStyle, flex: 1 }}
+            />
+          </div>
+        </div>
+      </PanelSection>
+
+      {/* ── Shadow ── */}
+      <PanelSection title="Đổ bóng" icon="🌑">
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+        >
+          <div>
+            <label style={labelStyle}>X offset</label>
+            <input
+              type="number"
+              value={el.shadow?.offsetX ?? 0}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                const s = el.shadow ?? {
+                  offsetX: 0,
+                  offsetY: 4,
+                  blur: 8,
+                  spread: 0,
+                  color: "rgba(0,0,0,0.15)",
+                };
+                updateElement({
+                  shadow: {
+                    ...s,
+                    offsetX: safeNumber(e.target.value, s.offsetX),
+                  },
+                });
+              }}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Y offset</label>
+            <input
+              type="number"
+              value={el.shadow?.offsetY ?? 0}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                const s = el.shadow ?? {
+                  offsetX: 0,
+                  offsetY: 4,
+                  blur: 8,
+                  spread: 0,
+                  color: "rgba(0,0,0,0.15)",
+                };
+                updateElement({
+                  shadow: {
+                    ...s,
+                    offsetY: safeNumber(e.target.value, s.offsetY),
+                  },
+                });
+              }}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Blur</label>
+            <input
+              type="number"
+              value={el.shadow?.blur ?? 0}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                const s = el.shadow ?? {
+                  offsetX: 0,
+                  offsetY: 4,
+                  blur: 8,
+                  spread: 0,
+                  color: "rgba(0,0,0,0.15)",
+                };
+                updateElement({
+                  shadow: { ...s, blur: safeNumber(e.target.value, s.blur) },
+                });
+              }}
+              min={0}
+              step={1}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Spread</label>
+            <input
+              type="number"
+              value={el.shadow?.spread ?? 0}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                const s = el.shadow ?? {
+                  offsetX: 0,
+                  offsetY: 4,
+                  blur: 8,
+                  spread: 0,
+                  color: "rgba(0,0,0,0.15)",
+                };
+                updateElement({
+                  shadow: {
+                    ...s,
+                    spread: safeNumber(e.target.value, s.spread),
+                  },
+                });
+              }}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label style={labelStyle}>Màu bóng</label>
+          <input
+            type="text"
+            value={el.shadow?.color ?? "rgba(0,0,0,0.15)"}
+            onChange={(e) => {
+              dispatch({ type: "SNAPSHOT" });
+              const s = el.shadow ?? {
+                offsetX: 0,
+                offsetY: 4,
+                blur: 8,
+                spread: 0,
+                color: "rgba(0,0,0,0.15)",
+              };
+              updateElement({ shadow: { ...s, color: e.target.value } });
+            }}
+            style={inputStyle}
+            placeholder="rgba(0,0,0,0.15)"
+          />
+        </div>
+        {el.shadow && (
+          <button
+            onClick={() => {
+              dispatch({ type: "SNAPSHOT" });
+              updateElement({ shadow: null });
+            }}
+            style={{
+              marginTop: 8,
+              padding: "4px 10px",
+              fontSize: 11,
+              border: "1px solid #e5e7eb",
+              borderRadius: 6,
+              background: "#fff",
+              cursor: "pointer",
+              color: "#6b7280",
+            }}
+          >
+            Xóa bóng
+          </button>
+        )}
+      </PanelSection>
+
+      {/* ── Background Color (text only) ── */}
+      {isText && textProps && (
+        <PanelSection title="Nền văn bản" icon="🎨">
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="color"
+              value={textProps.backgroundColor || "#ffffff"}
+              onChange={(e) => updateProp({ backgroundColor: e.target.value })}
+              style={{
+                width: 32,
+                height: 32,
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                cursor: "pointer",
+                padding: 0,
+              }}
+            />
+            <input
+              type="text"
+              value={textProps.backgroundColor || ""}
+              onChange={(e) => updateProp({ backgroundColor: e.target.value })}
+              style={{ ...inputStyle, flex: 1 }}
+              placeholder="transparent"
+            />
+          </div>
+          {textProps.backgroundColor && (
+            <button
+              onClick={() => updateProp({ backgroundColor: "" })}
+              style={{
+                marginTop: 6,
+                padding: "4px 10px",
+                fontSize: 11,
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                background: "#fff",
+                cursor: "pointer",
+                color: "#6b7280",
+              }}
+            >
+              Xóa nền
+            </button>
+          )}
+        </PanelSection>
+      )}
+
       {/* ── Lock ── */}
       <PanelSection title="Khóa" icon="🔒">
-        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 12, color: "#374151" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            fontSize: 12,
+            color: "#374151",
+          }}
+        >
           <input
             type="checkbox"
             checked={el.locked}
@@ -368,21 +800,42 @@ export function CanvasRightPanel() {
 }
 
 /** Collapsible panel section */
-function PanelSection({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function PanelSection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(true);
   return (
-    <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10, marginTop: 10 }}>
+    <div
+      style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10, marginTop: 10 }}
+    >
       <button
         onClick={() => setOpen(!open)}
         style={{
-          display: "flex", alignItems: "center", gap: 6, width: "100%",
-          background: "none", border: "none", cursor: "pointer",
-          fontSize: 11, fontWeight: 600, color: "#374151", padding: 0, marginBottom: open ? 8 : 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          width: "100%",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#374151",
+          padding: 0,
+          marginBottom: open ? 8 : 0,
         }}
       >
         <span>{icon}</span>
         <span>{title}</span>
-        <span style={{ marginLeft: "auto", fontSize: 10, color: "#9ca3af" }}>{open ? "▼" : "▶"}</span>
+        <span style={{ marginLeft: "auto", fontSize: 10, color: "#9ca3af" }}>
+          {open ? "▼" : "▶"}
+        </span>
       </button>
       {open && children}
     </div>
@@ -390,15 +843,29 @@ function PanelSection({ title, icon, children }: { title: string; icon: string; 
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 10, fontWeight: 600, color: "#6b7280", display: "block", marginBottom: 4,
+  fontSize: 10,
+  fontWeight: 600,
+  color: "#6b7280",
+  display: "block",
+  marginBottom: 4,
 };
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #e5e7eb",
-  fontSize: 12, boxSizing: "border-box", background: "#fff",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 6,
+  border: "1px solid #e5e7eb",
+  fontSize: 12,
+  boxSizing: "border-box",
+  background: "#fff",
 };
 
 const selectStyle: React.CSSProperties = {
-  width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #e5e7eb",
-  fontSize: 12, boxSizing: "border-box", background: "#fff",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 6,
+  border: "1px solid #e5e7eb",
+  fontSize: 12,
+  boxSizing: "border-box",
+  background: "#fff",
 };

@@ -53,6 +53,8 @@ export function ElementToolbar() {
         top: el.top - 44,
         left: el.left,
         zIndex: 100000,
+        transformOrigin: `0 ${44 + (typeof elHeight === "number" ? elHeight / 2 : 20)}px`,
+        transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
         display: "flex",
         alignItems: "center",
         gap: 2,
@@ -63,18 +65,39 @@ export function ElementToolbar() {
       }}
     >
       <ToolbarBtn title="Nhân bản" onClick={handleClone}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect x="9" y="9" width="13" height="13" rx="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
       </ToolbarBtn>
       <ToolbarBtn title="Lên một lớp" onClick={handleMoveUp}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M12 19V5M5 12l7-7 7 7" />
         </svg>
       </ToolbarBtn>
       <ToolbarBtn title="Xuống một lớp" onClick={handleMoveDown}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M12 5v14M5 12l7 7 7-7" />
         </svg>
       </ToolbarBtn>
@@ -83,7 +106,14 @@ export function ElementToolbar() {
         onClick={handleLock}
         active={el.locked}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           {el.locked ? (
             <>
               <rect x="3" y="11" width="18" height="11" rx="2" />
@@ -97,9 +127,23 @@ export function ElementToolbar() {
           )}
         </svg>
       </ToolbarBtn>
-      <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+      <div
+        style={{
+          width: 1,
+          height: 18,
+          background: "rgba(255,255,255,0.15)",
+          margin: "0 2px",
+        }}
+      />
       <ToolbarBtn title="Xóa" onClick={handleDelete} danger>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         </svg>
       </ToolbarBtn>

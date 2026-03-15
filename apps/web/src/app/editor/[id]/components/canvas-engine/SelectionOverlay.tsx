@@ -111,16 +111,12 @@ export function SelectionOverlay() {
     if (dir.includes("e")) newWidth = Math.max(20, origWidth + dx);
     if (dir.includes("w")) {
       newWidth = Math.max(20, origWidth - dx);
-      newLeft = origLeft + dx;
+      newLeft = origLeft + (origWidth - newWidth);
     }
     if (dir.includes("s")) newHeight = Math.max(20, origHeight + dy);
-    if (dir.includes("n") && dir !== "ne" && dir !== "nw") {
+    if (dir.includes("n")) {
       newHeight = Math.max(20, origHeight - dy);
-      newTop = origTop + dy;
-    }
-    if (dir === "nw" || dir === "ne") {
-      newHeight = Math.max(20, origHeight - dy);
-      newTop = origTop + dy;
+      newTop = origTop + (origHeight - (newHeight as number));
     }
 
     dispatch({

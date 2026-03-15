@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useReducer, useCallback, type Dispatch } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  type Dispatch,
+} from "react";
 import type { EditorState, EditorAction, CanvasElement } from "./types";
 
 const MAX_UNDO = 50;
@@ -52,7 +58,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 
     case "DELETE_ELEMENT": {
       const elements = state.elements.filter((el) => el.id !== action.id);
-      const selectedId = state.selectedId === action.id ? null : state.selectedId;
+      const selectedId =
+        state.selectedId === action.id ? null : state.selectedId;
       return { ...state, elements, selectedId };
     }
 
@@ -65,9 +72,9 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 
       let newZ = el.zIndex;
       if (action.direction === "front") newZ = maxZ + 1;
-      else if (action.direction === "back") newZ = Math.max(minZ - 1, 0);
+      else if (action.direction === "back") newZ = minZ - 1;
       else if (action.direction === "up") newZ = el.zIndex + 1;
-      else if (action.direction === "down") newZ = Math.max(el.zIndex - 1, 0);
+      else if (action.direction === "down") newZ = el.zIndex - 1;
 
       const elements = state.elements.map((e) =>
         e.id === action.id ? { ...e, zIndex: newZ } : e,

@@ -1,9 +1,16 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorContext } from "./useEditorState";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { ElementToolbar } from "./ElementToolbar";
 import type { CanvasElement, TextProps, ImageProps } from "./types";
+
+/** Sanitize paste to plain text only — prevents XSS via pasted HTML */
+function handlePastePlainText(e: React.ClipboardEvent) {
+  e.preventDefault();
+  const text = e.clipboardData.getData("text/plain");
+  document.execCommand("insertText", false, text);
+}
 
 /** Render a single text element */
 function TextElement({
@@ -44,6 +51,7 @@ function TextElement({
       contentEditable={isEditing}
       suppressContentEditableWarning
       onBlur={isEditing ? handleBlur : undefined}
+      onPaste={isEditing ? handlePastePlainText : undefined}
       onDoubleClick={onStartEdit}
       style={{
         width: "100%",
@@ -174,7 +182,6 @@ export function CanvasRenderer() {
 
   const handleSelect = useCallback(
     (id: string) => {
-      dispatch({ type: "SNAPSHOT" });
       dispatch({ type: "SELECT", id });
     },
     [dispatch],
@@ -189,8 +196,9 @@ export function CanvasRenderer() {
     [dispatch],
   );
 
-  const sortedElements = [...state.elements].sort(
-    (a, b) => a.zIndex - b.zIndex,
+  const sortedElements = useMemo(
+    () => [...state.elements].sort((a, b) => a.zIndex - b.zIndex),
+    [state.elements],
   );
 
   return (

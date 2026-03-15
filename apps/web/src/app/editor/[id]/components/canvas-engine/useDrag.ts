@@ -9,6 +9,7 @@ export function useDrag(elementId: string) {
     startY: number;
     origTop: number;
     origLeft: number;
+    snapshotTaken: boolean;
   } | null>(null);
 
   const onPointerDown = useCallback(
@@ -19,7 +20,6 @@ export function useDrag(elementId: string) {
       e.stopPropagation();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-      dispatch({ type: "SNAPSHOT" });
       dispatch({ type: "SELECT", id: elementId });
 
       dragRef.current = {
@@ -27,6 +27,7 @@ export function useDrag(elementId: string) {
         startY: e.clientY,
         origTop: el.top,
         origLeft: el.left,
+        snapshotTaken: false,
       };
     },
     [elementId, state.elements, dispatch],
@@ -35,6 +36,12 @@ export function useDrag(elementId: string) {
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!dragRef.current) return;
+
+      // Defer snapshot until first actual move
+      if (!dragRef.current.snapshotTaken) {
+        dispatch({ type: "SNAPSHOT" });
+        dragRef.current.snapshotTaken = true;
+      }
 
       const zoom = state.zoom;
       const dx = (e.clientX - dragRef.current.startX) / zoom;
