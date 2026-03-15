@@ -40,7 +40,7 @@ export function BackupRecoveryBanner({
         Phát hiện bản sao lưu chưa được lưu. Bạn muốn khôi phục?
       </p>
       <button
-        onClick={() => {
+        onClick={async () => {
           try {
             const backup = localStorage.getItem(`editor_backup_${projectId}`);
             if (backup) {

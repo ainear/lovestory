@@ -3,6 +3,7 @@
 import React from "react";
 import { Image as ImageIcon } from "lucide-react";
 import { STOCK_IMAGES, panelLabelStyle } from "../editor-constants";
+import type { EditorAction } from "../canvas-engine/types";
 
 interface UploadedImage {
   url: string;
@@ -16,19 +17,7 @@ interface ImageTabProps {
   uploadedImages: UploadedImage[];
   setUploadedImages: React.Dispatch<React.SetStateAction<UploadedImage[]>>;
   triggerAutosave: () => void;
-  /** Stub query object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  /** Stub actions object for legacy CraftJS sidebar code */
-  actions: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    addNodeTree: (...args: any[]) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-  };
-  /** Stub CraftImage component for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftImage: React.ComponentType<any>;
+  editorDispatch?: React.Dispatch<EditorAction>;
 }
 
 export function ImageTab({
@@ -37,10 +26,42 @@ export function ImageTab({
   uploadedImages,
   setUploadedImages,
   triggerAutosave,
-  query,
-  actions,
-  CraftImage,
+  editorDispatch,
 }: ImageTabProps) {
+  function addStockImage(url: string) {
+    if (!editorDispatch) return;
+    editorDispatch({ type: "SNAPSHOT" });
+    editorDispatch({
+      type: "ADD_ELEMENT",
+      element: {
+        id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        type: "image",
+        top: 100,
+        left: 50,
+        width: 300,
+        height: 200,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+        zIndex: 1,
+        locked: false,
+        visible: true,
+        opacity: 1,
+        borderRadius: 12,
+        border: { width: 0, color: "transparent", style: "solid" },
+        shadow: null,
+        entrance: null,
+        continuous: null,
+        props: {
+          src: url,
+          objectFit: "cover",
+          crop: null,
+        },
+      },
+    });
+    triggerAutosave();
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <p style={panelLabelStyle}>Thêm hình ảnh</p>
@@ -94,8 +115,7 @@ export function ImageTab({
         </span>
         <span>•</span>
         <span>
-          Còn lại:{" "}
-          <strong>{Math.max(0, 10 - uploadedImages.length)}</strong>
+          Còn lại: <strong>{Math.max(0, 10 - uploadedImages.length)}</strong>
         </span>
       </div>
 
@@ -200,25 +220,7 @@ export function ImageTab({
         {STOCK_IMAGES.map((img, i) => (
           <button
             key={i}
-            onClick={() => {
-              const tree = query
-                .parseReactElement(
-                  <CraftImage
-                    src={img.url}
-                    borderRadius={12}
-                    objectFit="cover"
-                    opacity={1}
-                    shadow={false}
-                    borderWidth={0}
-                    borderColor="transparent"
-                  />,
-                )
-                .toNodeTree();
-              const rootNodeId = query.node("ROOT").get().data
-                .nodes?.[0];
-              if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
-              triggerAutosave();
-            }}
+            onClick={() => addStockImage(img.url)}
             title={img.label}
             style={{
               width: "100%",

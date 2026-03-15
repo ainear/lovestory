@@ -70,48 +70,11 @@ interface SidebarPanelProps {
   /* Components tab */
   sectionCat: string;
   setSectionCat: (val: string) => void;
-  /* Canvas-engine state for section presets */
+  /* Canvas-engine state */
   editorDispatch?: React.Dispatch<EditorAction>;
   editorState?: EditorState;
   /* Common */
   triggerAutosave: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
-  /* Stub components */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftText: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftImage: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftContainer: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftCountdown: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftCalendar: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftMap: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftRSVP: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftCallButton: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftPhotoAlbum: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftYouTube: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftQRBox: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftGuestName: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftFormBuilder: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftEnvelope: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftSticker: React.ComponentType<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftShape: React.ComponentType<any>;
 }
 
 export function SidebarPanel(props: SidebarPanelProps) {
@@ -183,9 +146,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
             uploadedImages={props.uploadedImages}
             setUploadedImages={props.setUploadedImages}
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
-            CraftImage={props.CraftImage}
+            editorDispatch={props.editorDispatch}
           />
         )}
 
@@ -199,27 +160,13 @@ export function SidebarPanel(props: SidebarPanelProps) {
             setBgOpacity={props.setBgOpacity}
             triggerAutosave={props.triggerAutosave}
             projectId={props.projectId}
-            query={props.query}
-            actions={props.actions}
           />
         )}
 
         {activeTab === "plugins" && (
           <PluginsTab
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
-            CraftCountdown={props.CraftCountdown}
-            CraftCalendar={props.CraftCalendar}
-            CraftMap={props.CraftMap}
-            CraftRSVP={props.CraftRSVP}
-            CraftCallButton={props.CraftCallButton}
-            CraftPhotoAlbum={props.CraftPhotoAlbum}
-            CraftYouTube={props.CraftYouTube}
-            CraftQRBox={props.CraftQRBox}
-            CraftGuestName={props.CraftGuestName}
-            CraftFormBuilder={props.CraftFormBuilder}
-            CraftEnvelope={props.CraftEnvelope}
+            editorDispatch={props.editorDispatch}
           />
         )}
 
@@ -228,18 +175,14 @@ export function SidebarPanel(props: SidebarPanelProps) {
             clipartCat={props.clipartCat}
             setClipartCat={props.setClipartCat}
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
-            CraftSticker={props.CraftSticker}
+            editorDispatch={props.editorDispatch}
           />
         )}
 
         {activeTab === "shapes" && (
           <ShapesTab
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
-            CraftShape={props.CraftShape}
+            editorDispatch={props.editorDispatch}
           />
         )}
 
@@ -248,8 +191,6 @@ export function SidebarPanel(props: SidebarPanelProps) {
             background={props.background}
             setBackground={props.setBackground}
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
           />
         )}
 
@@ -293,11 +234,6 @@ export function SidebarPanel(props: SidebarPanelProps) {
             sectionCat={props.sectionCat}
             setSectionCat={props.setSectionCat}
             triggerAutosave={props.triggerAutosave}
-            query={props.query}
-            actions={props.actions}
-            CraftText={props.CraftText}
-            CraftImage={props.CraftImage}
-            CraftContainer={props.CraftContainer}
             editorDispatch={props.editorDispatch}
             editorState={props.editorState}
           />

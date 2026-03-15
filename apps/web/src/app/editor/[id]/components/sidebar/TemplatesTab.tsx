@@ -7,20 +7,12 @@ interface TemplatesTabProps {
   background: string;
   setBackground: (val: string) => void;
   triggerAutosave: () => void;
-  /** Stub query object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  /** Stub actions object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
 }
 
 export function TemplatesTab({
   background,
   setBackground,
   triggerAutosave,
-  query,
-  actions,
 }: TemplatesTabProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -70,32 +62,6 @@ export function TemplatesTab({
               <button
                 onClick={() => {
                   setBackground(t.bg);
-                  const rootNodeId = query.node("ROOT").get().data
-                    .nodes?.[0];
-                  if (rootNodeId) {
-                    actions.setProp(
-                      rootNodeId,
-                      (props: { background: string }) => {
-                        props.background = t.bg;
-                      },
-                    );
-                  }
-                  const nodes = query.getSerializedNodes();
-                  Object.keys(nodes).forEach((nodeId) => {
-                    const node = nodes[nodeId];
-                    if (
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (node?.type as any)?.resolvedName ===
-                      "CraftText"
-                    ) {
-                      actions.setProp(
-                        nodeId,
-                        (props: { color: string }) => {
-                          props.color = t.textColor;
-                        },
-                      );
-                    }
-                  });
                   triggerAutosave();
                 }}
                 style={{
@@ -183,16 +149,6 @@ export function TemplatesTab({
                     onClick={(e) => {
                       e.stopPropagation();
                       setBackground(t.bg);
-                      const rootNodeId = query.node("ROOT").get()
-                        .data.nodes?.[0];
-                      if (rootNodeId) {
-                        actions.setProp(
-                          rootNodeId,
-                          (props: { background: string }) => {
-                            props.background = t.bg;
-                          },
-                        );
-                      }
                       triggerAutosave();
                     }}
                     style={{

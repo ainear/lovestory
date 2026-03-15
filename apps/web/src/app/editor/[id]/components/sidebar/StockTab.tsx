@@ -5,30 +5,58 @@ import {
   CLIPART_CATEGORIES,
   CLIPART_ITEMS,
 } from "@/server/data/clipart-library";
+import type {
+  EditorAction,
+  CanvasElement,
+  StickerProps,
+} from "../canvas-engine/types";
 
 interface StockTabProps {
   clipartCat: string;
   setClipartCat: (val: string) => void;
   triggerAutosave: () => void;
-  /** Stub query object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  /** Stub actions object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
-  /** Stub CraftSticker component for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftSticker: React.ComponentType<any>;
+  editorDispatch?: React.Dispatch<EditorAction>;
 }
 
 export function StockTab({
   clipartCat,
   setClipartCat,
   triggerAutosave,
-  query,
-  actions,
-  CraftSticker,
+  editorDispatch,
 }: StockTabProps) {
+  function addSticker(item: { id: string; svgContent: string }) {
+    if (!editorDispatch) return;
+    const element: CanvasElement = {
+      id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: "sticker",
+      top: 100,
+      left: 100,
+      width: 150,
+      height: 150,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      zIndex: 1,
+      locked: false,
+      visible: true,
+      opacity: 1,
+      borderRadius: 0,
+      border: { width: 0, color: "transparent", style: "solid" },
+      shadow: null,
+      entrance: null,
+      continuous: null,
+      props: {
+        stickerId: item.id,
+        color: "#d4a574",
+        size: 150,
+        customSvg: item.svgContent,
+      } as StickerProps,
+    };
+    editorDispatch({ type: "SNAPSHOT" });
+    editorDispatch({ type: "ADD_ELEMENT", element });
+    triggerAutosave();
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p
@@ -57,8 +85,7 @@ export function StockTab({
               fontSize: 11,
               cursor: "pointer",
               fontWeight: 500,
-              background:
-                clipartCat === cat.id ? "#fdf2f8" : "#f3f4f6",
+              background: clipartCat === cat.id ? "#fdf2f8" : "#f3f4f6",
               color: clipartCat === cat.id ? "#be185d" : "#6b7280",
             }}
           >
@@ -75,27 +102,11 @@ export function StockTab({
         }}
       >
         {CLIPART_ITEMS.filter(
-          (item) =>
-            clipartCat === "all" || item.category === clipartCat,
+          (item) => clipartCat === "all" || item.category === clipartCat,
         ).map((item) => (
           <button
             key={item.id}
-            onClick={() => {
-              const el = (
-                <CraftSticker
-                  stickerId={item.id}
-                  color="#d4a574"
-                  size={150}
-                  opacity={1}
-                  customSvg={item.svgContent}
-                />
-              );
-              const tree = query.parseReactElement(el).toNodeTree();
-              const rootNodeId = query.node("ROOT").get().data
-                .nodes?.[0];
-              if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
-              triggerAutosave();
-            }}
+            onClick={() => addSticker(item)}
             title={item.name}
             style={{
               padding: 6,

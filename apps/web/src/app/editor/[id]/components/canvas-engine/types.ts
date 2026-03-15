@@ -24,7 +24,7 @@ export interface CanvasElement {
   } | null;
   entrance: { type: string; duration: number; delay: number } | null;
   continuous: { type: string; duration: number } | null;
-  props: TextProps | ImageProps | ShapeProps | WidgetProps;
+  props: TextProps | ImageProps | ShapeProps | StickerProps | WidgetProps;
 }
 
 export interface TextProps {
@@ -46,8 +46,15 @@ export interface ImageProps {
   crop: { x: number; y: number; width: number; height: number } | null;
 }
 
+export interface StickerProps {
+  stickerId: string;
+  color: string;
+  size: number;
+  customSvg?: string;
+}
+
 export interface ShapeProps {
-  shapeType: "rectangle" | "circle" | "line" | "star" | "heart";
+  shapeType: "rectangle" | "circle" | "line" | "star" | "heart" | "triangle";
   fill: string;
   stroke: string;
   strokeWidth: number;

@@ -1,21 +1,23 @@
 "use client";
 
 import React from "react";
+import type {
+  EditorAction,
+  CanvasElement,
+  ShapeProps,
+} from "../canvas-engine/types";
 
 interface ShapesTabProps {
   triggerAutosave: () => void;
-  /** Stub query object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  /** Stub actions object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
-  /** Stub CraftShape component for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CraftShape: React.ComponentType<any>;
+  editorDispatch?: React.Dispatch<EditorAction>;
 }
 
-const SHAPES = [
+const SHAPES: {
+  id: string;
+  name: string;
+  shapeType: ShapeProps["shapeType"];
+  svg: string;
+}[] = [
   {
     id: "shape-line",
     name: "Đường thẳng",
@@ -54,12 +56,40 @@ const SHAPES = [
   },
 ];
 
-export function ShapesTab({
-  triggerAutosave,
-  query,
-  actions,
-  CraftShape,
-}: ShapesTabProps) {
+export function ShapesTab({ triggerAutosave, editorDispatch }: ShapesTabProps) {
+  function addShape(shapeType: ShapeProps["shapeType"]) {
+    if (!editorDispatch) return;
+    const element: CanvasElement = {
+      id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: "shape",
+      top: 100,
+      left: 100,
+      width: 120,
+      height: 120,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      zIndex: 1,
+      locked: false,
+      visible: true,
+      opacity: 1,
+      borderRadius: 0,
+      border: { width: 0, color: "transparent", style: "solid" },
+      shadow: null,
+      entrance: null,
+      continuous: null,
+      props: {
+        shapeType,
+        fill: "#374151",
+        stroke: "#374151",
+        strokeWidth: 2,
+      },
+    };
+    editorDispatch({ type: "SNAPSHOT" });
+    editorDispatch({ type: "ADD_ELEMENT", element });
+    triggerAutosave();
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p
@@ -86,23 +116,7 @@ export function ShapesTab({
         {SHAPES.map((shape) => (
           <button
             key={shape.id}
-            onClick={() => {
-              const el = (
-                <CraftShape
-                  shapeType={shape.shapeType}
-                  fill="#374151"
-                  stroke="#374151"
-                  strokeWidth={2}
-                  opacity={1}
-                  rotation={0}
-                />
-              );
-              const tree = query.parseReactElement(el).toNodeTree();
-              const rootNodeId = query.node("ROOT").get().data
-                .nodes?.[0];
-              if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
-              triggerAutosave();
-            }}
+            onClick={() => addShape(shape.shapeType)}
             style={{
               padding: "12px 6px",
               borderRadius: 10,

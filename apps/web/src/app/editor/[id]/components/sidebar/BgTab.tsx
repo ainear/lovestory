@@ -12,12 +12,6 @@ interface BgTabProps {
   setBgOpacity: (val: number) => void;
   triggerAutosave: () => void;
   projectId: string;
-  /** Stub query object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  /** Stub actions object for legacy CraftJS sidebar code */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
 }
 
 export function BgTab({
@@ -29,17 +23,9 @@ export function BgTab({
   setBgOpacity,
   triggerAutosave,
   projectId,
-  query,
-  actions,
 }: BgTabProps) {
   const applyBg = (val: string) => {
     setBackground(val);
-    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-    if (rootNodeId) {
-      actions.setProp(rootNodeId, (props: { background: string }) => {
-        props.background = val;
-      });
-    }
     triggerAutosave();
   };
 

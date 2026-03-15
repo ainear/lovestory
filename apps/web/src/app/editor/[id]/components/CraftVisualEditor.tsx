@@ -27,7 +27,6 @@ import type { CanvasElement } from "./canvas-engine/types";
 import { TEXT_PRESETS } from "./editor-constants";
 import { SidebarPanel } from "./sidebar/SidebarPanel";
 import { EditorTopBar } from "./sidebar/EditorTopBar";
-import { FloatingToolbar } from "./sidebar/FloatingToolbar";
 import { BackupRecoveryBanner } from "./sidebar/BackupRecoveryBanner";
 import { LeftIconColumn } from "./sidebar/LeftIconColumn";
 
@@ -72,66 +71,6 @@ function CraftEditorInner({
   projectSlug,
   onPublish,
 }: CraftVisualEditorProps) {
-  // CraftJS removed — these stubs keep remaining sidebar UI code compiling.
-  // The sidebar tab buttons (text, image, sticker, etc.) still reference
-  // actions/query but are effectively no-ops. The custom canvas engine
-  // handles element management via EditorContext.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const selected:
-    | {
-        id: string;
-        name: string;
-        settings: any;
-        isDeletable: boolean;
-        props: any;
-      }
-    | undefined = undefined as any;
-  const canUndo = false;
-  const canRedo = false;
-  // Stub components for dead sidebar code that still references them in JSX.
-  // These are never rendered — only passed to query.parseReactElement (also a stub).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const StubComponent = (_props: any) => null;
-  const CraftText = StubComponent;
-  const CraftImage = StubComponent;
-  const CraftContainer = StubComponent;
-  const RootContainer = StubComponent;
-  const CraftCountdown = StubComponent;
-  const CraftCalendar = StubComponent;
-  const CraftMap = StubComponent;
-  const CraftRSVP = StubComponent;
-  const CraftCallButton = StubComponent;
-  const CraftPhotoAlbum = StubComponent;
-  const CraftYouTube = StubComponent;
-  const CraftQRBox = StubComponent;
-  const CraftGuestName = StubComponent;
-  const CraftFormBuilder = StubComponent;
-  const CraftEnvelope = StubComponent;
-  const CraftSticker = StubComponent;
-  const CraftShape = StubComponent;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const noop = (..._args: any[]) => {};
-  const actions = {
-    history: { undo: noop, redo: noop },
-    delete: noop,
-    addNodeTree: noop,
-    move: noop,
-    setProp: noop,
-    deserialize: noop,
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: any = {
-    serialize: () => "{}",
-    getSerializedNodes: () => ({}),
-    node: (_id: string) => ({
-      get: () => ({ data: { nodes: [] } }),
-      toNodeTree: () => ({}),
-      isDeletable: () => false,
-    }),
-    parseReactElement: (_el: any) => ({ toNodeTree: () => ({}) }),
-  };
-
   const [activeTab, setActiveTab] = useState("text");
   const [clipartCat, setClipartCat] = useState("all");
   const [sectionCat, setSectionCat] = useState("all");
@@ -200,6 +139,8 @@ function CraftEditorInner({
 
   // ── Custom Canvas Engine State ──
   const [editorState, editorDispatch] = useReducer(editorReducer, initialState);
+  const canUndo = editorState.undoStack.length > 0;
+  const canRedo = editorState.redoStack.length > 0;
   // Stable ref for save() to avoid stale closure race condition
   const editorStateRef = useRef(editorState);
   useEffect(() => {
@@ -661,8 +602,6 @@ function CraftEditorInner({
         save={save}
         handlePublish={handlePublish}
         triggerAutosave={triggerAutosave}
-        query={query}
-        actions={actions}
       />
 
       {/* ── Backup Recovery Banner ── */}
@@ -735,24 +674,6 @@ function CraftEditorInner({
           sectionCat={sectionCat}
           setSectionCat={setSectionCat}
           triggerAutosave={triggerAutosave}
-          query={query}
-          actions={actions}
-          CraftText={CraftText}
-          CraftImage={CraftImage}
-          CraftContainer={CraftContainer}
-          CraftCountdown={CraftCountdown}
-          CraftCalendar={CraftCalendar}
-          CraftMap={CraftMap}
-          CraftRSVP={CraftRSVP}
-          CraftCallButton={CraftCallButton}
-          CraftPhotoAlbum={CraftPhotoAlbum}
-          CraftYouTube={CraftYouTube}
-          CraftQRBox={CraftQRBox}
-          CraftGuestName={CraftGuestName}
-          CraftFormBuilder={CraftFormBuilder}
-          CraftEnvelope={CraftEnvelope}
-          CraftSticker={CraftSticker}
-          CraftShape={CraftShape}
           editorDispatch={editorDispatch}
           editorState={editorState}
         />
@@ -767,15 +688,6 @@ function CraftEditorInner({
             position: "relative",
           }}
         >
-          {/* ── Floating Element Toolbar ── */}
-          {selected && (
-            <FloatingToolbar
-              selected={selected}
-              triggerAutosave={triggerAutosave}
-              query={query}
-              actions={actions}
-            />
-          )}
           <EditorContext.Provider value={editorCtx}>
             <CanvasRenderer />
             <CanvasContextMenu />

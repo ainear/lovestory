@@ -28,10 +28,6 @@ interface EditorTopBarProps {
   save: () => void;
   handlePublish: () => void;
   triggerAutosave: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  query: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actions: any;
 }
 
 export function EditorTopBar({
@@ -48,8 +44,6 @@ export function EditorTopBar({
   save,
   handlePublish,
   triggerAutosave,
-  query,
-  actions,
 }: EditorTopBarProps) {
   return (
     <div
@@ -159,15 +153,6 @@ export function EditorTopBar({
                   key={bg.label}
                   onClick={() => {
                     setBackground(bg.value);
-                    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                    if (rootNodeId) {
-                      actions.setProp(
-                        rootNodeId,
-                        (props: { background: string }) => {
-                          props.background = bg.value;
-                        },
-                      );
-                    }
                     triggerAutosave();
                     setShowTemplateSwap(false);
                   }}
