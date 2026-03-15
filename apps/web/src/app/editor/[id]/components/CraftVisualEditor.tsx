@@ -33,7 +33,7 @@ import {
   ArrowDown,
   RefreshCw,
 } from "lucide-react";
-import html2canvas from "html2canvas";
+// html2canvas loaded dynamically to avoid large static bundle (PERF-02)
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
 import { CraftImage } from "./craft/CraftImage";
@@ -74,7 +74,7 @@ const TABS = [
   { key: "effects", icon: <Sparkles size={20} />, label: "Hiệu ứng" },
   {
     key: "components",
-    icon: <LayoutTemplate size={20} />,
+    icon: <Grid size={20} />,
     label: "Thành phần",
   },
 ];
@@ -1022,15 +1022,18 @@ function CraftEditorInner({
         const el = canvasRef.current;
         if (!el) return;
         setThumbnailLoading(true);
-        html2canvas(el, {
-          useCORS: true,
-          allowTaint: true,
-          scale: 0.5,
-          width: el.offsetWidth,
-          height: Math.min(el.offsetHeight, 1200),
-          windowWidth: el.offsetWidth,
-          windowHeight: Math.min(el.offsetHeight, 1200),
-        })
+        import("html2canvas")
+          .then(({ default: html2canvas }) =>
+            html2canvas(el, {
+              useCORS: true,
+              allowTaint: true,
+              scale: 0.5,
+              width: el.offsetWidth,
+              height: Math.min(el.offsetHeight, 1200),
+              windowWidth: el.offsetWidth,
+              windowHeight: Math.min(el.offsetHeight, 1200),
+            }),
+          )
           .then((capturedCanvas) => {
             const thumbCanvas = document.createElement("canvas");
             const maxW = 200;
@@ -2814,22 +2817,21 @@ function CraftEditorInner({
                         ))}
                       </div>
                       <button
-                        onClick={() => alert("Preview hiệu ứng sắp có!")}
+                        disabled
                         style={{
                           marginTop: 10,
                           padding: "8px 16px",
                           borderRadius: 10,
                           border: "none",
-                          background:
-                            "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                          color: "#fff",
+                          background: "rgba(100,100,120,0.3)",
+                          color: "rgba(255,255,255,0.4)",
                           fontSize: 12,
                           fontWeight: 600,
-                          cursor: "pointer",
+                          cursor: "not-allowed",
                           width: "100%",
                         }}
                       >
-                        🎬 Xem trước hiệu ứng
+                        🎬 Xem trước (sắp có)
                       </button>
                     </div>
                   )}
@@ -4412,15 +4414,18 @@ function CraftEditorInner({
                         const el = canvasRef.current;
                         if (!el || thumbnailLoading) return;
                         setThumbnailLoading(true);
-                        html2canvas(el, {
-                          useCORS: true,
-                          allowTaint: true,
-                          scale: 0.5,
-                          width: el.offsetWidth,
-                          height: Math.min(el.offsetHeight, 1200),
-                          windowWidth: el.offsetWidth,
-                          windowHeight: Math.min(el.offsetHeight, 1200),
-                        })
+                        import("html2canvas")
+                          .then(({ default: html2canvas }) =>
+                            html2canvas(el, {
+                              useCORS: true,
+                              allowTaint: true,
+                              scale: 0.5,
+                              width: el.offsetWidth,
+                              height: Math.min(el.offsetHeight, 1200),
+                              windowWidth: el.offsetWidth,
+                              windowHeight: Math.min(el.offsetHeight, 1200),
+                            }),
+                          )
                           .then((capturedCanvas) => {
                             const thumbCanvas =
                               document.createElement("canvas");

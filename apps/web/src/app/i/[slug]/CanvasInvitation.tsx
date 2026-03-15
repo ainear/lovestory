@@ -1438,12 +1438,15 @@ function CraftV2Renderer({
   craftState,
   background,
 }: {
-  craftState: string;
+  craftState: string | Record<string, unknown>;
   background: string;
 }) {
   const nodes: CraftState = useMemo(() => {
     try {
-      return JSON.parse(craftState);
+      if (typeof craftState === "object" && craftState !== null) {
+        return craftState as unknown as CraftState;
+      }
+      return JSON.parse(craftState as string);
     } catch {
       return {};
     }
@@ -1714,6 +1717,689 @@ function CraftV2Renderer({
       );
     }
 
+    if (name === "CraftCallButton") {
+      const icon =
+        p.type === "call"
+          ? "\u{1F4DE}"
+          : p.type === "zalo"
+            ? "\u{1F4AC}"
+            : "\u{2709}\u{FE0F}";
+      const href =
+        p.type === "call"
+          ? `tel:${p.phoneNumber}`
+          : p.type === "zalo"
+            ? `https://zalo.me/${p.phoneNumber}`
+            : `sms:${p.phoneNumber}`;
+      return (
+        <div key={nodeId}>
+          <a
+            href={href}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "14px 24px",
+              borderRadius: p.borderRadius ?? 24,
+              background: p.accentColor || "#ff6b9d",
+              color: p.textColor || "#fff",
+              textDecoration: "none",
+              fontWeight: 700,
+              fontSize: 15,
+              fontFamily: "'Inter', sans-serif",
+              boxShadow: `0 3px 12px ${p.accentColor || "#ff6b9d"}30`,
+              width: "100%",
+              boxSizing: "border-box" as const,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>{icon}</span>
+            {p.label || "Call"}
+          </a>
+        </div>
+      );
+    }
+
+    if (name === "CraftPhotoAlbum") {
+      const PLACEHOLDER_PHOTOS = [
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=300&h=300&fit=crop",
+      ];
+      const photos: string[] =
+        p.photos && p.photos.length > 0 ? p.photos : PLACEHOLDER_PHOTOS;
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: 16,
+            width: "100%",
+            boxSizing: "border-box" as const,
+          }}
+        >
+          {p.title && (
+            <p
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: p.accentColor || "#ff6b9d",
+                textAlign: "center",
+                margin: "0 0 12px",
+                fontFamily: "'Playfair Display', serif",
+              }}
+            >
+              {p.title}
+            </p>
+          )}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${p.columns ?? 3}, 1fr)`,
+              gap: p.gap ?? 6,
+            }}
+          >
+            {photos.map((src: string, i: number) => (
+              <div
+                key={i}
+                style={{
+                  aspectRatio: "1",
+                  borderRadius: p.borderRadius ?? 8,
+                  overflow: "hidden",
+                  background: "#f3f4f6",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={src}
+                  alt={`Photo ${i + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (name === "CraftYouTube") {
+      const videoMatch = (p.videoUrl || "").match(
+        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/,
+      );
+      const videoId = videoMatch ? videoMatch[1] : null;
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: 8,
+            width: "100%",
+            boxSizing: "border-box" as const,
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              paddingBottom: p.aspectRatio === "4:3" ? "75%" : "56.25%",
+              borderRadius: p.borderRadius ?? 12,
+              overflow: "hidden",
+              background: "#000",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+            }}
+          >
+            {videoId ? (
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0`}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Wedding Video"
+              />
+            ) : (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                }}
+              >
+                <span style={{ fontSize: 40 }}>Video</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (name === "CraftQRBox") {
+      const qrUrl = `https://img.vietqr.io/image/${p.bankName || "VCB"}-${p.accountNumber || ""}-compact.png?amount=${p.amount || ""}&addInfo=${encodeURIComponent(p.note || "")}&accountName=${encodeURIComponent(p.accountName || "")}`;
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: 20,
+            width: "100%",
+            boxSizing: "border-box" as const,
+            background: "rgba(255,255,255,0.85)",
+            borderRadius: p.borderRadius ?? 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              color: p.accentColor || "#ff6b9d",
+              margin: 0,
+              fontFamily: "'Playfair Display', serif",
+            }}
+          >
+            Mung cuoi
+          </p>
+          <div
+            style={{
+              width: 180,
+              height: 180,
+              borderRadius: 12,
+              overflow: "hidden",
+              background: "#fff",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {p.accountNumber ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={qrUrl}
+                alt="QR Code"
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            ) : (
+              <div
+                style={{
+                  textAlign: "center",
+                  color: "#9ca3af",
+                  fontSize: 12,
+                  padding: 16,
+                }}
+              >
+                <span style={{ fontSize: 32 }}>QR</span>
+              </div>
+            )}
+          </div>
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <p
+              style={{
+                fontSize: 13,
+                color: p.textColor || "#374151",
+                margin: "0 0 4px",
+                fontWeight: 600,
+              }}
+            >
+              {p.bankName || ""}
+            </p>
+            <p
+              style={{
+                fontSize: 16,
+                color: p.accentColor || "#ff6b9d",
+                margin: "0 0 4px",
+                fontWeight: 700,
+                letterSpacing: 1,
+              }}
+            >
+              {p.accountNumber || ""}
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color: p.textColor || "#374151",
+                margin: 0,
+                opacity: 0.7,
+              }}
+            >
+              {p.accountName || ""}
+            </p>
+          </div>
+          {p.accountNumber && (
+            <button
+              onClick={() => {
+                if (p.accountNumber)
+                  navigator.clipboard.writeText(p.accountNumber);
+              }}
+              style={{
+                padding: "8px 20px",
+                borderRadius: 20,
+                border: `1px solid ${p.accentColor || "#ff6b9d"}`,
+                background: "transparent",
+                color: p.accentColor || "#ff6b9d",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Sao chep STK
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    if (name === "CraftGuestName") {
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: "16px 20px",
+            width: "100%",
+            boxSizing: "border-box" as const,
+            textAlign:
+              (p.textAlign as React.CSSProperties["textAlign"]) ?? "center",
+          }}
+        >
+          {p.prefix && (
+            <p
+              style={{
+                fontSize: (p.fontSize ?? 28) * 0.6,
+                color: p.color || "#374151",
+                fontFamily: p.fontFamily || "'Playfair Display', serif",
+                margin: "0 0 4px",
+                opacity: 0.6,
+              }}
+            >
+              {p.prefix}
+            </p>
+          )}
+          <p
+            style={{
+              fontSize: p.fontSize ?? 28,
+              fontFamily: p.fontFamily || "'Playfair Display', serif",
+              color: p.accentColor || "#ff6b9d",
+              fontWeight: 700,
+              margin: 0,
+            }}
+          >
+            {p.defaultName || "Quy khach"}
+          </p>
+        </div>
+      );
+    }
+
+    if (name === "CraftFormBuilder") {
+      const fields = p.fields || [];
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: 20,
+            background: p.background || "rgba(255,255,255,0.8)",
+            borderRadius: p.borderRadius ?? 16,
+            width: "100%",
+            boxSizing: "border-box" as const,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: p.accentColor || "#ff6b9d",
+              margin: 0,
+              textAlign: "center",
+              fontFamily: "'Playfair Display', serif",
+            }}
+          >
+            {p.title || "Form"}
+          </p>
+          {p.subtitle && (
+            <p
+              style={{
+                fontSize: 12,
+                color: p.textColor || "#374151",
+                margin: 0,
+                textAlign: "center",
+                opacity: 0.7,
+              }}
+            >
+              {p.subtitle}
+            </p>
+          )}
+          {fields.map(
+            (field: {
+              id: string;
+              label: string;
+              type: string;
+              placeholder?: string;
+              options?: string[];
+              required?: boolean;
+            }) => (
+              <div
+                key={field.id}
+                style={{ display: "flex", flexDirection: "column", gap: 4 }}
+              >
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: p.textColor || "#374151",
+                  }}
+                >
+                  {field.label}
+                  {field.required && (
+                    <span
+                      style={{
+                        color: p.accentColor || "#ff6b9d",
+                        marginLeft: 2,
+                      }}
+                    >
+                      *
+                    </span>
+                  )}
+                </label>
+                {(field.type === "text" || field.type === "textarea") && (
+                  <input
+                    type="text"
+                    placeholder={field.placeholder || ""}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 10,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 13,
+                      width: "100%",
+                      boxSizing: "border-box" as const,
+                    }}
+                  />
+                )}
+                {field.type === "radio" && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {(field.options || []).map((opt: string) => (
+                      <button
+                        key={opt}
+                        style={{
+                          flex: 1,
+                          padding: "10px 8px",
+                          borderRadius: 10,
+                          border: "none",
+                          background: "#f3f4f6",
+                          color: p.textColor || "#374151",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          minWidth: 80,
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ),
+          )}
+          <button
+            style={{
+              padding: "12px 20px",
+              borderRadius: 24,
+              border: "none",
+              cursor: "pointer",
+              background: p.accentColor || "#ff6b9d",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 700,
+              marginTop: 4,
+            }}
+          >
+            {p.buttonText || "Gui"}
+          </button>
+        </div>
+      );
+    }
+
+    if (name === "CraftEnvelope") {
+      return (
+        <div
+          key={nodeId}
+          style={{
+            padding: 20,
+            width: "100%",
+            boxSizing: "border-box" as const,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 220,
+              height: 160,
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                background: p.envelopeColor || "#d4a574",
+                borderRadius: "0 0 8px 8px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  left: 15,
+                  right: 15,
+                  height: 120,
+                  background: "#fff",
+                  borderRadius: 6,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: p.sealColor || "#c0392b",
+                    fontFamily: p.fontFamily || "'Playfair Display', serif",
+                    fontWeight: 700,
+                  }}
+                >
+                  {p.groomName || "Anh"} & {p.brideName || "Em"}
+                </span>
+                <span style={{ fontSize: 8, color: "#9ca3af" }}>
+                  Wedding Invitation
+                </span>
+              </div>
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: -12,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: p.sealColor || "#c0392b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  fontSize: 14,
+                }}
+              >
+                {"\u{1F48C}"}
+              </div>
+            </div>
+          </div>
+          <p
+            style={{
+              fontSize: 13,
+              color: p.textColor || "#374151",
+              fontFamily: p.fontFamily || "'Playfair Display', serif",
+              fontWeight: 600,
+              textAlign: "center",
+              margin: 0,
+            }}
+          >
+            {p.label || "Nhan de mo thiep moi"}
+          </p>
+        </div>
+      );
+    }
+
+    if (name === "CraftSticker") {
+      const STICKER_SVGS_VIEWER: Record<string, (c: string) => string> = {
+        "heart-divider": (c) =>
+          `<svg viewBox="0 0 200 30" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="15" x2="75" y2="15" stroke="${c}" stroke-width="1" opacity="0.4"/><path d="M100 5 C95 0 85 0 85 8 C85 16 100 22 100 22 C100 22 115 16 115 8 C115 0 105 0 100 5Z" fill="${c}"/><line x1="125" y1="15" x2="195" y2="15" stroke="${c}" stroke-width="1" opacity="0.4"/></svg>`,
+        "double-hearts": (c) =>
+          `<svg viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg"><path d="M25 10 C22 5 15 5 15 12 C15 19 25 25 25 25 C25 25 35 19 35 12 C35 5 28 5 25 10Z" fill="${c}" opacity="0.7"/><path d="M55 10 C52 5 45 5 45 12 C45 19 55 25 55 25 C55 25 65 19 65 12 C65 5 58 5 55 10Z" fill="${c}" opacity="0.9"/></svg>`,
+        rings: (c) =>
+          `<svg viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="20" r="12" fill="none" stroke="${c}" stroke-width="2.5"/><circle cx="52" cy="20" r="12" fill="none" stroke="${c}" stroke-width="2.5"/><circle cx="40" cy="8" r="2.5" fill="${c}"/></svg>`,
+        "floral-top": (c) =>
+          `<svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><path d="M30 35 Q40 15 50 25 Q55 10 65 20 Q75 5 80 20 Q85 5 95 20 Q105 10 110 25 Q120 15 130 35" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.6"/><circle cx="50" cy="22" r="2" fill="${c}" opacity="0.4"/><circle cx="80" cy="15" r="2.5" fill="${c}"/><circle cx="110" cy="22" r="2" fill="${c}" opacity="0.4"/></svg>`,
+        "gold-line": (c) =>
+          `<svg viewBox="0 0 200 10" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="5" x2="190" y2="5" stroke="${c}" stroke-width="1" opacity="0.5"/><circle cx="100" cy="5" r="3" fill="${c}"/><circle cx="85" cy="5" r="1.5" fill="${c}" opacity="0.5"/><circle cx="115" cy="5" r="1.5" fill="${c}" opacity="0.5"/></svg>`,
+        "leaf-branch": (c) =>
+          `<svg viewBox="0 0 160 30" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="15" x2="140" y2="15" stroke="${c}" stroke-width="0.8" opacity="0.3"/><ellipse cx="45" cy="11" rx="8" ry="4" fill="${c}" opacity="0.3" transform="rotate(-30 45 11)"/><ellipse cx="65" cy="19" rx="8" ry="4" fill="${c}" opacity="0.35" transform="rotate(30 65 19)"/><ellipse cx="95" cy="11" rx="8" ry="4" fill="${c}" opacity="0.35" transform="rotate(-30 95 11)"/><ellipse cx="115" cy="19" rx="8" ry="4" fill="${c}" opacity="0.3" transform="rotate(30 115 19)"/></svg>`,
+        "star-sparkle": (c) =>
+          `<svg viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg"><polygon points="20,5 22,12 29,12 23,17 25,24 20,19 15,24 17,17 11,12 18,12" fill="${c}" opacity="0.5"/><polygon points="50,3 52.5,11 60,11 54,16 56,24 50,19 44,24 46,16 40,11 47.5,11" fill="${c}" opacity="0.8"/><polygon points="80,5 82,12 89,12 83,17 85,24 80,19 75,24 77,17 71,12 78,12" fill="${c}" opacity="0.5"/></svg>`,
+        butterfly: (c) =>
+          `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><path d="M30 20 Q15 5 10 15 Q5 25 30 20" fill="${c}" opacity="0.6"/><path d="M30 20 Q45 5 50 15 Q55 25 30 20" fill="${c}" opacity="0.6"/><path d="M30 20 Q18 25 15 32 Q20 35 30 20" fill="${c}" opacity="0.4"/><path d="M30 20 Q42 25 45 32 Q40 35 30 20" fill="${c}" opacity="0.4"/><line x1="30" y1="15" x2="30" y2="25" stroke="${c}" stroke-width="1"/></svg>`,
+      };
+
+      const sColor = p.color || "#d4a574";
+      const sSize = p.size ?? 200;
+      const sOpacity = p.opacity ?? 1;
+
+      if (p.customSvg) {
+        const coloredSvg = (p.customSvg as string).replace(
+          /currentColor/g,
+          sColor,
+        );
+        return (
+          <div
+            key={nodeId}
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              padding: "4px 0",
+              opacity: sOpacity,
+            }}
+            dangerouslySetInnerHTML={{
+              __html: coloredSvg.replace(
+                "<svg ",
+                `<svg width="${sSize}" height="${sSize}" `,
+              ),
+            }}
+          />
+        );
+      }
+
+      const stickerFn = STICKER_SVGS_VIEWER[p.stickerId || "heart-divider"];
+      if (!stickerFn) return <div key={nodeId} />;
+      const svgStr = stickerFn(sColor);
+      return (
+        <div
+          key={nodeId}
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            padding: "4px 0",
+            opacity: sOpacity,
+          }}
+          dangerouslySetInnerHTML={{
+            __html: svgStr.replace(
+              "<svg ",
+              `<svg width="${sSize}" height="${sSize * 0.25}" `,
+            ),
+          }}
+        />
+      );
+    }
+
+    if (name === "CraftShape") {
+      const renderShapeSvg = (
+        shapeType: string,
+        fill: string,
+        stroke: string,
+        strokeWidth: number,
+      ): string => {
+        switch (shapeType) {
+          case "rectangle":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="${strokeWidth}" y="${strokeWidth}" width="${100 - strokeWidth * 2}" height="${100 - strokeWidth * 2}" rx="4" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/></svg>`;
+          case "circle":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="${48 - strokeWidth}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/></svg>`;
+          case "triangle":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 95,95 5,95" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round"/></svg>`;
+          case "star":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round"/></svg>`;
+          case "heart":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 88 C30 65 8 50 8 30 C8 15 18 8 28 8 C36 8 44 14 50 22 C56 14 64 8 72 8 C82 8 92 15 92 30 C92 50 70 65 50 88Z" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/></svg>`;
+          case "line":
+            return `<svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="10" x2="195" y2="10" stroke="${stroke || fill}" stroke-width="${Math.max(strokeWidth, 2)}" stroke-linecap="round"/></svg>`;
+          case "diamond":
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 95,50 50,95 5,50" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round"/></svg>`;
+          default:
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="96" height="96" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/></svg>`;
+        }
+      };
+      const svgStr = renderShapeSvg(
+        p.shapeType || "rectangle",
+        p.fill || "#f9a8d4",
+        p.stroke || "#ec4899",
+        p.strokeWidth ?? 2,
+      );
+      return (
+        <div
+          key={nodeId}
+          style={{
+            opacity: p.opacity ?? 1,
+            transform: p.rotation ? `rotate(${p.rotation}deg)` : undefined,
+          }}
+        >
+          <div
+            dangerouslySetInnerHTML={{ __html: svgStr }}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      );
+    }
+
     // Fallback: render children
     return <div key={nodeId}>{childIds.map((cid) => renderNode(cid))}</div>;
   }
@@ -1926,6 +2612,16 @@ export function CanvasInvitation({
                 @keyframes slideInUp { from { opacity: 0; transform: translateY(100%) } to { opacity: 1; transform: translateY(0) } }
                 html { scroll-behavior: smooth; }
                 body { overscroll-behavior-y: none; }
+                .canvas-section-v1 { width: 100%; max-width: 420px; box-sizing: border-box; }
+                @media (max-width: 420px) {
+                  .canvas-section-v1 { max-width: 100vw; }
+                  .canvas-section-v1-inner {
+                    transform-origin: top left;
+                    transform: scale(calc(100vw / 420));
+                    width: 420px !important;
+                  }
+                }
+                button, a { min-height: 44px; min-width: 44px; }
             `}</style>
 
       {/* Particle effects — fixed full-screen */}
@@ -1999,35 +2695,40 @@ export function CanvasInvitation({
               pageAnimation={pageAnimation}
             >
               <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  maxWidth: 420,
-                  minHeight: Math.max(sectionHeight, 200),
-                  margin: "0 auto",
-                  background: canvas.bg,
-                  overflow: "hidden",
-                  ...(sIdx === 0
-                    ? {
-                        borderRadius: "16px 16px 0 0",
-                        paddingTop: guestName ? 0 : 24,
-                      }
-                    : {}),
-                  ...(sIdx === sections.length - 1
-                    ? { borderRadius: "0 0 16px 16px", paddingBottom: 24 }
-                    : {}),
-                }}
+                className="canvas-section-v1"
+                style={{ margin: "0 auto", overflow: "hidden" }}
               >
-                {section.elements
-                  .sort((a, b) => a.zIndex - b.zIndex)
-                  .map((el, eIdx) => (
-                    <RenderElement
-                      key={el.id}
-                      el={el}
-                      sectionYStart={section.yStart}
-                      idx={eIdx}
-                    />
-                  ))}
+                <div
+                  className="canvas-section-v1-inner"
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    maxWidth: 420,
+                    minHeight: Math.max(sectionHeight, 200),
+                    background: canvas.bg,
+                    overflow: "hidden",
+                    ...(sIdx === 0
+                      ? {
+                          borderRadius: "16px 16px 0 0",
+                          paddingTop: guestName ? 0 : 24,
+                        }
+                      : {}),
+                    ...(sIdx === sections.length - 1
+                      ? { borderRadius: "0 0 16px 16px", paddingBottom: 24 }
+                      : {}),
+                  }}
+                >
+                  {section.elements
+                    .sort((a, b) => a.zIndex - b.zIndex)
+                    .map((el, eIdx) => (
+                      <RenderElement
+                        key={el.id}
+                        el={el}
+                        sectionYStart={section.yStart}
+                        idx={eIdx}
+                      />
+                    ))}
+                </div>
               </div>
             </ScrollSection>
           );
