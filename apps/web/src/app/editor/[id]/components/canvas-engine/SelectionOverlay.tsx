@@ -7,26 +7,42 @@ const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const;
 type HandleDir = (typeof HANDLES)[number];
 
 const HANDLE_CURSORS: Record<HandleDir, string> = {
-  nw: "nw-resize", n: "n-resize", ne: "ne-resize", e: "e-resize",
-  se: "se-resize", s: "s-resize", sw: "sw-resize", w: "w-resize",
+  nw: "nw-resize",
+  n: "n-resize",
+  ne: "ne-resize",
+  e: "e-resize",
+  se: "se-resize",
+  s: "s-resize",
+  sw: "sw-resize",
+  w: "w-resize",
 };
 
 function handlePosition(dir: HandleDir): React.CSSProperties {
   const half = -HANDLE_SIZE / 2;
   switch (dir) {
-    case "nw": return { top: half, left: half };
-    case "n":  return { top: half, left: "50%", marginLeft: half };
-    case "ne": return { top: half, right: half };
-    case "e":  return { top: "50%", right: half, marginTop: half };
-    case "se": return { bottom: half, right: half };
-    case "s":  return { bottom: half, left: "50%", marginLeft: half };
-    case "sw": return { bottom: half, left: half };
-    case "w":  return { top: "50%", left: half, marginTop: half };
+    case "nw":
+      return { top: half, left: half };
+    case "n":
+      return { top: half, left: "50%", marginLeft: half };
+    case "ne":
+      return { top: half, right: half };
+    case "e":
+      return { top: "50%", right: half, marginTop: half };
+    case "se":
+      return { bottom: half, right: half };
+    case "s":
+      return { bottom: half, left: "50%", marginLeft: half };
+    case "sw":
+      return { bottom: half, left: half };
+    case "w":
+      return { top: "50%", left: half, marginTop: half };
   }
 }
 
 export function SelectionOverlay() {
   const { state, dispatch } = useEditorContext();
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const rotateRef = useRef(false);
   const resizeRef = useRef<{
     dir: HandleDir;
     startX: number;
@@ -57,9 +73,32 @@ export function SelectionOverlay() {
     };
   };
 
+  const handleRotateDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dispatch({ type: "SNAPSHOT" });
+    rotateRef.current = true;
+  };
+
   const handleResizeMove = (e: React.PointerEvent) => {
+    if (rotateRef.current) {
+      if (!overlayRef.current) return;
+      const rect = overlayRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const angle =
+        Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) +
+        90;
+      dispatch({
+        type: "UPDATE_ELEMENT",
+        id: el.id,
+        patch: { rotation: angle },
+      });
+      return;
+    }
     if (!resizeRef.current) return;
-    const { dir, startX, startY, origTop, origLeft, origWidth, origHeight } = resizeRef.current;
+    const { dir, startX, startY, origTop, origLeft, origWidth, origHeight } =
+      resizeRef.current;
     const zoom = state.zoom;
     const dx = (e.clientX - startX) / zoom;
     const dy = (e.clientY - startY) / zoom;
@@ -93,10 +132,12 @@ export function SelectionOverlay() {
 
   const handleResizeUp = () => {
     resizeRef.current = null;
+    rotateRef.current = false;
   };
 
   return (
     <div
+      ref={overlayRef}
       onPointerMove={handleResizeMove}
       onPointerUp={handleResizeUp}
       style={{
@@ -142,6 +183,7 @@ export function SelectionOverlay() {
 
       {/* Rotate handle (above element) */}
       <div
+        onPointerDown={handleRotateDown}
         style={{
           position: "absolute",
           top: -28,
