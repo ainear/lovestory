@@ -7,12 +7,14 @@ interface TemplatesTabProps {
   background: string;
   setBackground: (val: string) => void;
   triggerAutosave: () => void;
+  userTier?: string;
 }
 
 export function TemplatesTab({
   background,
   setBackground,
   triggerAutosave,
+  userTier,
 }: TemplatesTabProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -44,6 +46,8 @@ export function TemplatesTab({
             PREMIUM: { bg: "#8b5cf6", text: "#fff" },
           };
           const badge = tierColors[t.tier];
+          const isPremiumLocked =
+            t.tier === "PREMIUM" && userTier !== "premium";
           return (
             <div
               key={t.name}
@@ -56,11 +60,13 @@ export function TemplatesTab({
                 background: "#fff",
                 overflow: "hidden",
                 transition: "all 0.2s",
+                opacity: isPremiumLocked ? 0.75 : 1,
               }}
             >
               {/* Thumbnail preview */}
               <button
                 onClick={() => {
+                  if (isPremiumLocked) return;
                   setBackground(t.bg);
                   triggerAutosave();
                 }}
@@ -68,7 +74,7 @@ export function TemplatesTab({
                   width: "100%",
                   padding: 0,
                   border: "none",
-                  cursor: "pointer",
+                  cursor: isPremiumLocked ? "not-allowed" : "pointer",
                   background: "none",
                   textAlign: "left",
                 }}
@@ -85,6 +91,30 @@ export function TemplatesTab({
                     overflow: "hidden",
                   }}
                 >
+                  {/* Premium lock overlay */}
+                  {isPremiumLocked && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.35)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 2,
+                        borderRadius: "inherit",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 22,
+                          filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
+                        }}
+                      >
+                        🔒
+                      </span>
+                    </div>
+                  )}
                   {/* Tier Badge */}
                   <span
                     style={{
@@ -98,6 +128,7 @@ export function TemplatesTab({
                       background: badge.bg,
                       color: badge.text,
                       letterSpacing: 0.5,
+                      zIndex: 3,
                     }}
                   >
                     {t.tier}
@@ -148,6 +179,7 @@ export function TemplatesTab({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (isPremiumLocked) return;
                       setBackground(t.bg);
                       triggerAutosave();
                     }}
@@ -155,20 +187,20 @@ export function TemplatesTab({
                       fontSize: 9,
                       padding: "2px 8px",
                       borderRadius: 4,
-                      border: "1px solid #3b82f6",
-                      background: "#eff6ff",
-                      color: "#3b82f6",
-                      cursor: "pointer",
+                      border: isPremiumLocked
+                        ? "1px solid #8b5cf6"
+                        : "1px solid #3b82f6",
+                      background: isPremiumLocked ? "#f5f3ff" : "#eff6ff",
+                      color: isPremiumLocked ? "#8b5cf6" : "#3b82f6",
+                      cursor: isPremiumLocked ? "not-allowed" : "pointer",
                       fontWeight: 600,
                     }}
                   >
-                    Xem mẫu
+                    {isPremiumLocked ? "Nâng cấp" : "Xem mẫu"}
                   </button>
                 </div>
                 {/* View count + usage */}
-                <div
-                  style={{ display: "flex", gap: 8, marginTop: 3 }}
-                >
+                <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
                   <span style={{ fontSize: 8, color: "#9ca3af" }}>
                     {t.views.toLocaleString()}
                   </span>
