@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Dancing_Script, Playfair_Display, Lora } from "next/font/google";
+import {
+  Inter,
+  Dancing_Script,
+  Playfair_Display,
+  Lora,
+  Quicksand,
+  Montserrat,
+  Great_Vibes,
+  Cormorant_Garamond,
+  Pacifico,
+} from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/client";
@@ -34,6 +44,50 @@ const lora = Lora({
   display: "swap",
 });
 
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const greatVibes = Great_Vibes({
+  variable: "--font-great-vibes",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const pacifico = Pacifico({
+  variable: "--font-pacifico",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+/*
+ * CineLove custom fonts that need self-hosting later:
+ * - BucThu (calligraphy) -> closest Google: Great Vibes
+ * - Aquarelle (watercolor script) -> closest Google: Pacifico
+ * - Mallong (elegant serif) -> closest Google: Cormorant Garamond
+ * For now using Google Font equivalents above.
+ */
+
 export const metadata: Metadata = {
   title: {
     default: "LoveStory — Thiệp cưới online & AI Video",
@@ -51,7 +105,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "LoveStory" }],
   creator: "LoveStory",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://7app.online"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://7app.online",
+  ),
   openGraph: {
     type: "website",
     locale: "vi_VN",
@@ -73,18 +129,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <head>
         {GA_ID && (
           <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
             <Script id="ga4" strategy="afterInteractive">
               {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}');`}
             </Script>
           </>
         )}
       </head>
-      <body className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} antialiased`} style={{ margin: 0 }}>
+      <body
+        suppressHydrationWarning
+        className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} antialiased`}
+        style={{ margin: 0 }}
+      >
         <TRPCProvider>{children}</TRPCProvider>
       </body>
     </html>

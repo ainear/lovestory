@@ -1,11 +1,36 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from "react";
 import {
-    Type, Image as ImageIcon, Palette, Music, Sparkles,
-    Undo2, Redo2, Eye, Rocket, Save, LayoutTemplate,
-    Grid, Smile, Plus, Download, Home, Share2, Layers,
-    ZoomIn, ZoomOut,
+  Type,
+  Image as ImageIcon,
+  Palette,
+  Music,
+  Sparkles,
+  Undo2,
+  Redo2,
+  Eye,
+  Rocket,
+  Save,
+  LayoutTemplate,
+  Grid,
+  Smile,
+  Plus,
+  Download,
+  Home,
+  Share2,
+  Layers,
+  ZoomIn,
+  ZoomOut,
+  Flower2,
+  HelpCircle,
+  Pentagon,
 } from "lucide-react";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
@@ -15,84 +40,601 @@ import { CraftCountdown } from "./craft/CraftCountdown";
 import { CraftCalendar } from "./craft/CraftCalendar";
 import { CraftMap } from "./craft/CraftMap";
 import { CraftRSVP } from "./craft/CraftRSVP";
+import { CraftCallButton } from "./craft/CraftCallButton";
+import { CraftPhotoAlbum } from "./craft/CraftPhotoAlbum";
+import { CraftYouTube } from "./craft/CraftYouTube";
+import { CraftQRBox } from "./craft/CraftQRBox";
+import { CraftGuestName } from "./craft/CraftGuestName";
+import { CraftFormBuilder } from "./craft/CraftFormBuilder";
+import { CraftEnvelope } from "./craft/CraftEnvelope";
+import { CraftSticker } from "./craft/CraftSticker";
+import { CraftShape } from "./craft/CraftShape";
+import {
+  CLIPART_CATEGORIES,
+  CLIPART_ITEMS,
+} from "@/server/data/clipart-library";
 import { createBrowserClient } from "@supabase/ssr";
 
-/* ── Tab config (same as old VisualEditor) ── */
+/* ── Tab config (CineLove parity: 10 tabs) ── */
 const TABS = [
-    { key: "text", icon: <Type size={18} />, label: "Văn bản" },
-    { key: "image", icon: <ImageIcon size={18} />, label: "Hình ảnh" },
-    { key: "bg", icon: <Palette size={18} />, label: "Nền" },
-    { key: "plugins", icon: <Grid size={18} />, label: "Tiện ích" },
-    { key: "templates", icon: <LayoutTemplate size={18} />, label: "Mẫu" },
-    { key: "effects", icon: <Sparkles size={18} />, label: "Hiệu ứng" },
-    { key: "music", icon: <Music size={18} />, label: "Âm nhạc" },
+  { key: "text", icon: <Type size={20} />, label: "Văn bản" },
+  { key: "image", icon: <ImageIcon size={20} />, label: "Hình ảnh" },
+  { key: "stock", icon: <Flower2 size={20} />, label: "Stock" },
+  { key: "shapes", icon: <Pentagon size={20} />, label: "Hình dạng" },
+  { key: "bg", icon: <Palette size={20} />, label: "Nền" },
+  { key: "music", icon: <Music size={20} />, label: "Âm nhạc" },
+  { key: "plugins", icon: <Grid size={20} />, label: "Tiện ích" },
+  { key: "templates", icon: <LayoutTemplate size={20} />, label: "Mẫu" },
+  { key: "effects", icon: <Sparkles size={20} />, label: "Hiệu ứng" },
+  { key: "support", icon: <HelpCircle size={20} />, label: "Hỗ trợ" },
 ];
 
 /* ── Text presets ── */
 const TEXT_PRESETS = [
-    { label: "Tiêu đề chính", fontSize: 32, fontFamily: "'Dancing Script', cursive", fontWeight: "bold", fontStyle: "normal" },
-    { label: "Tiêu đề phụ", fontSize: 18, fontFamily: "'Playfair Display', serif", fontWeight: "normal", fontStyle: "italic" },
-    { label: "Ngày tháng", fontSize: 22, fontFamily: "'Cormorant Garamond', serif", fontWeight: "bold", fontStyle: "normal" },
-    { label: "Địa điểm", fontSize: 14, fontFamily: "'Inter', sans-serif", fontWeight: "normal", fontStyle: "normal" },
-    { label: "Ghi chú", fontSize: 13, fontFamily: "'Lora', serif", fontWeight: "normal", fontStyle: "italic" },
+  {
+    label: "Tiêu đề chính",
+    fontSize: 32,
+    fontFamily: "'Dancing Script', cursive",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
+  {
+    label: "Tiêu đề phụ",
+    fontSize: 18,
+    fontFamily: "'Playfair Display', serif",
+    fontWeight: "normal",
+    fontStyle: "italic",
+  },
+  {
+    label: "Ngày tháng",
+    fontSize: 22,
+    fontFamily: "'Cormorant Garamond', serif",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
+  {
+    label: "Địa điểm",
+    fontSize: 14,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Ghi chú",
+    fontSize: 13,
+    fontFamily: "'Lora', serif",
+    fontWeight: "normal",
+    fontStyle: "italic",
+  },
 ];
 
-/* ── Background presets ── */
+/* ── Background presets — Solid colors ── */
 const BG_PRESETS = [
-    { label: "Hoa hồng", value: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)" },
-    { label: "Đêm tím", value: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)" },
-    { label: "Vàng hoàng hôn", value: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)" },
-    { label: "Anh đào", value: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)" },
-    { label: "Trắng tinh", value: "#ffffff" },
-    { label: "Đen sang trọng", value: "linear-gradient(180deg, #111827 0%, #1f2937 100%)" },
+  {
+    label: "Hoa hồng",
+    value: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+  },
+  {
+    label: "Đêm tím",
+    value: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)",
+  },
+  {
+    label: "Vàng hoàng hôn",
+    value: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)",
+  },
+  {
+    label: "Anh đào",
+    value: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)",
+  },
+  { label: "Trắng tinh", value: "#ffffff" },
+  {
+    label: "Đen sang trọng",
+    value: "linear-gradient(180deg, #111827 0%, #1f2937 100%)",
+  },
+];
+
+/* ── Gradient presets (CineLove parity) ── */
+const GRADIENT_PRESETS = [
+  {
+    label: "Hồng → Tím",
+    value: "linear-gradient(135deg, #fce4ec 0%, #e1bee7 100%)",
+  },
+  {
+    label: "Vàng → Cam",
+    value: "linear-gradient(135deg, #fff8e1 0%, #ffe0b2 100%)",
+  },
+  {
+    label: "Xanh → Tím",
+    value: "linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%)",
+  },
+  {
+    label: "Cam → Hồng",
+    value: "linear-gradient(135deg, #fff3e0 0%, #fce4ec 50%, #f3e5f5 100%)",
+  },
+  {
+    label: "Xanh lá → Vàng",
+    value: "linear-gradient(135deg, #e8f5e9 0%, #fffde7 100%)",
+  },
+  {
+    label: "Tím → Xanh",
+    value: "linear-gradient(135deg, #ede7f6 0%, #e3f2fd 100%)",
+  },
+  {
+    label: "Hoàng hôn",
+    value: "linear-gradient(180deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%)",
+  },
+  {
+    label: "Bình minh",
+    value: "linear-gradient(180deg, #fdfcfb 0%, #e2d1c3 100%)",
+  },
+  {
+    label: "Đêm sao",
+    value: "radial-gradient(ellipse at top, #1b2735 0%, #090a0f 100%)",
+  },
+  {
+    label: "Vàng ánh kim",
+    value: "linear-gradient(135deg, #f5f0e0 0%, #d4a574 50%, #f5f0e0 100%)",
+  },
+  {
+    label: "Navy sang trọng",
+    value: "linear-gradient(180deg, #1a2744 0%, #16213e 50%, #0f3460 100%)",
+  },
+  {
+    label: "Hồng pastel",
+    value:
+      "radial-gradient(ellipse at center, #ffeef8 0%, #fce4ec 50%, #f8bbd9 100%)",
+  },
+];
+
+/* ── Music widget style options ── */
+const MUSIC_WIDGET_STYLES = [
+  { id: "vinyl", label: "Đĩa than", emoji: "💿" },
+  { id: "notes", label: "Nốt nhạc", emoji: "🎵" },
+  { id: "wave", label: "Sóng âm", emoji: "🌊" },
+  { id: "minimal", label: "Tối giản", emoji: "▶️" },
 ];
 
 /* ── Music presets ── */
 const MUSIC_PRESETS = [
-    { id: "m1", label: "Beautiful Wedding", emoji: "🎵", url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3" },
-    { id: "m2", label: "Canon in D", emoji: "🎻", url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3" },
-    { id: "m3", label: "Romantic Piano", emoji: "🎹", url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3" },
-    { id: "m4", label: "Wedding March", emoji: "💍", url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3" },
-    { id: "m5", label: "Chill Acoustic", emoji: "🎸", url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3" },
-    { id: "m6", label: "Love Strings", emoji: "🎼", url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3" },
+  {
+    id: "m1",
+    label: "Bà Này Không Để Đi Diễn",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+    duration: "03:00",
+    cat: "vpop",
+  },
+  {
+    id: "m2",
+    label: "50 Năm Về Sau – đi…",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3",
+    duration: "03:54",
+    cat: "vpop",
+  },
+  {
+    id: "m3",
+    label: "50 Năm Về Sau (ma…",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3",
+    duration: "04:48",
+    cat: "vpop",
+  },
+  {
+    id: "m4",
+    label: "A Little Love",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3",
+    duration: "02:11",
+    cat: "intl",
+  },
+  {
+    id: "m5",
+    label: "A Thousand Years",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3",
+    duration: "04:48",
+    cat: "intl",
+  },
+  {
+    id: "m6",
+    label: "Alex Warren – Ordin…",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3",
+    duration: "03:08",
+    cat: "intl",
+  },
+  {
+    id: "m7",
+    label: "All of Me",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+    duration: "04:30",
+    cat: "intl",
+  },
+  {
+    id: "m8",
+    label: "Aloha – 이기타리스…",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3",
+    duration: "02:50",
+    cat: "intl",
+  },
+  {
+    id: "m9",
+    label: "Always",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3",
+    duration: "03:26",
+    cat: "intl",
+  },
+  {
+    id: "m10",
+    label: "Beautiful In White",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3",
+    duration: "04:15",
+    cat: "intl",
+  },
+  {
+    id: "m11",
+    label: "Canon in D – Pachelbel",
+    emoji: "🎻",
+    url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3",
+    duration: "05:30",
+    cat: "intl",
+  },
+  {
+    id: "m12",
+    label: "Can't Help Falling",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3",
+    duration: "03:00",
+    cat: "intl",
+  },
+  {
+    id: "m13",
+    label: "Cưới Nhau Đi (Yes I Do)",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+    duration: "04:20",
+    cat: "vpop",
+  },
+  {
+    id: "m14",
+    label: "Đi Về Nhà",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3",
+    duration: "03:45",
+    cat: "vpop",
+  },
+  {
+    id: "m15",
+    label: "Perfect – Ed Sheeran",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3",
+    duration: "04:23",
+    cat: "intl",
+  },
+  {
+    id: "m16",
+    label: "Marry Me – Train",
+    emoji: "💍",
+    url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3",
+    duration: "03:24",
+    cat: "intl",
+  },
+  {
+    id: "m17",
+    label: "From This Moment",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3",
+    duration: "03:38",
+    cat: "intl",
+  },
+  {
+    id: "m18",
+    label: "Here Comes The Sun",
+    emoji: "☀️",
+    url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3",
+    duration: "03:05",
+    cat: "intl",
+  },
+  {
+    id: "m19",
+    label: "Thinking Out Loud",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+    duration: "04:41",
+    cat: "intl",
+  },
+  {
+    id: "m20",
+    label: "Nơi Này Có Anh",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3",
+    duration: "04:15",
+    cat: "vpop",
+  },
+  {
+    id: "m21",
+    label: "Ngày Chung Đôi",
+    emoji: "💒",
+    url: "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3",
+    duration: "03:52",
+    cat: "vpop",
+  },
+  {
+    id: "m22",
+    label: "Chỉ Cần Em Hạnh Phúc",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3",
+    duration: "04:10",
+    cat: "vpop",
+  },
+  {
+    id: "m23",
+    label: "Yêu Là Cưới",
+    emoji: "💒",
+    url: "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3",
+    duration: "03:30",
+    cat: "vpop",
+  },
+  {
+    id: "m24",
+    label: "Anh Thấy Cô Gái Kia Chưa",
+    emoji: "🎵",
+    url: "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3",
+    duration: "03:42",
+    cat: "vpop",
+  },
 ];
+
+/* ── CineLove-style Accordion Section component ── */
+function AccordionSection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: "1px solid #f0f0f0" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          padding: "10px 0",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+          fontWeight: 600,
+          color: "#374151",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            color: "#9ca3af",
+            transition: "transform 0.2s",
+            transform: open ? "rotate(90deg)" : "rotate(0deg)",
+            display: "inline-block",
+          }}
+        >
+          ▶
+        </span>
+        <span>{icon}</span>
+        <span>{title}</span>
+      </button>
+      {open && <div style={{ padding: "0 0 12px 20px" }}>{children}</div>}
+    </div>
+  );
+}
 
 /* ── Particle effect presets (CineLove parity: 7 effects) ── */
 const PARTICLE_PRESETS = [
-    { id: "none", label: "Không hiệu ứng", emoji: "🚫" },
-    { id: "hearts", label: "Trái tim", emoji: "❤️" },
-    { id: "flowers", label: "Hoa anh đào", emoji: "🌸" },
-    { id: "snow", label: "Tuyết rơi", emoji: "❄️" },
-    { id: "stars", label: "Ngôi sao", emoji: "⭐" },
-    { id: "confetti", label: "Confetti", emoji: "🎉" },
-    { id: "butterflies", label: "Bướm", emoji: "🦋" },
-    { id: "mixed", label: "Hỗn hợp", emoji: "✨" },
+  { id: "none", label: "Không hiệu ứng", emoji: "🚫" },
+  { id: "hearts", label: "Trái tim", emoji: "❤️" },
+  { id: "flowers", label: "Hoa anh đào", emoji: "🌸" },
+  { id: "snow", label: "Tuyết rơi", emoji: "❄️" },
+  { id: "stars", label: "Ngôi sao", emoji: "⭐" },
+  { id: "confetti", label: "Confetti", emoji: "🎉" },
+  { id: "butterflies", label: "Bướm", emoji: "🦋" },
+  { id: "mixed", label: "Hỗn hợp", emoji: "✨" },
+];
+
+/* ── Page animation presets (CineLove parity: 7 effects) ── */
+const PAGE_ANIM_PRESETS = [
+  { id: "none", label: "None", icon: "🚫" },
+  { id: "fadeInAll", label: "Fade In All", icon: "🌫️" },
+  { id: "slideUpAll", label: "Slide Up All", icon: "⬆️" },
+  { id: "scaleInAll", label: "Scale In All", icon: "🔍" },
+  { id: "flipInAll", label: "Flip In All", icon: "🔄" },
+  { id: "slideUpMix", label: "Slide Up Mix", icon: "🎭" },
+  { id: "fadeInMix", label: "Fade In Mix", icon: "✨" },
+];
+
+/* ── Curtain / opening presets ── */
+const CURTAIN_PRESETS = [
+  {
+    id: "none",
+    label: "Không hiệu ứng",
+    emoji: "🚫",
+    desc: "Thiệp hiển thị ngay",
+  },
+  {
+    id: "envelope",
+    label: "Phong bì thư",
+    emoji: "💌",
+    desc: "Mở phong bì để xem thiệp",
+  },
+  { id: "curtain", label: "Rèm cửa", emoji: "🎭", desc: "Rèm kéo sang 2 bên" },
+  { id: "fadeReveal", label: "Fade lên", emoji: "🌅", desc: "Từ tối sáng dần" },
 ];
 
 /* ── Stock image library ── */
 const STOCK_IMAGES: { url: string; thumb: string; label: string }[] = [
-    { url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600", thumb: "https://images.unsplash.com/photo-1519741497674-611481863552?w=120", label: "Hoa cưới" },
-    { url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600", thumb: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=120", label: "Nhẫn cưới" },
-    { url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600", thumb: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=120", label: "Hoa hồng" },
-    { url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600", thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120", label: "Bàn tiệc" },
-    { url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600", thumb: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=120", label: "Cô dâu" },
-    { url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600", thumb: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=120", label: "Nến" },
-    { url: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600", thumb: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=120", label: "Bánh cưới" },
-    { url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600", thumb: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=120", label: "Lễ cưới" },
-    { url: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=600", thumb: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=120", label: "Hoa lá" },
-    { url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600", thumb: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=120", label: "Confetti" },
-    { url: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=600", thumb: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=120", label: "Đôi tay" },
-    { url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600", thumb: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=120", label: "Cổng hoa" },
+  {
+    url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600",
+    thumb: "https://images.unsplash.com/photo-1519741497674-611481863552?w=120",
+    label: "Hoa cưới",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600",
+    thumb: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=120",
+    label: "Nhẫn cưới",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600",
+    thumb: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=120",
+    label: "Hoa hồng",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600",
+    thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120",
+    label: "Bàn tiệc",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600",
+    thumb: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=120",
+    label: "Cô dâu",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600",
+    thumb: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=120",
+    label: "Nến",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600",
+    thumb: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=120",
+    label: "Bánh cưới",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600",
+    thumb: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=120",
+    label: "Lễ cưới",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=600",
+    thumb: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=120",
+    label: "Hoa lá",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600",
+    thumb: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=120",
+    label: "Confetti",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=600",
+    thumb: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=120",
+    label: "Đôi tay",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600",
+    thumb: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=120",
+    label: "Cổng hoa",
+  },
 ];
 
 /* ── Template style presets ── */
-const TEMPLATE_STYLES: { name: string; bg: string; textColor: string; font: string; desc: string }[] = [
-    { name: "Hoa hồng", bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)", textColor: "#831843", font: "'Dancing Script', cursive", desc: "Lãng mạn, nhẹ nhàng" },
-    { name: "Đêm tím", bg: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)", textColor: "#e9d5ff", font: "'Cormorant Garamond', serif", desc: "Sang trọng, huyền bí" },
-    { name: "Hoàng hôn", bg: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)", textColor: "#92400e", font: "'Playfair Display', serif", desc: "Ấm áp, rực rỡ" },
-    { name: "Anh đào", bg: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)", textColor: "#9f1239", font: "'Lora', serif", desc: "Ngọt ngào, dịu dàng" },
-    { name: "Trắng tinh", bg: "#ffffff", textColor: "#1f2937", font: "'Inter', sans-serif", desc: "Tối giản, hiện đại" },
-    { name: "Đen sang trọng", bg: "linear-gradient(180deg, #111827 0%, #1f2937 100%)", textColor: "#f9a8d4", font: "'Cormorant Garamond', serif", desc: "Luxury, premium" },
+const TEMPLATE_STYLES: {
+  name: string;
+  bg: string;
+  textColor: string;
+  font: string;
+  desc: string;
+}[] = [
+  {
+    name: "Hoa hồng",
+    bg: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+    textColor: "#831843",
+    font: "'Dancing Script', cursive",
+    desc: "Lãng mạn, nhẹ nhàng",
+  },
+  {
+    name: "Đêm tím",
+    bg: "linear-gradient(180deg, #0f0825 0%, #1a0a3e 30%, #2d1b69 100%)",
+    textColor: "#e9d5ff",
+    font: "'Cormorant Garamond', serif",
+    desc: "Sang trọng, huyền bí",
+  },
+  {
+    name: "Hoàng hôn",
+    bg: "linear-gradient(180deg, #fdf6e3 0%, #fef3c7 30%, #fffbeb 100%)",
+    textColor: "#92400e",
+    font: "'Playfair Display', serif",
+    desc: "Ấm áp, rực rỡ",
+  },
+  {
+    name: "Anh đào",
+    bg: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%)",
+    textColor: "#9f1239",
+    font: "'Lora', serif",
+    desc: "Ngọt ngào, dịu dàng",
+  },
+  {
+    name: "Trắng tinh",
+    bg: "#ffffff",
+    textColor: "#1f2937",
+    font: "'Inter', sans-serif",
+    desc: "Tối giản, hiện đại",
+  },
+  {
+    name: "Đen sang trọng",
+    bg: "linear-gradient(180deg, #111827 0%, #1f2937 100%)",
+    textColor: "#f9a8d4",
+    font: "'Cormorant Garamond', serif",
+    desc: "Luxury, premium",
+  },
+  {
+    name: "Vintage Gold",
+    bg: "linear-gradient(180deg, #fef9ef 0%, #fdf4dc 40%, #fcefc7 100%)",
+    textColor: "#78350f",
+    font: "'Playfair Display', serif",
+    desc: "Cổ điển, vàng ấm",
+  },
+  {
+    name: "Biển xanh",
+    bg: "linear-gradient(180deg, #ecfeff 0%, #cffafe 30%, #a5f3fc 100%)",
+    textColor: "#164e63",
+    font: "'Inter', sans-serif",
+    desc: "Tươi mát, biển cả",
+  },
+  {
+    name: "Hoa lavender",
+    bg: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 40%, #e9d5ff 100%)",
+    textColor: "#581c87",
+    font: "'Dancing Script', cursive",
+    desc: "Nhẹ nhàng, thanh lịch",
+  },
+  {
+    name: "Rustic",
+    bg: "linear-gradient(180deg, #fefce8 0%, #fef3c7 30%, #fde68a 100%)",
+    textColor: "#713f12",
+    font: "'Lora', serif",
+    desc: "Mộc mạc, ấm cúng",
+  },
+  {
+    name: "Bạc tuyết",
+    bg: "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 40%, #bae6fd 100%)",
+    textColor: "#0c4a6e",
+    font: "'Cormorant Garamond', serif",
+    desc: "Thanh thoát, mùa đông",
+  },
+  {
+    name: "Sunset Beach",
+    bg: "linear-gradient(180deg, #fff7ed 0%, #ffedd5 30%, #fed7aa 100%)",
+    textColor: "#9a3412",
+    font: "'Playfair Display', serif",
+    desc: "Hoàng hôn biển",
+  },
 ];
 
 /* ═══════════════════════════════════════════════
@@ -101,1019 +643,3750 @@ const TEMPLATE_STYLES: { name: string; bg: string; textColor: string; font: stri
    ═══════════════════════════════════════════════ */
 
 interface CraftVisualEditorProps {
-    projectId: string;
-    initialCanvasJson?: string | null;
-    projectSlug: string;
-    onPublish?: () => void;
+  projectId: string;
+  initialCanvasJson?: string | null;
+  projectSlug: string;
+  onPublish?: () => void;
 }
 
-export function CraftVisualEditor({ projectId, initialCanvasJson, projectSlug, onPublish }: CraftVisualEditorProps) {
-    return (
-        <Editor
-            resolver={{ CraftText, CraftImage, CraftContainer, RootContainer, CraftCountdown, CraftCalendar, CraftMap, CraftRSVP }}
-            enabled={true}
-        >
-            <CraftEditorInner
-                projectId={projectId}
-                initialCanvasJson={initialCanvasJson}
-                projectSlug={projectSlug}
-                onPublish={onPublish}
-            />
-        </Editor>
-    );
+export function CraftVisualEditor({
+  projectId,
+  initialCanvasJson,
+  projectSlug,
+  onPublish,
+}: CraftVisualEditorProps) {
+  return (
+    <Editor
+      resolver={{
+        div: "div" as any,
+        CraftText,
+        CraftImage,
+        CraftContainer,
+        RootContainer,
+        CraftCountdown,
+        CraftCalendar,
+        CraftMap,
+        CraftRSVP,
+        CraftCallButton,
+        CraftPhotoAlbum,
+        CraftYouTube,
+        CraftQRBox,
+        CraftGuestName,
+        CraftFormBuilder,
+        CraftEnvelope,
+        CraftSticker,
+        CraftShape,
+      }}
+      enabled={true}
+    >
+      <CraftEditorInner
+        projectId={projectId}
+        initialCanvasJson={initialCanvasJson}
+        projectSlug={projectSlug}
+        onPublish={onPublish}
+      />
+    </Editor>
+  );
 }
 
 /* ── Inner component with useEditor access ── */
-function CraftEditorInner({ projectId, initialCanvasJson, projectSlug, onPublish }: CraftVisualEditorProps) {
-    const { actions, query, selected, canUndo, canRedo } = useEditor((state, query) => {
-        const [currentNodeId] = state.events.selected;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let sel: { id: string; name: string; settings: any; isDeletable: boolean } | undefined;
-        if (currentNodeId) {
-            sel = {
-                id: currentNodeId,
-                name: state.nodes[currentNodeId]?.data?.name || "Unknown",
-                settings: (state.nodes[currentNodeId] as any)?.related?.settings || null,
-                isDeletable: query.node(currentNodeId).isDeletable(),
-            };
-        }
-        return {
-            selected: sel,
-            canUndo: query.history.canUndo(),
-            canRedo: query.history.canRedo(),
+function CraftEditorInner({
+  projectId,
+  initialCanvasJson,
+  projectSlug,
+  onPublish,
+}: CraftVisualEditorProps) {
+  const { actions, query, selected, canUndo, canRedo } = useEditor(
+    (state, query) => {
+      const [currentNodeId] = state.events.selected;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let sel:
+        | { id: string; name: string; settings: any; isDeletable: boolean }
+        | undefined;
+      if (currentNodeId) {
+        sel = {
+          id: currentNodeId,
+          name: state.nodes[currentNodeId]?.data?.name || "Unknown",
+          settings:
+            (state.nodes[currentNodeId] as any)?.related?.settings || null,
+          isDeletable: query.node(currentNodeId).isDeletable(),
         };
+      }
+      return {
+        selected: sel,
+        canUndo: query.history.canUndo(),
+        canRedo: query.history.canRedo(),
+      };
+    },
+  );
+
+  const [activeTab, setActiveTab] = useState("text");
+  const [clipartCat, setClipartCat] = useState("all");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+    "saved",
+  );
+  const [publishStatus, setPublishStatus] = useState<
+    "idle" | "publishing" | "done"
+  >("idle");
+  const [musicUrl, setMusicUrl] = useState("");
+  const [musicName, setMusicName] = useState("");
+  const [particleEffect, setParticleEffect] = useState("none");
+  const [effectSubTab, setEffectSubTab] = useState("anim");
+  const [pageAnimation, setPageAnimation] = useState("none");
+  const [curtainEffect, setCurtainEffect] = useState("none");
+  const [background, setBackground] = useState(
+    "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+  );
+  const [showTemplateSwap, setShowTemplateSwap] = useState(false);
+  /* Phase 1: BG upgrade */
+  const [bgSubTab, setBgSubTab] = useState<"colors" | "gradient" | "image">(
+    "colors",
+  );
+  const [bgOpacity, setBgOpacity] = useState(100);
+  /* Phase 2: Music widget */
+  const [musicWidgetStyle, setMusicWidgetStyle] = useState("vinyl");
+  const [musicWidgetColor, setMusicWidgetColor] = useState("#ff6b9d");
+  /* Phase 4: Support + Backup */
+  const [showBackupRecovery, setShowBackupRecovery] = useState(false);
+  const [bugReportText, setBugReportText] = useState("");
+  const [musicFilter, setMusicFilter] = useState<"all" | "intl" | "vpop">(
+    "all",
+  );
+  const [musicSearch, setMusicSearch] = useState("");
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const musicAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [zoom, setZoom] = useState(100);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+
+  // Parse initial background + craft.js state from saved canvas_json
+  useEffect(() => {
+    if (initialCanvasJson) {
+      try {
+        const parsed = JSON.parse(initialCanvasJson);
+        if (parsed.canvas?.bg) setBackground(parsed.canvas.bg);
+        if (parsed.canvas?.bgOpacity !== undefined)
+          setBgOpacity(parsed.canvas.bgOpacity);
+        if (parsed.meta?.musicUrl) {
+          setMusicUrl(parsed.meta.musicUrl);
+          setMusicName(parsed.meta.musicName || "");
+        }
+        if (parsed.meta?.musicWidgetStyle)
+          setMusicWidgetStyle(parsed.meta.musicWidgetStyle);
+        if (parsed.meta?.musicWidgetColor)
+          setMusicWidgetColor(parsed.meta.musicWidgetColor);
+        if (parsed.effects?.particleEffect)
+          setParticleEffect(parsed.effects.particleEffect);
+        // Load saved craft.js node tree into editor
+        if (parsed.craftState) {
+          const stateStr =
+            typeof parsed.craftState === "string"
+              ? parsed.craftState
+              : JSON.stringify(parsed.craftState);
+          actions.deserialize(stateStr);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [initialCanvasJson]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Backup recovery check ──
+  useEffect(() => {
+    try {
+      const backupKey = `editor_backup_${projectId}`;
+      const backup = localStorage.getItem(backupKey);
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        const backupAge = Date.now() - (parsed.timestamp || 0);
+        // Show recovery if backup is less than 24h old
+        if (backupAge < 86400000) {
+          setShowBackupRecovery(true);
+        } else {
+          localStorage.removeItem(backupKey);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [projectId]);
+
+  // ── Save ──
+  const save = useCallback(async () => {
+    setSaveStatus("saving");
+    const craftJson = query.serialize();
+    const canvasJson = JSON.stringify({
+      version: 2,
+      engine: "craftjs",
+      canvas: { width: 390, height: 5000, bg: background, bgOpacity },
+      craftState: craftJson,
+      meta: { musicUrl, musicName, musicWidgetStyle, musicWidgetColor },
+      effects: { particleEffect, pageAnimation, curtainEffect },
     });
+    // Save backup to localStorage
+    try {
+      localStorage.setItem(
+        `editor_backup_${projectId}`,
+        JSON.stringify({ canvasJson, timestamp: Date.now() }),
+      );
+    } catch {
+      /* quota exceeded */
+    }
+    try {
+      await supabase
+        .from("projects")
+        .update({
+          canvas_json: canvasJson,
+          music_url: musicUrl || null,
+          music_name: musicName || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", projectId);
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("unsaved");
+    }
+  }, [
+    query,
+    background,
+    bgOpacity,
+    projectId,
+    supabase,
+    musicUrl,
+    musicName,
+    musicWidgetStyle,
+    musicWidgetColor,
+  ]);
 
-    const [activeTab, setActiveTab] = useState("text");
-    const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
-    const [publishStatus, setPublishStatus] = useState<"idle" | "publishing" | "done">("idle");
-    const [musicUrl, setMusicUrl] = useState("");
-    const [musicName, setMusicName] = useState("");
-    const [particleEffect, setParticleEffect] = useState("none");
-    const [background, setBackground] = useState("linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)");
-    const [showTemplateSwap, setShowTemplateSwap] = useState(false);
-    const [zoom, setZoom] = useState(100);
-    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  // ── Publish ──
+  const handlePublish = useCallback(async () => {
+    if (publishStatus === "publishing") return;
+    setPublishStatus("publishing");
+    const craftJson = query.serialize();
+    const canvasJson = JSON.stringify({
+      version: 2,
+      engine: "craftjs",
+      canvas: { width: 390, height: 5000, bg: background, bgOpacity },
+      craftState: craftJson,
+      meta: { musicUrl, musicName, musicWidgetStyle, musicWidgetColor },
+      effects: { particleEffect, pageAnimation, curtainEffect },
+    });
+    try {
+      await supabase
+        .from("projects")
+        .update({
+          canvas_json: canvasJson,
+          music_url: musicUrl || null,
+          music_name: musicName || null,
+          status: "published",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", projectId);
+      setSaveStatus("saved");
+      setPublishStatus("done");
+      onPublish?.();
+    } catch {
+      setPublishStatus("idle");
+      alert("Xuất bản thất bại. Vui lòng thử lại.");
+    }
+  }, [
+    query,
+    background,
+    projectId,
+    supabase,
+    musicUrl,
+    musicName,
+    onPublish,
+    publishStatus,
+  ]);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
+  // Auto-save on changes (debounced)
+  const triggerAutosave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    setSaveStatus("unsaved");
+    saveTimer.current = setTimeout(save, 3000);
+  }, [save]);
 
-    // Parse initial background from saved canvas_json
-    useEffect(() => {
-        if (initialCanvasJson) {
-            try {
-                const parsed = JSON.parse(initialCanvasJson);
-                if (parsed.canvas?.bg) setBackground(parsed.canvas.bg);
-                if (parsed.meta?.musicUrl) { setMusicUrl(parsed.meta.musicUrl); setMusicName(parsed.meta.musicName || ""); }
-                if (parsed.effects?.particleEffect) setParticleEffect(parsed.effects.particleEffect);
-            } catch { /* ignore */ }
-        }
-    }, [initialCanvasJson]);
+  // ── Add Text via craft.js ──
+  const addCraftText = useCallback(
+    (preset: (typeof TEXT_PRESETS)[0]) => {
+      const tree = query
+        .parseReactElement(
+          <CraftText
+            text={preset.label}
+            fontSize={preset.fontSize}
+            fontFamily={preset.fontFamily}
+            fontWeight={preset.fontWeight}
+            fontStyle={preset.fontStyle}
+            color={
+              background.includes("0f0825") || background.includes("111827")
+                ? "#ffffff"
+                : "#1f2937"
+            }
+            textAlign="center"
+            lineHeight={1.5}
+            letterSpacing={0}
+            opacity={1}
+          />,
+        )
+        .toNodeTree();
+      // Add to ROOT canvas node
+      const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+      if (rootNodeId) {
+        actions.addNodeTree(tree, rootNodeId);
+      }
+      triggerAutosave();
+    },
+    [query, actions, background, triggerAutosave],
+  );
 
-    // ── Save ──
-    const save = useCallback(async () => {
-        setSaveStatus("saving");
-        const craftJson = query.serialize();
-        const canvasJson = JSON.stringify({
-            version: 2,
-            engine: "craftjs",
-            canvas: { width: 390, height: 5000, bg: background },
-            craftState: craftJson,
-            meta: { musicUrl, musicName },
-            effects: { particleEffect },
+  // ── Add Image via upload ──
+  const handleImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("projectId", projectId);
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
         });
-        try {
-            await supabase.from("projects").update({
-                canvas_json: canvasJson,
-                music_url: musicUrl || null,
-                music_name: musicName || null,
-                updated_at: new Date().toISOString(),
-            }).eq("id", projectId);
-            setSaveStatus("saved");
-        } catch {
-            setSaveStatus("unsaved");
-        }
-    }, [query, background, projectId, supabase, musicUrl, musicName]);
-
-    // ── Publish ──
-    const handlePublish = useCallback(async () => {
-        if (publishStatus === "publishing") return;
-        setPublishStatus("publishing");
-        const craftJson = query.serialize();
-        const canvasJson = JSON.stringify({
-            version: 2,
-            engine: "craftjs",
-            canvas: { width: 390, height: 5000, bg: background },
-            craftState: craftJson,
-            meta: { musicUrl, musicName },
-            effects: { particleEffect },
-        });
-        try {
-            await supabase.from("projects").update({
-                canvas_json: canvasJson,
-                music_url: musicUrl || null,
-                music_name: musicName || null,
-                status: "published",
-                updated_at: new Date().toISOString(),
-            }).eq("id", projectId);
-            setSaveStatus("saved");
-            setPublishStatus("done");
-            onPublish?.();
-        } catch {
-            setPublishStatus("idle");
-            alert("Xuất bản thất bại. Vui lòng thử lại.");
-        }
-    }, [query, background, projectId, supabase, musicUrl, musicName, onPublish, publishStatus]);
-
-    // Auto-save on changes (debounced)
-    const triggerAutosave = useCallback(() => {
-        if (saveTimer.current) clearTimeout(saveTimer.current);
-        setSaveStatus("unsaved");
-        saveTimer.current = setTimeout(save, 3000);
-    }, [save]);
-
-    // ── Add Text via craft.js ──
-    const addCraftText = useCallback((preset: typeof TEXT_PRESETS[0]) => {
-        const tree = query.parseReactElement(
-            <CraftText
-                text={preset.label}
-                fontSize={preset.fontSize}
-                fontFamily={preset.fontFamily}
-                fontWeight={preset.fontWeight}
-                fontStyle={preset.fontStyle}
-                color={background.includes("0f0825") || background.includes("111827") ? "#ffffff" : "#1f2937"}
-                textAlign="center"
-                lineHeight={1.5}
-                letterSpacing={0}
+        const data = await res.json();
+        if (data.url) {
+          const tree = query
+            .parseReactElement(
+              <CraftImage
+                src={data.url}
+                objectFit="cover"
+                borderRadius={12}
+                borderWidth={2}
+                borderColor="#f9a8d4"
                 opacity={1}
-            />
-        ).toNodeTree();
-        // Add to ROOT canvas node
-        const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-        if (rootNodeId) {
+                shadow={false}
+              />,
+            )
+            .toNodeTree();
+          const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+          if (rootNodeId) {
             actions.addNodeTree(tree, rootNodeId);
+          }
+          triggerAutosave();
         }
-        triggerAutosave();
-    }, [query, actions, background, triggerAutosave]);
+      } catch {
+        alert("Upload ảnh thất bại.");
+      }
+      e.target.value = "";
+    },
+    [query, actions, projectId, triggerAutosave],
+  );
 
-    // ── Add Image via upload ──
-    const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("projectId", projectId);
-        try {
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
-            const data = await res.json();
-            if (data.url) {
-                const tree = query.parseReactElement(
-                    <CraftImage
-                        src={data.url}
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        background: "#f0f0f0",
+        fontFamily: "'Inter', -apple-system, sans-serif",
+        overflow: "hidden",
+      }}
+    >
+      {/* ══ Top Bar ══ */}
+      <div
+        style={{
+          height: 52,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: 10,
+          background: "#fff",
+          borderBottom: "1px solid #e5e7eb",
+          flexShrink: 0,
+          zIndex: 100,
+        }}
+      >
+        <a
+          href="/dashboard"
+          title="Về trang chủ"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d" }}>
+            💌
+          </span>
+          <Home size={16} style={{ color: "#9ca3af" }} />
+        </a>
+        <span
+          style={{ fontSize: 14, color: "#6b7280", fontWeight: 500, flex: 1 }}
+        >
+          Visual Editor
+        </span>
+
+        {/* Undo/Redo — craft.js history */}
+        <button
+          onClick={() => actions.history.undo()}
+          disabled={!canUndo}
+          title="Hoàn tác (⌘Z)"
+          style={topBtnStyle(!canUndo)}
+        >
+          <Undo2 size={16} />
+        </button>
+        <button
+          onClick={() => actions.history.redo()}
+          disabled={!canRedo}
+          title="Làm lại (⌘⇧Z)"
+          style={topBtnStyle(!canRedo)}
+        >
+          <Redo2 size={16} />
+        </button>
+
+        {/* Template Hot-Swap */}
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setShowTemplateSwap((p) => !p)}
+            title="Đổi giao diện"
+            style={{
+              ...topBtnStyle(false),
+              padding: "6px 10px",
+              fontSize: 11,
+              gap: 4,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <LayoutTemplate size={14} /> Đổi mẫu
+          </button>
+          {showTemplateSwap && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                background: "#fff",
+                borderRadius: 12,
+                padding: 12,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                border: "1px solid #e5e7eb",
+                width: 220,
+                zIndex: 999,
+                marginTop: 4,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#374151",
+                  margin: "0 0 8px",
+                  textTransform: "uppercase",
+                }}
+              >
+                Đổi giao diện nhanh
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 6,
+                }}
+              >
+                {BG_PRESETS.map((bg) => (
+                  <button
+                    key={bg.label}
+                    onClick={() => {
+                      setBackground(bg.value);
+                      const rootNodeId = query.node("ROOT").get().data
+                        .nodes?.[0];
+                      if (rootNodeId) {
+                        actions.setProp(
+                          rootNodeId,
+                          (props: { background: string }) => {
+                            props.background = bg.value;
+                          },
+                        );
+                      }
+                      triggerAutosave();
+                      setShowTemplateSwap(false);
+                    }}
+                    style={{
+                      height: 44,
+                      borderRadius: 8,
+                      border:
+                        background === bg.value
+                          ? "2px solid #ff6b9d"
+                          : "1px solid #e5e7eb",
+                      background: bg.value,
+                      cursor: "pointer",
+                      position: "relative",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: 1,
+                        left: 0,
+                        right: 0,
+                        fontSize: 7,
+                        fontWeight: 600,
+                        textAlign: "center",
+                        color:
+                          bg.value.includes("0f0825") ||
+                          bg.value.includes("111827")
+                            ? "#fff"
+                            : "#374151",
+                      }}
+                    >
+                      {bg.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Save status */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 12,
+            color:
+              saveStatus === "saved"
+                ? "#10b981"
+                : saveStatus === "saving"
+                  ? "#f59e0b"
+                  : "#ef4444",
+          }}
+        >
+          <Save size={13} />
+          {saveStatus === "saved"
+            ? "Đã lưu tạm thời"
+            : saveStatus === "saving"
+              ? "Đang lưu..."
+              : "Chưa lưu"}
+        </div>
+
+        {/* Manual Save */}
+        <button
+          onClick={save}
+          title="Lưu ngay (⌘S)"
+          style={{
+            ...topBtnStyle(false),
+            padding: "6px 12px",
+            fontSize: 12,
+          }}
+        >
+          💾 Lưu
+        </button>
+
+        {/* Preview */}
+        <a
+          href={`/i/${projectSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 14px",
+            borderRadius: 10,
+            border: "1px solid #e5e7eb",
+            background: "#fff",
+            color: "#374151",
+            fontSize: 13,
+            fontWeight: 500,
+            textDecoration: "none",
+          }}
+        >
+          <Eye size={14} /> Xem trước
+        </a>
+
+        {/* Share */}
+        <button
+          onClick={async () => {
+            const url = `${window.location.origin}/i/${projectSlug}`;
+            try {
+              if (navigator.share)
+                await navigator.share({ title: "Thiệp mời cưới", url });
+              else {
+                await navigator.clipboard.writeText(url);
+                alert("✅ Đã sao chép link mời!");
+              }
+            } catch {
+              /* user cancelled */
+            }
+          }}
+          style={{ ...topBtnStyle(false), padding: "6px 12px", fontSize: 12 }}
+        >
+          <Share2 size={14} /> Chia sẻ
+        </button>
+
+        {/* Publish */}
+        <button
+          onClick={handlePublish}
+          disabled={publishStatus === "publishing"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 16px",
+            borderRadius: 10,
+            border: "none",
+            background:
+              publishStatus === "publishing"
+                ? "#d1d5db"
+                : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: publishStatus === "publishing" ? "not-allowed" : "pointer",
+            boxShadow:
+              publishStatus === "publishing"
+                ? "none"
+                : "0 2px 8px rgba(255,107,157,0.35)",
+          }}
+        >
+          <Rocket size={14} />
+          {publishStatus === "publishing" ? "Đang xuất bản..." : "Xuất bản"}
+        </button>
+      </div>
+
+      {/* ── Backup Recovery Banner ── */}
+      {showBackupRecovery && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 16px",
+            background: "linear-gradient(90deg, #fef3c7, #fde68a)",
+            borderBottom: "1px solid #f59e0b",
+          }}
+        >
+          <span style={{ fontSize: 16 }}>💾</span>
+          <p style={{ flex: 1, fontSize: 12, color: "#92400e", margin: 0 }}>
+            Phát hiện bản sao lưu chưa được lưu. Bạn muốn khôi phục?
+          </p>
+          <button
+            onClick={() => {
+              try {
+                const backup = localStorage.getItem(
+                  `editor_backup_${projectId}`,
+                );
+                if (backup) {
+                  const parsed = JSON.parse(backup);
+                  const data = JSON.parse(parsed.canvasJson);
+                  if (data.canvas?.bg) setBackground(data.canvas.bg);
+                  if (data.canvas?.bgOpacity !== undefined)
+                    setBgOpacity(data.canvas.bgOpacity);
+                  if (data.meta?.musicUrl) {
+                    setMusicUrl(data.meta.musicUrl);
+                    setMusicName(data.meta.musicName || "");
+                  }
+                  if (data.craftState) {
+                    const stateStr =
+                      typeof data.craftState === "string"
+                        ? data.craftState
+                        : JSON.stringify(data.craftState);
+                    actions.deserialize(stateStr);
+                  }
+                  triggerAutosave();
+                }
+              } catch {
+                /* ignore */
+              }
+              setShowBackupRecovery(false);
+            }}
+            style={{
+              padding: "5px 14px",
+              borderRadius: 8,
+              border: "none",
+              background: "#16a34a",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Khôi phục
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem(`editor_backup_${projectId}`);
+              setShowBackupRecovery(false);
+            }}
+            style={{
+              padding: "5px 14px",
+              borderRadius: 8,
+              border: "1px solid #d1d5db",
+              background: "#fff",
+              color: "#6b7280",
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Bỏ qua
+          </button>
+        </div>
+      )}
+
+      {/* ══ Main Area ══ */}
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        {/* ── Left Icon Column ── */}
+        <div
+          style={{
+            width: 85,
+            background: "#fff",
+            borderRight: "1px solid #f0f0f0",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            paddingTop: 8,
+            gap: 2,
+            flexShrink: 0,
+            overflowY: "auto",
+            boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+            zIndex: 2,
+          }}
+        >
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(activeTab === tab.key ? "" : tab.key)}
+              title={tab.label}
+              style={{
+                width: 74,
+                padding: "8px 2px",
+                border: "none",
+                borderRadius: 10,
+                background: activeTab === tab.key ? "#fff0f5" : "transparent",
+                color: activeTab === tab.key ? "#ff6b9d" : "#6b7280",
+                cursor: "pointer",
+                fontSize: 9,
+                fontWeight: activeTab === tab.key ? 700 : 400,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s",
+              }}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* ── Overlay Left Panel (floats over canvas) ── */}
+        {activeTab !== "" && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 85,
+              bottom: 0,
+              width: 220,
+              background: "#fff",
+              borderRight: "1px solid #e5e7eb",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              zIndex: 20,
+              animation: "slideIn 0.2s ease",
+              boxShadow: "4px 0 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <style>{`@keyframes slideIn { from { transform: translateX(-10px); opacity:0 } to { transform: translateX(0); opacity:1 } }`}</style>
+            <div
+              style={{
+                padding: "12px 16px 0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#374151",
+                  margin: 0,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.8,
+                }}
+              >
+                {TABS.find((t) => t.key === activeTab)?.label}
+              </p>
+              <button
+                onClick={() => setActiveTab("")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#9ca3af",
+                  fontSize: 16,
+                  padding: 2,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+              {/* TEXT TAB */}
+              {activeTab === "text" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p style={panelLabelStyle}>Thêm văn bản</p>
+                  {TEXT_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      onClick={() => addCraftText(preset)}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: 10,
+                        border: "1px solid #e5e7eb",
+                        background: "#fff",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        fontFamily: preset.fontFamily,
+                        fontSize: Math.min(preset.fontSize * 0.65, 16),
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* IMAGE TAB */}
+              {activeTab === "image" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  <p style={panelLabelStyle}>Thêm hình ảnh</p>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      padding: 16,
+                      borderRadius: 12,
+                      border: "2px dashed #e5e7eb",
+                      background: "#fafafa",
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <ImageIcon size={24} color="#9ca3af" />
+                    <span style={{ fontSize: 13, color: "#6b7280" }}>
+                      Upload ảnh
+                    </span>
+                    <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                      PNG, JPG, WebP
+                    </span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleImageUpload}
+                  />
+
+                  {/* Stock Image Library */}
+                  <p style={panelLabelStyle}>Kho ảnh miễn phí</p>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 4,
+                    }}
+                  >
+                    {STOCK_IMAGES.map((img, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          const tree = query
+                            .parseReactElement(
+                              <CraftImage
+                                src={img.url}
+                                borderRadius={12}
+                                objectFit="cover"
+                                opacity={1}
+                                shadow={false}
+                                borderWidth={0}
+                                borderColor="transparent"
+                              />,
+                            )
+                            .toNodeTree();
+                          const rootNodeId = query.node("ROOT").get().data
+                            .nodes?.[0];
+                          if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
+                          triggerAutosave();
+                        }}
+                        title={img.label}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1",
+                          borderRadius: 6,
+                          border: "1px solid #e5e7eb",
+                          cursor: "pointer",
+                          background: `url(${img.thumb}) center/cover no-repeat`,
+                          overflow: "hidden",
+                          position: "relative",
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            background: "rgba(0,0,0,0.45)",
+                            color: "#fff",
+                            fontSize: 7,
+                            textAlign: "center",
+                            padding: "2px 0",
+                          }}
+                        >
+                          {img.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* BG TAB — CineLove parity: sub-tabs + gradient picker + opacity */}
+              {activeTab === "bg" &&
+                (() => {
+                  const applyBg = (val: string) => {
+                    setBackground(val);
+                    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
+                    if (rootNodeId) {
+                      actions.setProp(
+                        rootNodeId,
+                        (props: { background: string }) => {
+                          props.background = val;
+                        },
+                      );
+                    }
+                    triggerAutosave();
+                  };
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                      }}
+                    >
+                      {/* Sub-tab buttons */}
+                      <div style={{ display: "flex", gap: 4 }}>
+                        {(
+                          [
+                            { id: "colors" as const, label: "Màu nền" },
+                            { id: "gradient" as const, label: "Gradient" },
+                            { id: "image" as const, label: "Hình nền" },
+                          ] as const
+                        ).map((sub) => (
+                          <button
+                            key={sub.id}
+                            onClick={() => setBgSubTab(sub.id)}
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              borderRadius: 20,
+                              border: "none",
+                              background:
+                                bgSubTab === sub.id ? "#3b82f6" : "#f3f4f6",
+                              color: bgSubTab === sub.id ? "#fff" : "#6b7280",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            {sub.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Solid colors */}
+                      {bgSubTab === "colors" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 6,
+                            }}
+                          >
+                            {BG_PRESETS.map((bg) => (
+                              <button
+                                key={bg.label}
+                                onClick={() => applyBg(bg.value)}
+                                style={{
+                                  height: 44,
+                                  borderRadius: 8,
+                                  border:
+                                    background === bg.value
+                                      ? "2px solid #3b82f6"
+                                      : "2px solid #e5e7eb",
+                                  background: bg.value,
+                                  cursor: "pointer",
+                                  position: "relative",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    position: "absolute",
+                                    bottom: 2,
+                                    left: 0,
+                                    right: 0,
+                                    fontSize: 8,
+                                    fontWeight: 600,
+                                    textAlign: "center",
+                                    color:
+                                      bg.value.includes("0f0825") ||
+                                      bg.value.includes("111827")
+                                        ? "#fff"
+                                        : "#374151",
+                                    textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                                  }}
+                                >
+                                  {bg.label}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                          {/* Custom hex color */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <input
+                              type="color"
+                              value={
+                                background.startsWith("#")
+                                  ? background
+                                  : "#ffffff"
+                              }
+                              onChange={(e) => applyBg(e.target.value)}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                border: "none",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            />
+                            <span style={{ fontSize: 11, color: "#6b7280" }}>
+                              Chọn màu tùy chỉnh
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Gradient presets */}
+                      {bgSubTab === "gradient" && (
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 6,
+                          }}
+                        >
+                          {GRADIENT_PRESETS.map((g) => (
+                            <button
+                              key={g.label}
+                              onClick={() => applyBg(g.value)}
+                              style={{
+                                height: 48,
+                                borderRadius: 10,
+                                border:
+                                  background === g.value
+                                    ? "2px solid #3b82f6"
+                                    : "2px solid #e5e7eb",
+                                background: g.value,
+                                cursor: "pointer",
+                                position: "relative",
+                                overflow: "hidden",
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  bottom: 3,
+                                  left: 0,
+                                  right: 0,
+                                  fontSize: 8,
+                                  fontWeight: 600,
+                                  textAlign: "center",
+                                  color:
+                                    g.value.includes("1b2735") ||
+                                    g.value.includes("1a2744")
+                                      ? "#fff"
+                                      : "#374151",
+                                  textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                                }}
+                              >
+                                {g.label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Background image upload */}
+                      {bgSubTab === "image" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                          }}
+                        >
+                          <button
+                            onClick={() => {
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.accept = "image/*";
+                              input.onchange = async (ev) => {
+                                const file = (ev.target as HTMLInputElement)
+                                  .files?.[0];
+                                if (!file) return;
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("projectId", projectId);
+                                try {
+                                  const res = await fetch("/api/upload", {
+                                    method: "POST",
+                                    body: formData,
+                                  });
+                                  const data = await res.json();
+                                  if (data.url) {
+                                    applyBg(
+                                      `url(${data.url}) center/cover no-repeat`,
+                                    );
+                                  }
+                                } catch {
+                                  alert("Upload nền thất bại.");
+                                }
+                              };
+                              input.click();
+                            }}
+                            style={{
+                              padding: 16,
+                              borderRadius: 12,
+                              border: "2px dashed #d1d5db",
+                              background: "#fafafa",
+                              cursor: "pointer",
+                              fontSize: 12,
+                              color: "#6b7280",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 6,
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <span style={{ fontSize: 24 }}>📁</span>
+                            <span>Upload ảnh nền</span>
+                            <span style={{ fontSize: 10, color: "#9ca3af" }}>
+                              PNG, JPG, WebP
+                            </span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Opacity slider — always visible */}
+                      <div
+                        style={{
+                          borderTop: "1px solid #f0f0f0",
+                          paddingTop: 10,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "#374151",
+                            }}
+                          >
+                            Độ trong suốt nền
+                          </span>
+                          <span style={{ fontSize: 11, color: "#6b7280" }}>
+                            {bgOpacity}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={bgOpacity}
+                          onChange={(e) => {
+                            setBgOpacity(Number(e.target.value));
+                            triggerAutosave();
+                          }}
+                          style={{ width: "100%", accentColor: "#3b82f6" }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* PLUGINS TAB — Widget add buttons */}
+              {activeTab === "plugins" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p style={panelLabelStyle}>Thêm tiện ích</p>
+                  {[
+                    {
+                      label: "⏱️ Đếm ngược",
+                      desc: "Live countdown đến ngày cưới",
+                      component: (
+                        <CraftCountdown
+                          targetDate="2026-05-28"
+                          label="Đếm ngược đến ngày cưới"
+                          color="#831843"
+                          labelColor="#9f1239"
+                          background="rgba(255,255,255,0.6)"
+                          borderRadius={16}
+                          fontSize={28}
+                        />
+                      ),
+                    },
+                    {
+                      label: "📅 Lịch cưới",
+                      desc: "Lịch tháng đánh dấu ngày cưới",
+                      component: (
+                        <CraftCalendar
+                          targetDate="2026-05-28"
+                          accentColor="#ff6b9d"
+                          textColor="#374151"
+                          background="rgba(255,255,255,0.7)"
+                          borderRadius={16}
+                        />
+                      ),
+                    },
+                    {
+                      label: "📍 Bản đồ",
+                      desc: "Google Maps + nút chỉ đường",
+                      component: (
+                        <CraftMap
+                          address="123 Nguyễn Huệ, Quận 1, TP.HCM"
+                          venueName="Diamond Palace"
+                          lat={10.7769}
+                          lng={106.7009}
+                          zoom={15}
+                          height={200}
+                          borderRadius={12}
+                          accentColor="#ff6b9d"
+                        />
+                      ),
+                    },
+                    {
+                      label: "💌 RSVP",
+                      desc: "Form xác nhận tham dự",
+                      component: (
+                        <CraftRSVP
+                          title="Xác nhận tham dự"
+                          subtitle="Vui lòng xác nhận sự hiện diện của bạn"
+                          accentColor="#ff6b9d"
+                          textColor="#374151"
+                          background="rgba(255,255,255,0.7)"
+                          borderRadius={16}
+                        />
+                      ),
+                    },
+                    {
+                      label: "📞 Nút gọi",
+                      desc: "Gọi điện / Zalo / SMS",
+                      component: (
+                        <CraftCallButton
+                          phoneNumber="0901234567"
+                          label="Gọi cho chúng tôi"
+                          type="call"
+                          accentColor="#ff6b9d"
+                          textColor="#ffffff"
+                          borderRadius={24}
+                        />
+                      ),
+                    },
+                    {
+                      label: "📸 Album ảnh",
+                      desc: "Gallery ảnh cưới",
+                      component: (
+                        <CraftPhotoAlbum
+                          photos={[]}
+                          columns={3}
+                          gap={6}
+                          borderRadius={8}
+                          accentColor="#ff6b9d"
+                          title="Album ảnh"
+                        />
+                      ),
+                    },
+                    {
+                      label: "🎥 Video YouTube",
+                      desc: "Nhúng video cưới",
+                      component: (
+                        <CraftYouTube
+                          videoUrl=""
+                          borderRadius={12}
+                          aspectRatio="16:9"
+                        />
+                      ),
+                    },
+                    {
+                      label: "🎁 QR Box",
+                      desc: "Mừng cưới qua QR ngân hàng",
+                      component: (
+                        <CraftQRBox
+                          bankName="VCB"
+                          accountNumber=""
+                          accountName=""
+                          amount="500000"
+                          note="Mung cuoi"
+                          accentColor="#ff6b9d"
+                          textColor="#374151"
+                          borderRadius={16}
+                        />
+                      ),
+                    },
+                    {
+                      label: "👤 Tên khách mời",
+                      desc: "Tự động điền tên khi chia sẻ",
+                      component: (
+                        <CraftGuestName
+                          prefix="Trân trọng kính mời"
+                          defaultName="Quý khách"
+                          fontSize={28}
+                          fontFamily="'Playfair Display', serif"
+                          color="#374151"
+                          textAlign="center"
+                          accentColor="#ff6b9d"
+                        />
+                      ),
+                    },
+                    {
+                      label: "📋 Form tuỳ chỉnh",
+                      desc: "Tạo form thông tin khách mời",
+                      component: (
+                        <CraftFormBuilder
+                          title="Thông tin khách mời"
+                          subtitle="Vui lòng điền đầy đủ thông tin"
+                          fields={[
+                            {
+                              id: "name",
+                              label: "Họ và tên",
+                              type: "text",
+                              placeholder: "Nhập tên của bạn",
+                              options: [],
+                              required: true,
+                            },
+                            {
+                              id: "phone",
+                              label: "Số điện thoại",
+                              type: "text",
+                              placeholder: "0901234567",
+                              options: [],
+                              required: false,
+                            },
+                            {
+                              id: "message",
+                              label: "Lời chúc",
+                              type: "textarea",
+                              placeholder: "Gửi lời chúc...",
+                              options: [],
+                              required: false,
+                            },
+                            {
+                              id: "attend",
+                              label: "Bạn sẽ tham dự?",
+                              type: "radio",
+                              placeholder: "",
+                              options: ["Sẽ tham dự", "Không tham dự"],
+                              required: true,
+                            },
+                          ]}
+                          buttonText="Gửi thông tin"
+                          accentColor="#ff6b9d"
+                          textColor="#374151"
+                          background="rgba(255,255,255,0.8)"
+                          borderRadius={16}
+                        />
+                      ),
+                    },
+                    {
+                      label: "💌 Phong bì thư",
+                      desc: "Hiệu ứng mở phong bì",
+                      component: (
+                        <CraftEnvelope
+                          groomName="Anh"
+                          brideName="Em"
+                          label="Nhấn để mở thiệp mời"
+                          envelopeColor="#d4a574"
+                          sealColor="#c0392b"
+                          textColor="#374151"
+                          fontFamily="'Playfair Display', serif"
+                        />
+                      ),
+                    },
+                  ].map((widget) => (
+                    <button
+                      key={widget.label}
+                      onClick={() => {
+                        const tree = query
+                          .parseReactElement(widget.component)
+                          .toNodeTree();
+                        const rootNodeId = query.node("ROOT").get().data
+                          .nodes?.[0];
+                        if (rootNodeId) {
+                          actions.addNodeTree(tree, rootNodeId);
+                        }
+                        triggerAutosave();
+                      }}
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        border: "1px solid #e5e7eb",
+                        background: "#fff",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: "#374151",
+                        }}
+                      >
+                        {widget.label}
+                      </span>
+                      <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                        {widget.desc}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* STOCK TAB — Clipart library (CineLove parity) */}
+              {activeTab === "stock" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#374151",
+                      margin: 0,
+                    }}
+                  >
+                    Clipart đám cưới
+                  </p>
+                  <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
+                    Chọn danh mục và thêm clipart vào thiệp
+                  </p>
+                  {/* Category filter chips */}
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {CLIPART_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setClipartCat(cat.id)}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: 12,
+                          border: "none",
+                          fontSize: 11,
+                          cursor: "pointer",
+                          fontWeight: 500,
+                          background:
+                            clipartCat === cat.id ? "#fdf2f8" : "#f3f4f6",
+                          color: clipartCat === cat.id ? "#be185d" : "#6b7280",
+                        }}
+                      >
+                        {cat.icon} {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Clipart grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 6,
+                    }}
+                  >
+                    {CLIPART_ITEMS.filter(
+                      (item) =>
+                        clipartCat === "all" || item.category === clipartCat,
+                    ).map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          const el = (
+                            <CraftSticker
+                              stickerId={item.id}
+                              color="#d4a574"
+                              size={150}
+                              opacity={1}
+                              customSvg={item.svgContent}
+                            />
+                          );
+                          const tree = query.parseReactElement(el).toNodeTree();
+                          const rootNodeId = query.node("ROOT").get().data
+                            .nodes?.[0];
+                          if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
+                          triggerAutosave();
+                        }}
+                        title={item.name}
+                        style={{
+                          padding: 6,
+                          borderRadius: 8,
+                          border: "1px solid #f3e8ff",
+                          background: "#faf5ff",
+                          cursor: "pointer",
+                          aspectRatio: "1",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <div
+                          style={{ width: "100%", height: "100%" }}
+                          dangerouslySetInnerHTML={{ __html: item.svgContent }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* SHAPES TAB — Basic geometric shapes (CineLove parity) */}
+              {activeTab === "shapes" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#374151",
+                      margin: 0,
+                    }}
+                  >
+                    Hình dạng cơ bản
+                  </p>
+                  <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
+                    Thêm hình dạng vào thiệp
+                  </p>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 8,
+                      marginTop: 4,
+                    }}
+                  >
+                    {[
+                      {
+                        id: "shape-line",
+                        name: "Đường thẳng",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                      {
+                        id: "shape-rect",
+                        name: "Hình chữ nhật",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="160" height="120" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                      {
+                        id: "shape-circle",
+                        name: "Hình tròn",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                      {
+                        id: "shape-triangle",
+                        name: "Tam giác",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,20 180,180 20,180" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                      {
+                        id: "shape-star",
+                        name: "Ngôi sao",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,10 125,75 195,80 140,125 155,195 100,160 45,195 60,125 5,80 75,75" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                      {
+                        id: "shape-heart",
+                        name: "Trái tim",
+                        svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100,180 C60,140 10,110 10,70 C10,30 50,10 100,50 C150,10 190,30 190,70 C190,110 140,140 100,180Z" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
+                      },
+                    ].map((shape) => (
+                      <button
+                        key={shape.id}
+                        onClick={() => {
+                          const el = (
+                            <CraftSticker
+                              stickerId={shape.id}
+                              color="#374151"
+                              size={120}
+                              opacity={1}
+                              customSvg={shape.svg}
+                            />
+                          );
+                          const tree = query.parseReactElement(el).toNodeTree();
+                          const rootNodeId = query.node("ROOT").get().data
+                            .nodes?.[0];
+                          if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
+                          triggerAutosave();
+                        }}
+                        style={{
+                          padding: "12px 6px",
+                          borderRadius: 10,
+                          border: "1px solid #e5e7eb",
+                          background: "#fff",
+                          cursor: "pointer",
+                          textAlign: "center",
+                          transition: "all 0.15s",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = "#ff6b9d";
+                          e.currentTarget.style.background = "#fff0f5";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "#e5e7eb";
+                          e.currentTarget.style.background = "#fff";
+                        }}
+                      >
+                        <div
+                          style={{ width: 40, height: 40, color: "#6b7280" }}
+                          dangerouslySetInnerHTML={{ __html: shape.svg }}
+                        />
+                        <span
+                          style={{
+                            fontSize: 9,
+                            color: "#6b7280",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {shape.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TEMPLATES TAB — Visual gallery with BASIC/PREMIUM badges (CineLove parity) */}
+              {activeTab === "templates" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#374151",
+                      margin: 0,
+                    }}
+                  >
+                    Chọn mẫu thiết kế
+                  </p>
+                  <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
+                    Chọn một mẫu có sẵn để bắt đầu nhanh chóng
+                  </p>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 8,
+                      marginTop: 4,
+                    }}
+                  >
+                    {TEMPLATE_STYLES.map((t, idx) => (
+                      <button
+                        key={t.name}
+                        onClick={() => {
+                          setBackground(t.bg);
+                          const rootNodeId = query.node("ROOT").get().data
+                            .nodes?.[0];
+                          if (rootNodeId) {
+                            actions.setProp(
+                              rootNodeId,
+                              (props: { background: string }) => {
+                                props.background = t.bg;
+                              },
+                            );
+                          }
+                          const nodes = query.getSerializedNodes();
+                          Object.keys(nodes).forEach((nodeId) => {
+                            const node = nodes[nodeId];
+                            if (
+                              (node?.type as any)?.resolvedName === "CraftText"
+                            ) {
+                              actions.setProp(
+                                nodeId,
+                                (props: { color: string }) => {
+                                  props.color = t.textColor;
+                                },
+                              );
+                            }
+                          });
+                          triggerAutosave();
+                        }}
+                        style={{
+                          padding: 0,
+                          borderRadius: 10,
+                          border:
+                            background === t.bg
+                              ? "2px solid #ff6b9d"
+                              : "1px solid #e5e7eb",
+                          background: "#fff",
+                          cursor: "pointer",
+                          overflow: "hidden",
+                          textAlign: "left",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {/* Thumbnail preview */}
+                        <div
+                          style={{
+                            height: 100,
+                            background: t.bg,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            position: "relative",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {/* Badge */}
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              padding: "2px 6px",
+                              borderRadius: 4,
+                              fontSize: 8,
+                              fontWeight: 700,
+                              background: idx < 4 ? "#10b981" : "#8b5cf6",
+                              color: "#fff",
+                              letterSpacing: 0.5,
+                            }}
+                          >
+                            {idx < 4 ? "BASIC" : "PREMIUM"}
+                          </span>
+                          {/* Preview text */}
+                          <span
+                            style={{
+                              fontSize: 14,
+                              color: t.textColor,
+                              fontFamily: t.font,
+                              fontWeight: 600,
+                              opacity: 0.9,
+                            }}
+                          >
+                            A & B
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 8,
+                              color: t.textColor,
+                              fontFamily: t.font,
+                              opacity: 0.6,
+                              marginTop: 2,
+                            }}
+                          >
+                            28.05.2026
+                          </span>
+                        </div>
+                        {/* Label */}
+                        <div style={{ padding: "6px 8px" }}>
+                          <p
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: "#374151",
+                              margin: 0,
+                            }}
+                          >
+                            {t.name}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: 8,
+                              color: "#9ca3af",
+                              margin: 0,
+                              fontFamily: t.font,
+                            }}
+                          >
+                            {t.desc}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* EFFECTS TAB — CineLove parity: 3 sub-tabs */}
+              {activeTab === "effects" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  {/* Sub-tab buttons */}
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {[
+                      { id: "anim", label: "Hiệu ứng động" },
+                      { id: "curtain", label: "Hiệu ứng mở màn" },
+                      { id: "particles", label: "Hiệu ứng rơi" },
+                    ].map((sub) => (
+                      <button
+                        key={sub.id}
+                        onClick={() => setEffectSubTab(sub.id)}
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 20,
+                          border: "none",
+                          background:
+                            effectSubTab === sub.id ? "#3b82f6" : "#f3f4f6",
+                          color: effectSubTab === sub.id ? "#fff" : "#6b7280",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Hiệu ứng động — page transition presets */}
+                  {effectSubTab === "anim" && (
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          margin: "0 0 8px",
+                        }}
+                      >
+                        Chọn 1 mẫu hiệu ứng để áp dụng cho toàn bộ trang
+                      </p>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 6,
+                        }}
+                      >
+                        {PAGE_ANIM_PRESETS.map((a) => (
+                          <button
+                            key={a.id}
+                            onClick={() => {
+                              setPageAnimation(a.id);
+                              triggerAutosave();
+                            }}
+                            style={{
+                              padding: "12px 8px",
+                              borderRadius: 10,
+                              border: `2px solid ${pageAnimation === a.id ? "#3b82f6" : "#e5e7eb"}`,
+                              background:
+                                pageAnimation === a.id ? "#eff6ff" : "#fff",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 6,
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <span style={{ fontSize: 22 }}>{a.icon}</span>
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 600,
+                                color: "#374151",
+                              }}
+                            >
+                              {a.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => alert("Preview hiệu ứng sắp có!")}
+                        style={{
+                          marginTop: 10,
+                          padding: "8px 16px",
+                          borderRadius: 10,
+                          border: "none",
+                          background:
+                            "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                          color: "#fff",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          width: "100%",
+                        }}
+                      >
+                        🎬 Xem trước hiệu ứng
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Hiệu ứng mở màn — envelope opening */}
+                  {effectSubTab === "curtain" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                      }}
+                    >
+                      <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>
+                        Hiệu ứng mở màn khi khách xem thiệp
+                      </p>
+                      {CURTAIN_PRESETS.map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => {
+                            setCurtainEffect(c.id);
+                            triggerAutosave();
+                          }}
+                          style={{
+                            padding: "12px 14px",
+                            borderRadius: 10,
+                            border: `2px solid ${curtainEffect === c.id ? "#ff6b9d" : "#e5e7eb"}`,
+                            background:
+                              curtainEffect === c.id ? "#fdf2f8" : "#fff",
+                            cursor: "pointer",
+                            textAlign: "left",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <span style={{ fontSize: 24 }}>{c.emoji}</span>
+                          <div>
+                            <p
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#374151",
+                                margin: 0,
+                              }}
+                            >
+                              {c.label}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: 10,
+                                color: "#9ca3af",
+                                margin: 0,
+                              }}
+                            >
+                              {c.desc}
+                            </p>
+                          </div>
+                          {curtainEffect === c.id && (
+                            <span
+                              style={{
+                                fontSize: 14,
+                                color: "#ff6b9d",
+                                marginLeft: "auto",
+                              }}
+                            >
+                              ✔
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hiệu ứng rơi — particles */}
+                  {effectSubTab === "particles" && (
+                    <div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 6,
+                        }}
+                      >
+                        {PARTICLE_PRESETS.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              setParticleEffect(p.id);
+                              triggerAutosave();
+                            }}
+                            style={{
+                              padding: "10px 8px",
+                              borderRadius: 10,
+                              border: `2px solid ${particleEffect === p.id ? "#ff6b9d" : "#e5e7eb"}`,
+                              background:
+                                particleEffect === p.id ? "#fdf2f8" : "#fff",
+                              cursor: "pointer",
+                              fontSize: 12,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 4,
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <span style={{ fontSize: 20 }}>{p.emoji}</span>
+                            <span style={{ fontSize: 10, color: "#374151" }}>
+                              {p.label}
+                            </span>
+                            {particleEffect === p.id && (
+                              <span style={{ fontSize: 10, color: "#ff6b9d" }}>
+                                ✔
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <p
+                        style={{ fontSize: 10, color: "#9ca3af", marginTop: 6 }}
+                      >
+                        Hiệu ứng hiển thị trên thiệp khi khách mở link mời
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MUSIC TAB — CineLove-style library with categories + play + search */}
+              {activeTab === "music" &&
+                (() => {
+                  const filtered = MUSIC_PRESETS.filter((m) => {
+                    if (musicFilter === "vpop" && m.cat !== "vpop")
+                      return false;
+                    if (musicFilter === "intl" && m.cat !== "intl")
+                      return false;
+                    if (
+                      musicSearch &&
+                      !m.label.toLowerCase().includes(musicSearch.toLowerCase())
+                    )
+                      return false;
+                    return true;
+                  });
+
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                      }}
+                    >
+                      {/* Tab categories */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0,
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#374151",
+                            margin: 0,
+                            marginRight: 8,
+                          }}
+                        >
+                          Thư viện nhạc
+                        </p>
+                      </div>
+
+                      {/* Currently playing */}
+                      {musicUrl && (
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            borderRadius: 12,
+                            background: "#fdf2f8",
+                            border: "1px solid #ff6b9d",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span style={{ fontSize: 16 }}>🎵</span>
+                          <div style={{ flex: 1 }}>
+                            <p
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: "#374151",
+                                margin: 0,
+                              }}
+                            >
+                              {musicName || "Đã chọn nhạc"}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: 9,
+                                color: "#9ca3af",
+                                margin: 0,
+                              }}
+                            >
+                              Nhạc hiện tại
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setMusicUrl("");
+                              setMusicName("");
+                              triggerAutosave();
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "#dc2626",
+                              fontSize: 14,
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Search */}
+                      <div style={{ position: "relative" }}>
+                        <span
+                          style={{
+                            position: "absolute",
+                            left: 10,
+                            top: 8,
+                            fontSize: 12,
+                            color: "#9ca3af",
+                          }}
+                        >
+                          🔍
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="Tìm kiếm bài hát"
+                          value={musicSearch}
+                          onChange={(e) => setMusicSearch(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "7px 10px 7px 28px",
+                            borderRadius: 20,
+                            border: "1px solid #e5e7eb",
+                            fontSize: 11,
+                            boxSizing: "border-box",
+                            background: "#fff",
+                          }}
+                        />
+                      </div>
+
+                      {/* Category tabs */}
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {[
+                          { id: "all" as const, label: "Tất cả" },
+                          { id: "intl" as const, label: "Nhạc ngoại" },
+                          { id: "vpop" as const, label: "V-POP" },
+                        ].map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => setMusicFilter(cat.id)}
+                            style={{
+                              padding: "5px 14px",
+                              borderRadius: 20,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              border: "none",
+                              cursor: "pointer",
+                              background:
+                                musicFilter === cat.id ? "#3b82f6" : "#f3f4f6",
+                              color:
+                                musicFilter === cat.id ? "#fff" : "#6b7280",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Song list */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                        }}
+                      >
+                        {filtered.map((m) => (
+                          <div
+                            key={m.id}
+                            style={{
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              background:
+                                musicUrl === m.url ? "#fdf2f8" : "transparent",
+                              transition: "all 0.1s",
+                            }}
+                          >
+                            {/* Play button */}
+                            <button
+                              onClick={() => {
+                                if (previewId === m.id) {
+                                  musicAudioRef.current?.pause();
+                                  setPreviewId(null);
+                                } else {
+                                  if (musicAudioRef.current)
+                                    musicAudioRef.current.pause();
+                                  musicAudioRef.current = new Audio(m.url);
+                                  musicAudioRef.current.play().catch(() => {});
+                                  setPreviewId(m.id);
+                                }
+                              }}
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                border: "none",
+                                background:
+                                  previewId === m.id ? "#3b82f6" : "#f3f4f6",
+                                color: previewId === m.id ? "#fff" : "#374151",
+                                cursor: "pointer",
+                                fontSize: 10,
+                                flexShrink: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {previewId === m.id ? "⏸" : "▶"}
+                            </button>
+
+                            {/* Song info */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 500,
+                                  color: "#374151",
+                                  margin: 0,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {m.label}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: 9,
+                                  color: "#9ca3af",
+                                  margin: 0,
+                                }}
+                              >
+                                {m.duration}
+                              </p>
+                            </div>
+
+                            {/* Use button */}
+                            <button
+                              onClick={() => {
+                                setMusicUrl(m.url);
+                                setMusicName(m.label);
+                                if (musicAudioRef.current) {
+                                  musicAudioRef.current.pause();
+                                  setPreviewId(null);
+                                }
+                                triggerAutosave();
+                              }}
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: 16,
+                                fontSize: 10,
+                                fontWeight: 600,
+                                border: "none",
+                                cursor: "pointer",
+                                flexShrink: 0,
+                                background:
+                                  musicUrl === m.url ? "#dcfce7" : "#e0f2fe",
+                                color:
+                                  musicUrl === m.url ? "#16a34a" : "#0369a1",
+                              }}
+                            >
+                              {musicUrl === m.url ? "✓" : "Sử dụng"}
+                            </button>
+                            {musicUrl === m.url && (
+                              <span style={{ fontSize: 10, color: "#16a34a" }}>
+                                ✅
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Music widget style picker */}
+                      <div
+                        style={{
+                          borderTop: "1px solid #f0f0f0",
+                          paddingTop: 10,
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "#374151",
+                            margin: "0 0 6px",
+                          }}
+                        >
+                          Kiểu nhạc widget
+                        </p>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 6,
+                          }}
+                        >
+                          {MUSIC_WIDGET_STYLES.map((s) => (
+                            <button
+                              key={s.id}
+                              onClick={() => {
+                                setMusicWidgetStyle(s.id);
+                                triggerAutosave();
+                              }}
+                              style={{
+                                padding: "10px 8px",
+                                borderRadius: 10,
+                                border:
+                                  musicWidgetStyle === s.id
+                                    ? "2px solid #3b82f6"
+                                    : "2px solid #e5e7eb",
+                                background:
+                                  musicWidgetStyle === s.id
+                                    ? "#eff6ff"
+                                    : "#fff",
+                                cursor: "pointer",
+                                fontSize: 11,
+                                fontWeight: 500,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                gap: 4,
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              <span style={{ fontSize: 18 }}>{s.emoji}</span>
+                              <span style={{ color: "#374151" }}>
+                                {s.label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                        {/* Widget color picker */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            marginTop: 8,
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={musicWidgetColor}
+                            onChange={(e) => {
+                              setMusicWidgetColor(e.target.value);
+                              triggerAutosave();
+                            }}
+                            style={{
+                              width: 28,
+                              height: 28,
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          />
+                          <span style={{ fontSize: 11, color: "#6b7280" }}>
+                            Màu widget nhạc
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* SUPPORT TAB — CineLove parity: Messenger + Bug report */}
+              {activeTab === "support" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#374151",
+                      margin: 0,
+                    }}
+                  >
+                    Hỗ trợ & Góp ý
+                  </p>
+
+                  {/* Messenger support */}
+                  <a
+                    href="https://m.me/7app.online"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      background: "linear-gradient(135deg, #0084ff, #00c6ff)",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      textDecoration: "none",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>💬</span>
+                    <div>
+                      <p style={{ margin: 0 }}>Chat qua Messenger</p>
+                      <p style={{ margin: 0, fontSize: 10, opacity: 0.8 }}>
+                        Phản hồi trong 5 phút
+                      </p>
+                    </div>
+                  </a>
+
+                  {/* Zalo support */}
+                  <a
+                    href="https://zalo.me/7app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      background: "linear-gradient(135deg, #0068ff, #0045e5)",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      textDecoration: "none",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>📱</span>
+                    <div>
+                      <p style={{ margin: 0 }}>Chat qua Zalo</p>
+                      <p style={{ margin: 0, fontSize: 10, opacity: 0.8 }}>
+                        Hỗ trợ nhanh nhất
+                      </p>
+                    </div>
+                  </a>
+
+                  {/* Bug report form */}
+                  <div
+                    style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10 }}
+                  >
+                    <p
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#374151",
+                        margin: "0 0 6px",
+                      }}
+                    >
+                      📝 Báo lỗi / Đóng góp
+                    </p>
+                    <textarea
+                      value={bugReportText}
+                      onChange={(e) => setBugReportText(e.target.value)}
+                      placeholder="Mô tả vấn đề bạn gặp phải hoặc tính năng bạn muốn thêm..."
+                      style={{
+                        width: "100%",
+                        minHeight: 80,
+                        borderRadius: 10,
+                        border: "1px solid #e5e7eb",
+                        padding: 10,
+                        fontSize: 11,
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                        fontFamily: "inherit",
+                      }}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!bugReportText.trim()) return;
+                        try {
+                          await supabase.from("bug_reports").insert({
+                            message: bugReportText.trim(),
+                            project_id: projectId,
+                            page_url: window.location.href,
+                            created_at: new Date().toISOString(),
+                          });
+                          setBugReportText("");
+                          alert("✅ Cảm ơn bạn! Góp ý đã được ghi nhận.");
+                        } catch {
+                          alert("Gửi thất bại. Vui lòng thử lại.");
+                        }
+                      }}
+                      style={{
+                        marginTop: 8,
+                        padding: "8px 16px",
+                        borderRadius: 10,
+                        border: "none",
+                        background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        width: "100%",
+                      }}
+                    >
+                      Gửi góp ý
+                    </button>
+                  </div>
+
+                  {/* FAQ */}
+                  <div
+                    style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10 }}
+                  >
+                    <p
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#374151",
+                        margin: "0 0 6px",
+                      }}
+                    >
+                      ❓ Câu hỏi thường gặp
+                    </p>
+                    {[
+                      {
+                        q: "Làm sao thêm ảnh?",
+                        a: "Vào tab Hình ảnh → Upload hoặc kéo thả",
+                      },
+                      {
+                        q: "Đổi nhạc nền?",
+                        a: "Vào tab Âm nhạc → Chọn bài → Sử dụng",
+                      },
+                      {
+                        q: "Gói Premium?",
+                        a: "Nâng cấp để mở khóa AI xóa nền, RSVP, và nhiều tính năng",
+                      },
+                    ].map((faq, i) => (
+                      <div key={i} style={{ marginBottom: 8 }}>
+                        <p
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "#374151",
+                            margin: "0 0 2px",
+                          }}
+                        >
+                          {faq.q}
+                        </p>
+                        <p
+                          style={{ fontSize: 10, color: "#6b7280", margin: 0 }}
+                        >
+                          {faq.a}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══ Canvas Area — craft.js Frame ══ */}
+        <div
+          style={{
+            flex: 1,
+            overflow: "auto",
+            padding: "32px 24px",
+            background: "linear-gradient(180deg, #d1d5db 0%, #e5e7eb 100%)",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              width: 390,
+              minHeight: 5000,
+              margin: "0 auto",
+              boxShadow:
+                "0 8px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
+              borderRadius: 12,
+              overflow: "hidden",
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: "top center",
+              transition: "transform 0.2s ease",
+              background: "#fff",
+            }}
+          >
+            {(() => {
+              // Extract saved craftState from initialCanvasJson
+              let savedCraftState: string | undefined;
+              if (initialCanvasJson) {
+                try {
+                  const parsed = JSON.parse(initialCanvasJson);
+                  if (parsed.craftState) {
+                    savedCraftState =
+                      typeof parsed.craftState === "string"
+                        ? parsed.craftState
+                        : JSON.stringify(parsed.craftState);
+                  }
+                } catch {
+                  /* fallback to default */
+                }
+              }
+
+              if (savedCraftState) {
+                // Load saved craft.js state
+                return <Frame data={savedCraftState} />;
+              }
+
+              // Default state for brand-new editors (no saved state)
+              return (
+                <Frame>
+                  <Element canvas is={RootContainer} background={background}>
+                    {/* Hero Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={20}
+                      minHeight={400}
+                      gap={12}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftText
+                        text="Lễ Thành Hôn"
+                        fontSize={22}
+                        fontFamily="'Cormorant Garamond', serif"
+                        fontWeight="normal"
+                        fontStyle="italic"
+                        color="#9f1239"
+                        textAlign="center"
+                        lineHeight={1.4}
+                        letterSpacing={2}
+                        opacity={0.9}
+                      />
+                    </Element>
+
+                    {/* Names Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={16}
+                      minHeight={200}
+                      gap={4}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftText
+                        text="Tên Chú Rể"
+                        fontSize={36}
+                        fontFamily="'Dancing Script', cursive"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.2}
+                        letterSpacing={0}
+                        opacity={1}
+                      />
+                      <CraftText
+                        text="&"
+                        fontSize={24}
+                        fontFamily="'Playfair Display', serif"
+                        fontWeight="normal"
+                        fontStyle="italic"
+                        color="#f472b6"
+                        textAlign="center"
+                        lineHeight={1.4}
+                        letterSpacing={0}
+                        opacity={0.8}
+                      />
+                      <CraftText
+                        text="Tên Cô Dâu"
+                        fontSize={36}
+                        fontFamily="'Dancing Script', cursive"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.2}
+                        letterSpacing={0}
+                        opacity={1}
+                      />
+                    </Element>
+
+                    {/* Photo Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={16}
+                      minHeight={280}
+                      gap={12}
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftImage
+                        src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=500&fit=crop"
                         objectFit="cover"
-                        borderRadius={12}
+                        borderRadius={14}
                         borderWidth={2}
                         borderColor="#f9a8d4"
                         opacity={1}
                         shadow={false}
-                    />
-                ).toNodeTree();
-                const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                if (rootNodeId) {
-                    actions.addNodeTree(tree, rootNodeId);
-                }
-                triggerAutosave();
-            }
-        } catch {
-            alert("Upload ảnh thất bại.");
-        }
-        e.target.value = "";
-    }, [query, actions, projectId, triggerAutosave]);
+                      />
+                      <CraftImage
+                        src="https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop"
+                        objectFit="cover"
+                        borderRadius={14}
+                        borderWidth={2}
+                        borderColor="#f9a8d4"
+                        opacity={1}
+                        shadow={false}
+                      />
+                    </Element>
 
-    return (
-        <div style={{
-            display: "flex", flexDirection: "column", height: "100vh",
-            background: "#f0f0f0", fontFamily: "'Inter', -apple-system, sans-serif",
-            overflow: "hidden",
-        }}>
-            {/* ══ Top Bar ══ */}
-            <div style={{
-                height: 52, display: "flex", alignItems: "center",
-                padding: "0 16px", gap: 10,
-                background: "#fff", borderBottom: "1px solid #e5e7eb",
-                flexShrink: 0, zIndex: 100,
-            }}>
-                <a href="/dashboard" title="Về trang chủ" style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    textDecoration: "none",
-                }}>
-                    <span style={{ fontSize: 20, fontWeight: 700, color: "#ff6b9d" }}>💌</span>
-                    <Home size={16} style={{ color: "#9ca3af" }} />
-                </a>
-                <span style={{ fontSize: 14, color: "#6b7280", fontWeight: 500, flex: 1 }}>Visual Editor</span>
-
-                {/* Undo/Redo — craft.js history */}
-                <button onClick={() => actions.history.undo()} disabled={!canUndo} title="Hoàn tác (⌘Z)" style={topBtnStyle(!canUndo)}>
-                    <Undo2 size={16} />
-                </button>
-                <button onClick={() => actions.history.redo()} disabled={!canRedo} title="Làm lại (⌘⇧Z)" style={topBtnStyle(!canRedo)}>
-                    <Redo2 size={16} />
-                </button>
-
-                {/* Template Hot-Swap */}
-                <div style={{ position: "relative" }}>
-                    <button
-                        onClick={() => setShowTemplateSwap(p => !p)}
-                        title="Đổi giao diện"
-                        style={{ ...topBtnStyle(false), padding: "6px 10px", fontSize: 11, gap: 4, display: "flex", alignItems: "center" }}
+                    {/* Date Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={20}
+                      minHeight={150}
+                      gap={8}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
                     >
-                        <LayoutTemplate size={14} /> Đổi mẫu
-                    </button>
-                    {showTemplateSwap && (
-                        <div style={{
-                            position: "absolute", top: "100%", left: 0,
-                            background: "#fff", borderRadius: 12, padding: 12,
-                            boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
-                            border: "1px solid #e5e7eb", width: 220, zIndex: 999,
-                            marginTop: 4,
-                        }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: "0 0 8px", textTransform: "uppercase" }}>
-                                Đổi giao diện nhanh
-                            </p>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
-                                {BG_PRESETS.map(bg => (
-                                    <button
-                                        key={bg.label}
-                                        onClick={() => {
-                                            setBackground(bg.value);
-                                            const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                            if (rootNodeId) {
-                                                actions.setProp(rootNodeId, (props: { background: string }) => {
-                                                    props.background = bg.value;
-                                                });
-                                            }
-                                            triggerAutosave();
-                                            setShowTemplateSwap(false);
-                                        }}
-                                        style={{
-                                            height: 44, borderRadius: 8,
-                                            border: background === bg.value ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
-                                            background: bg.value, cursor: "pointer",
-                                            position: "relative",
-                                        }}
-                                    >
-                                        <span style={{
-                                            position: "absolute", bottom: 1, left: 0, right: 0,
-                                            fontSize: 7, fontWeight: 600, textAlign: "center",
-                                            color: bg.value.includes("0f0825") || bg.value.includes("111827") ? "#fff" : "#374151",
-                                        }}>
-                                            {bg.label}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                      <CraftText
+                        text="Chủ Nhật, 28 · 05 · 2026"
+                        fontSize={26}
+                        fontFamily="'Cormorant Garamond', serif"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.3}
+                        letterSpacing={1}
+                        opacity={1}
+                      />
+                      <CraftText
+                        text="Lúc 10:00 sáng"
+                        fontSize={16}
+                        fontFamily="'Lora', serif"
+                        fontWeight="normal"
+                        fontStyle="italic"
+                        color="#9f1239"
+                        textAlign="center"
+                        lineHeight={1.4}
+                        letterSpacing={0}
+                        opacity={0.85}
+                      />
+                    </Element>
 
-                {/* Save status */}
-                <div style={{
-                    display: "flex", alignItems: "center", gap: 6, fontSize: 12,
-                    color: saveStatus === "saved" ? "#10b981" : saveStatus === "saving" ? "#f59e0b" : "#ef4444",
-                }}>
-                    <Save size={13} />
-                    {saveStatus === "saved" ? "Đã lưu" : saveStatus === "saving" ? "Đang lưu..." : "Chưa lưu"}
-                </div>
+                    {/* Family Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="rgba(255,255,255,0.5)"
+                      padding={20}
+                      minHeight={200}
+                      gap={8}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftText
+                        text="Nhà Trai"
+                        fontSize={18}
+                        fontFamily="'Dancing Script', cursive"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.4}
+                        letterSpacing={0}
+                        opacity={1}
+                      />
+                      <CraftText
+                        text="Ông: Nguyễn Văn A & Bà: Trần Thị B"
+                        fontSize={14}
+                        fontFamily="'Inter', sans-serif"
+                        fontWeight="normal"
+                        fontStyle="normal"
+                        color="#6b7280"
+                        textAlign="center"
+                        lineHeight={1.5}
+                        letterSpacing={0}
+                        opacity={0.9}
+                      />
+                      <CraftText
+                        text="Nhà Gái"
+                        fontSize={18}
+                        fontFamily="'Dancing Script', cursive"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.4}
+                        letterSpacing={0}
+                        opacity={1}
+                      />
+                      <CraftText
+                        text="Ông: Lê Văn C & Bà: Phạm Thị D"
+                        fontSize={14}
+                        fontFamily="'Inter', sans-serif"
+                        fontWeight="normal"
+                        fontStyle="normal"
+                        color="#6b7280"
+                        textAlign="center"
+                        lineHeight={1.5}
+                        letterSpacing={0}
+                        opacity={0.9}
+                      />
+                    </Element>
 
-                {/* Manual Save */}
-                <button onClick={save} title="Lưu ngay (⌘S)" style={{
-                    ...topBtnStyle(false), padding: "6px 12px", fontSize: 12,
-                }}>
-                    💾 Lưu
-                </button>
+                    {/* Venue Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={20}
+                      minHeight={150}
+                      gap={8}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftText
+                        text="Địa Điểm"
+                        fontSize={20}
+                        fontFamily="'Playfair Display', serif"
+                        fontWeight="bold"
+                        fontStyle="normal"
+                        color="#831843"
+                        textAlign="center"
+                        lineHeight={1.3}
+                        letterSpacing={1}
+                        opacity={1}
+                      />
+                      <CraftText
+                        text="Nhà Hàng ABC, 123 Đường XYZ, TP.HCM"
+                        fontSize={14}
+                        fontFamily="'Inter', sans-serif"
+                        fontWeight="normal"
+                        fontStyle="normal"
+                        color="#6b7280"
+                        textAlign="center"
+                        lineHeight={1.5}
+                        letterSpacing={0}
+                        opacity={0.9}
+                      />
+                    </Element>
 
-                {/* Preview */}
-                <a href={`/i/${projectSlug}`} target="_blank" rel="noopener noreferrer" style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "8px 14px", borderRadius: 10,
-                    border: "1px solid #e5e7eb", background: "#fff",
-                    color: "#374151", fontSize: 13, fontWeight: 500,
-                    textDecoration: "none",
-                }}>
-                    <Eye size={14} /> Xem trước
-                </a>
+                    {/* Gallery Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={16}
+                      minHeight={300}
+                      gap={8}
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftImage
+                        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop"
+                        objectFit="cover"
+                        borderRadius={10}
+                        borderWidth={0}
+                        borderColor="transparent"
+                        opacity={1}
+                        shadow={true}
+                      />
+                      <CraftImage
+                        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop"
+                        objectFit="cover"
+                        borderRadius={10}
+                        borderWidth={0}
+                        borderColor="transparent"
+                        opacity={1}
+                        shadow={true}
+                      />
+                    </Element>
 
-                {/* Share */}
-                <button
-                    onClick={async () => {
-                        const url = `${window.location.origin}/i/${projectSlug}`;
-                        try {
-                            if (navigator.share) await navigator.share({ title: "Thiệp mời cưới", url });
-                            else { await navigator.clipboard.writeText(url); alert("✅ Đã sao chép link mời!"); }
-                        } catch { /* user cancelled */ }
-                    }}
-                    style={{ ...topBtnStyle(false), padding: "6px 12px", fontSize: 12 }}
-                >
-                    <Share2 size={14} /> Chia sẻ
-                </button>
+                    {/* Quote Section */}
+                    <Element
+                      canvas
+                      is={CraftContainer}
+                      background="transparent"
+                      padding={24}
+                      minHeight={120}
+                      gap={8}
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CraftText
+                        text={`"Yêu nhau không phải là ngồi nhìn nhau, mà là cùng nhìn về một hướng."`}
+                        fontSize={16}
+                        fontFamily="'Lora', serif"
+                        fontWeight="normal"
+                        fontStyle="italic"
+                        color="#9f1239"
+                        textAlign="center"
+                        lineHeight={1.6}
+                        letterSpacing={0}
+                        opacity={0.85}
+                      />
+                    </Element>
+                  </Element>
+                </Frame>
+              );
+            })()}
+          </div>
 
-                {/* Publish */}
-                <button
-                    onClick={handlePublish}
-                    disabled={publishStatus === "publishing"}
-                    style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        padding: "8px 16px", borderRadius: 10, border: "none",
-                        background: publishStatus === "publishing" ? "#d1d5db" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                        color: "#fff", fontSize: 13, fontWeight: 700,
-                        cursor: publishStatus === "publishing" ? "not-allowed" : "pointer",
-                        boxShadow: publishStatus === "publishing" ? "none" : "0 2px 8px rgba(255,107,157,0.35)",
-                    }}
-                >
-                    <Rocket size={14} />
-                    {publishStatus === "publishing" ? "Đang xuất bản..." : "Xuất bản"}
-                </button>
-            </div>
-
-            {/* ══ Main Area ══ */}
-            <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-
-                {/* ── Left Icon Column ── */}
-                <div style={{
-                    width: 52, background: "#fff",
-                    borderRight: "1px solid #f0f0f0",
-                    display: "flex", flexDirection: "column", alignItems: "center",
-                    paddingTop: 8, gap: 2, flexShrink: 0, overflowY: "auto",
-                    boxShadow: "2px 0 8px rgba(0,0,0,0.04)", zIndex: 2,
-                }}>
-                    {TABS.map(tab => (
-                        <button key={tab.key} onClick={() => setActiveTab(activeTab === tab.key ? "" : tab.key)} title={tab.label} style={{
-                            width: 44, padding: "8px 2px", border: "none", borderRadius: 10,
-                            background: activeTab === tab.key ? "#fff0f5" : "transparent",
-                            color: activeTab === tab.key ? "#ff6b9d" : "#6b7280",
-                            cursor: "pointer", fontSize: 9, fontWeight: activeTab === tab.key ? 700 : 400,
-                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                            transition: "all 0.15s",
-                        }}>
-                            {tab.icon}
-                            <span>{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* ── Expandable Left Panel ── */}
-                {activeTab !== "" && (
-                    <div style={{
-                        width: 200, background: "#fff",
-                        borderRight: "1px solid #e5e7eb",
-                        display: "flex", flexDirection: "column",
-                        overflow: "hidden", flexShrink: 0,
-                        animation: "slideIn 0.15s ease",
-                    }}>
-                        <style>{`@keyframes slideIn { from { transform: translateX(-10px); opacity:0 } to { transform: translateX(0); opacity:1 } }`}</style>
-                        <div style={{ padding: "12px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", margin: 0, textTransform: "uppercase", letterSpacing: 0.8 }}>
-                                {TABS.find(t => t.key === activeTab)?.label}
-                            </p>
-                            <button onClick={() => setActiveTab("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 16, padding: 2 }}>×</button>
-                        </div>
-
-                        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-                            {/* TEXT TAB */}
-                            {activeTab === "text" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Thêm văn bản</p>
-                                    {TEXT_PRESETS.map(preset => (
-                                        <button key={preset.label}
-                                            onClick={() => addCraftText(preset)}
-                                            style={{
-                                                padding: "10px 14px", borderRadius: 10,
-                                                border: "1px solid #e5e7eb", background: "#fff",
-                                                cursor: "pointer", textAlign: "left",
-                                                fontFamily: preset.fontFamily,
-                                                fontSize: Math.min(preset.fontSize * 0.65, 16),
-                                            }}
-                                        >
-                                            {preset.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* IMAGE TAB */}
-                            {activeTab === "image" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <p style={panelLabelStyle}>Thêm hình ảnh</p>
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        style={{
-                                            padding: 16, borderRadius: 12,
-                                            border: "2px dashed #e5e7eb", background: "#fafafa",
-                                            cursor: "pointer", display: "flex",
-                                            flexDirection: "column", alignItems: "center", gap: 8,
-                                        }}
-                                    >
-                                        <ImageIcon size={24} color="#9ca3af" />
-                                        <span style={{ fontSize: 13, color: "#6b7280" }}>Upload ảnh</span>
-                                        <span style={{ fontSize: 11, color: "#9ca3af" }}>PNG, JPG, WebP</span>
-                                    </button>
-                                    <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
-
-                                    {/* Stock Image Library */}
-                                    <p style={panelLabelStyle}>Kho ảnh miễn phí</p>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
-                                        {STOCK_IMAGES.map((img, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => {
-                                                    const tree = query.parseReactElement(
-                                                        <CraftImage src={img.url} borderRadius={12} objectFit="cover" opacity={1} shadow={false} borderWidth={0} borderColor="transparent" />
-                                                    ).toNodeTree();
-                                                    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                                    if (rootNodeId) actions.addNodeTree(tree, rootNodeId);
-                                                    triggerAutosave();
-                                                }}
-                                                title={img.label}
-                                                style={{
-                                                    width: "100%", aspectRatio: "1", borderRadius: 6,
-                                                    border: "1px solid #e5e7eb", cursor: "pointer",
-                                                    background: `url(${img.thumb}) center/cover no-repeat`,
-                                                    overflow: "hidden", position: "relative",
-                                                }}
-                                            >
-                                                <span style={{
-                                                    position: "absolute", bottom: 0, left: 0, right: 0,
-                                                    background: "rgba(0,0,0,0.45)", color: "#fff",
-                                                    fontSize: 7, textAlign: "center", padding: "2px 0",
-                                                }}>
-                                                    {img.label}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* BG TAB */}
-                            {activeTab === "bg" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Nền nhanh</p>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                                        {BG_PRESETS.map(bg => (
-                                            <button key={bg.label}
-                                                onClick={() => {
-                                                    setBackground(bg.value);
-                                                    // Update root container background
-                                                    const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                                    if (rootNodeId) {
-                                                        actions.setProp(rootNodeId, (props: { background: string }) => {
-                                                            props.background = bg.value;
-                                                        });
-                                                    }
-                                                    triggerAutosave();
-                                                }}
-                                                style={{
-                                                    height: 44, borderRadius: 8, border: "2px solid #e5e7eb",
-                                                    background: bg.value, cursor: "pointer",
-                                                    position: "relative", overflow: "hidden",
-                                                }}
-                                            >
-                                                <span style={{
-                                                    position: "absolute", bottom: 2, left: 0, right: 0,
-                                                    fontSize: 8, fontWeight: 600, textAlign: "center",
-                                                    color: bg.value.includes("0f0825") || bg.value.includes("111827") ? "#fff" : "#374151",
-                                                    textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-                                                }}>
-                                                    {bg.label}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {/* Custom BG upload */}
-                                    <p style={panelLabelStyle}>Ảnh nền tùy chỉnh</p>
-                                    <button
-                                        onClick={() => {
-                                            const input = document.createElement("input");
-                                            input.type = "file";
-                                            input.accept = "image/*";
-                                            input.onchange = async (ev) => {
-                                                const file = (ev.target as HTMLInputElement).files?.[0];
-                                                if (!file) return;
-                                                const formData = new FormData();
-                                                formData.append("file", file);
-                                                formData.append("projectId", projectId);
-                                                try {
-                                                    const res = await fetch("/api/upload", { method: "POST", body: formData });
-                                                    const data = await res.json();
-                                                    if (data.url) {
-                                                        const bgCss = `url(${data.url}) center/cover no-repeat`;
-                                                        setBackground(bgCss);
-                                                        const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                                        if (rootNodeId) {
-                                                            actions.setProp(rootNodeId, (props: { background: string }) => {
-                                                                props.background = bgCss;
-                                                            });
-                                                        }
-                                                        triggerAutosave();
-                                                    }
-                                                } catch {
-                                                    alert("Upload nền thất bại.");
-                                                }
-                                            };
-                                            input.click();
-                                        }}
-                                        style={{
-                                            padding: 12, borderRadius: 10,
-                                            border: "2px dashed #e5e7eb", background: "#fafafa",
-                                            cursor: "pointer", fontSize: 12, color: "#6b7280",
-                                            display: "flex", alignItems: "center", gap: 8,
-                                        }}
-                                    >
-                                        📁 Upload ảnh nền
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* PLUGINS TAB — Widget add buttons */}
-                            {activeTab === "plugins" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Thêm tiện ích</p>
-                                    {[
-                                        { label: "⏱️ Đếm ngược", desc: "Live countdown đến ngày cưới", component: <CraftCountdown targetDate="2026-05-28" label="Đếm ngược đến ngày cưới" color="#831843" labelColor="#9f1239" background="rgba(255,255,255,0.6)" borderRadius={16} fontSize={28} /> },
-                                        { label: "📅 Lịch cưới", desc: "Lịch tháng đánh dấu ngày cưới", component: <CraftCalendar targetDate="2026-05-28" accentColor="#ff6b9d" textColor="#374151" background="rgba(255,255,255,0.7)" borderRadius={16} /> },
-                                        { label: "📍 Bản đồ", desc: "Google Maps + nút chỉ đường", component: <CraftMap address="123 Nguyễn Huệ, Quận 1, TP.HCM" venueName="Diamond Palace" lat={10.7769} lng={106.7009} zoom={15} height={200} borderRadius={12} accentColor="#ff6b9d" /> },
-                                        { label: "💌 RSVP", desc: "Form xác nhận tham dự", component: <CraftRSVP title="Xác nhận tham dự" subtitle="Vui lòng xác nhận sự hiện diện của bạn" accentColor="#ff6b9d" textColor="#374151" background="rgba(255,255,255,0.7)" borderRadius={16} /> },
-                                    ].map(widget => (
-                                        <button
-                                            key={widget.label}
-                                            onClick={() => {
-                                                const tree = query.parseReactElement(widget.component).toNodeTree();
-                                                const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                                if (rootNodeId) {
-                                                    actions.addNodeTree(tree, rootNodeId);
-                                                }
-                                                triggerAutosave();
-                                            }}
-                                            style={{
-                                                padding: "12px 14px", borderRadius: 12,
-                                                border: "1px solid #e5e7eb", background: "#fff",
-                                                cursor: "pointer", textAlign: "left",
-                                                display: "flex", flexDirection: "column", gap: 4,
-                                                transition: "all 0.15s",
-                                            }}
-                                        >
-                                            <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>{widget.label}</span>
-                                            <span style={{ fontSize: 11, color: "#9ca3af" }}>{widget.desc}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* TEMPLATES TAB — Style presets (CineLove parity) */}
-                            {activeTab === "templates" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Chọn phong cách</p>
-                                    {TEMPLATE_STYLES.map(t => (
-                                        <button
-                                            key={t.name}
-                                            onClick={() => {
-                                                setBackground(t.bg);
-                                                const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-                                                if (rootNodeId) {
-                                                    actions.setProp(rootNodeId, (props: { background: string }) => {
-                                                        props.background = t.bg;
-                                                    });
-                                                }
-                                                // Update text colors for all CraftText nodes
-                                                const nodes = query.getSerializedNodes();
-                                                Object.keys(nodes).forEach(nodeId => {
-                                                    const node = nodes[nodeId];
-                                                    if ((node?.type as any)?.resolvedName === "CraftText") {
-                                                        actions.setProp(nodeId, (props: { color: string }) => {
-                                                            props.color = t.textColor;
-                                                        });
-                                                    }
-                                                });
-                                                triggerAutosave();
-                                            }}
-                                            style={{
-                                                display: "flex", alignItems: "center", gap: 10,
-                                                padding: "10px 12px", borderRadius: 10,
-                                                border: background === t.bg ? "2px solid #ff6b9d" : "1px solid #e5e7eb",
-                                                background: "#fff", cursor: "pointer",
-                                                transition: "all 0.15s",
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: 40, height: 56, borderRadius: 6,
-                                                background: t.bg, border: "1px solid #e5e7eb",
-                                                flexShrink: 0, position: "relative", overflow: "hidden",
-                                            }}>
-                                                <span style={{
-                                                    position: "absolute", top: "50%", left: "50%",
-                                                    transform: "translate(-50%,-50%)",
-                                                    fontSize: 14, color: t.textColor,
-                                                    fontFamily: t.font,
-                                                }}>A</span>
-                                            </div>
-                                            <div style={{ textAlign: "left" }}>
-                                                <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 }}>{t.name}</p>
-                                                <p style={{ fontSize: 10, color: "#9ca3af", margin: 0, fontFamily: t.font }}>{t.desc}</p>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* EFFECTS TAB — Particle picker (CineLove parity) */}
-                            {activeTab === "effects" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Hiệu ứng rơi</p>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                                        {PARTICLE_PRESETS.map(p => (
-                                            <button
-                                                key={p.id}
-                                                onClick={() => { setParticleEffect(p.id); triggerAutosave(); }}
-                                                style={{
-                                                    padding: "10px 8px", borderRadius: 10,
-                                                    border: `2px solid ${particleEffect === p.id ? "#ff6b9d" : "#e5e7eb"}`,
-                                                    background: particleEffect === p.id ? "#fdf2f8" : "#fff",
-                                                    cursor: "pointer", fontSize: 12,
-                                                    display: "flex", flexDirection: "column",
-                                                    alignItems: "center", gap: 4,
-                                                    transition: "all 0.15s",
-                                                }}
-                                            >
-                                                <span style={{ fontSize: 20 }}>{p.emoji}</span>
-                                                <span style={{ fontSize: 10, color: "#374151" }}>{p.label}</span>
-                                                {particleEffect === p.id && <span style={{ fontSize: 10, color: "#ff6b9d" }}>✔</span>}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 4 }}>
-                                        Hiệu ứng hiển thị trên thiệp khi khách mở link mời
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* MUSIC TAB */}
-                            {activeTab === "music" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <p style={panelLabelStyle}>Nhạc nền</p>
-                                    {musicUrl && (
-                                        <div style={{
-                                            padding: "10px 14px", borderRadius: 12,
-                                            background: "#fdf2f8", border: "1px solid #ff6b9d",
-                                            display: "flex", alignItems: "center", gap: 8,
-                                        }}>
-                                            <span style={{ fontSize: 16 }}>🎵</span>
-                                            <span style={{ fontSize: 12, fontWeight: 600, color: "#374151", flex: 1 }}>
-                                                {musicName || "Đã chọn nhạc"}
-                                            </span>
-                                            <button onClick={() => { setMusicUrl(""); setMusicName(""); triggerAutosave(); }}
-                                                style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 16 }}>×</button>
-                                        </div>
-                                    )}
-                                    {MUSIC_PRESETS.map(m => (
-                                        <button key={m.id}
-                                            onClick={() => {
-                                                setMusicUrl(m.url);
-                                                setMusicName(m.label);
-                                                triggerAutosave();
-                                            }}
-                                            style={{
-                                                padding: "8px 12px", borderRadius: 10,
-                                                border: `1px solid ${musicUrl === m.url ? "#ff6b9d" : "#e5e7eb"}`,
-                                                background: musicUrl === m.url ? "#fdf2f8" : "#fff",
-                                                cursor: "pointer", fontSize: 12, color: "#374151",
-                                                display: "flex", alignItems: "center", gap: 8,
-                                                textAlign: "left",
-                                            }}
-                                        >
-                                            <span>{m.emoji}</span>
-                                            <span style={{ flex: 1 }}>{m.label}</span>
-                                            {musicUrl === m.url && <span style={{ color: "#ff6b9d" }}>✔</span>}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* ══ Canvas Area — craft.js Frame ══ */}
-                <div style={{
-                    flex: 1, overflow: "auto",
-                    display: "flex", justifyContent: "center",
-                    padding: "24px 0",
-                    background: "#e5e7eb",
-                    position: "relative",
-                }}>
-                    <div style={{
-                        width: 390,
-                        minHeight: 5000,
-                        boxShadow: "0 4px 32px rgba(0,0,0,0.12)",
-                        borderRadius: 8,
-                        overflow: "hidden",
-                        transform: `scale(${zoom / 100})`,
-                        transformOrigin: "top center",
-                        transition: "transform 0.2s ease",
-                    }}>
-                        <Frame>
-                            <Element
-                                canvas
-                                is={RootContainer}
-                                background={background}
-                            >
-                                {/* Hero Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={20} minHeight={400} gap={12} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text="Lễ Thành Hôn" fontSize={22} fontFamily="'Cormorant Garamond', serif" fontWeight="normal" fontStyle="italic" color="#9f1239" textAlign="center" lineHeight={1.4} letterSpacing={2} opacity={0.9} />
-                                </Element>
-
-                                {/* Names Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={16} minHeight={200} gap={4} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text="Tên Chú Rể" fontSize={36} fontFamily="'Dancing Script', cursive" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.2} letterSpacing={0} opacity={1} />
-                                    <CraftText text="&" fontSize={24} fontFamily="'Playfair Display', serif" fontWeight="normal" fontStyle="italic" color="#f472b6" textAlign="center" lineHeight={1.4} letterSpacing={0} opacity={0.8} />
-                                    <CraftText text="Tên Cô Dâu" fontSize={36} fontFamily="'Dancing Script', cursive" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.2} letterSpacing={0} opacity={1} />
-                                </Element>
-
-                                {/* Photo Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={16} minHeight={280} gap={12} flexDirection="row" alignItems="center" justifyContent="center">
-                                    <CraftImage src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=500&fit=crop" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
-                                    <CraftImage src="https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop" objectFit="cover" borderRadius={14} borderWidth={2} borderColor="#f9a8d4" opacity={1} shadow={false} />
-                                </Element>
-
-                                {/* Date Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={20} minHeight={150} gap={8} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text="Chủ Nhật, 28 · 05 · 2026" fontSize={26} fontFamily="'Cormorant Garamond', serif" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.3} letterSpacing={1} opacity={1} />
-                                    <CraftText text="Lúc 10:00 sáng" fontSize={16} fontFamily="'Lora', serif" fontWeight="normal" fontStyle="italic" color="#9f1239" textAlign="center" lineHeight={1.4} letterSpacing={0} opacity={0.85} />
-                                </Element>
-
-                                {/* Family Section */}
-                                <Element canvas is={CraftContainer} background="rgba(255,255,255,0.5)" padding={20} minHeight={200} gap={8} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text="Nhà Trai" fontSize={18} fontFamily="'Dancing Script', cursive" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.4} letterSpacing={0} opacity={1} />
-                                    <CraftText text="Ông: Nguyễn Văn A & Bà: Trần Thị B" fontSize={14} fontFamily="'Inter', sans-serif" fontWeight="normal" fontStyle="normal" color="#6b7280" textAlign="center" lineHeight={1.5} letterSpacing={0} opacity={0.9} />
-                                    <CraftText text="Nhà Gái" fontSize={18} fontFamily="'Dancing Script', cursive" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.4} letterSpacing={0} opacity={1} />
-                                    <CraftText text="Ông: Lê Văn C & Bà: Phạm Thị D" fontSize={14} fontFamily="'Inter', sans-serif" fontWeight="normal" fontStyle="normal" color="#6b7280" textAlign="center" lineHeight={1.5} letterSpacing={0} opacity={0.9} />
-                                </Element>
-
-                                {/* Venue Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={20} minHeight={150} gap={8} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text="Địa Điểm" fontSize={20} fontFamily="'Playfair Display', serif" fontWeight="bold" fontStyle="normal" color="#831843" textAlign="center" lineHeight={1.3} letterSpacing={1} opacity={1} />
-                                    <CraftText text="Nhà Hàng ABC, 123 Đường XYZ, TP.HCM" fontSize={14} fontFamily="'Inter', sans-serif" fontWeight="normal" fontStyle="normal" color="#6b7280" textAlign="center" lineHeight={1.5} letterSpacing={0} opacity={0.9} />
-                                </Element>
-
-                                {/* Gallery Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={16} minHeight={300} gap={8} flexDirection="row" alignItems="center" justifyContent="center">
-                                    <CraftImage src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
-                                    <CraftImage src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop" objectFit="cover" borderRadius={10} borderWidth={0} borderColor="transparent" opacity={1} shadow={true} />
-                                </Element>
-
-                                {/* Quote Section */}
-                                <Element canvas is={CraftContainer} background="transparent" padding={24} minHeight={120} gap={8} flexDirection="column" alignItems="center" justifyContent="center">
-                                    <CraftText text={`"Yêu nhau không phải là ngồi nhìn nhau, mà là cùng nhìn về một hướng."`} fontSize={16} fontFamily="'Lora', serif" fontWeight="normal" fontStyle="italic" color="#9f1239" textAlign="center" lineHeight={1.6} letterSpacing={0} opacity={0.85} />
-                                </Element>
-                            </Element>
-                        </Frame>
-                    </div>
-
-                    {/* Zoom Controls Overlay */}
-                    <div style={{
-                        position: "sticky", bottom: 12, right: 12,
-                        display: "flex", alignItems: "center", gap: 4,
-                        background: "rgba(255,255,255,0.95)",
-                        borderRadius: 10, padding: "4px 8px",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                        marginLeft: "auto", marginRight: 12, marginTop: -44,
-                        zIndex: 10, width: "fit-content",
-                    }}>
-                        <button onClick={() => setZoom(z => Math.max(50, z - 10))} title="Thu nhỏ" style={{ width: 28, height: 28, border: "none", borderRadius: 6, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}>
-                            <ZoomOut size={14} />
-                        </button>
-                        <button onClick={() => setZoom(100)} title="Reset 100%" style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", border: "none", background: "transparent", cursor: "pointer", padding: "2px 6px", minWidth: 36, textAlign: "center" }}>
-                            {zoom}%
-                        </button>
-                        <button onClick={() => setZoom(z => Math.min(200, z + 10))} title="Phóng to" style={{ width: 28, height: 28, border: "none", borderRadius: 6, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}>
-                            <ZoomIn size={14} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* ══ Right Settings Panel ══ */}
-                <div style={{
-                    width: 280, background: "#fff",
-                    borderLeft: "1px solid #e5e7eb",
-                    overflowY: "auto", padding: 16, flexShrink: 0,
-                }}>
-                    <h3 style={{
-                        fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 12px",
-                        textTransform: "uppercase", letterSpacing: 1,
-                    }}>
-                        🎨 Tùy chỉnh
-                    </h3>
-
-                    {selected ? (
-                        <div>
-                            <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 12px" }}>
-                                <span style={{
-                                    background: "#3b82f6", color: "#fff", fontSize: 10,
-                                    padding: "2px 8px", borderRadius: 4, fontWeight: 600,
-                                }}>
-                                    {selected.name}
-                                </span>
-                            </p>
-
-                            {/* Component-specific settings (auto from craft.js related) */}
-                            {selected.settings && React.createElement(selected.settings)}
-
-                            {/* Delete button */}
-                            {selected.isDeletable && (
-                                <button
-                                    onClick={() => {
-                                        actions.delete(selected.id);
-                                        triggerAutosave();
-                                    }}
-                                    style={{
-                                        width: "100%", padding: "8px 14px", borderRadius: 8,
-                                        border: "1px solid #fca5a5", background: "#fef2f2",
-                                        color: "#dc2626", fontSize: 12, fontWeight: 600,
-                                        cursor: "pointer", marginTop: 16,
-                                    }}
-                                >
-                                    🗑️ Xóa phần tử
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <div style={{ paddingTop: 16 }}>
-                            <p style={{ fontSize: 32, margin: "0 0 8px", textAlign: "center" }}>👆</p>
-                            <p style={{ fontSize: 13, color: "#9ca3af", fontStyle: "italic", textAlign: "center" }}>
-                                Click vào phần tử trên canvas để chỉnh sửa
-                            </p>
-                            <p style={{ fontSize: 11, color: "#d1d5db", marginTop: 4, textAlign: "center" }}>
-                                Kéo thả, thêm text/image, thay đổi nền từ sidebar
-                            </p>
-
-                            {/* SEO / Status section — CineLove parity */}
-                            <div style={{ marginTop: 24, borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
-                                <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: 0.8 }}>
-                                    Cài đặt chung
-                                </p>
-
-                                {/* Status */}
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, fontSize: 12, color: "#6b7280" }}>
-                                    <span>Trạng thái</span>
-                                    <span style={{ background: "#dcfce7", color: "#16a34a", fontSize: 10, padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-                                        Công khai
-                                    </span>
-                                </div>
-
-                                {/* Slug */}
-                                <div style={{ marginBottom: 8 }}>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px" }}>Link thiệp</p>
-                                    <a
-                                        href={`/i/${projectSlug}`}
-                                        target="_blank"
-                                        rel="noopener"
-                                        style={{ fontSize: 11, color: "#3b82f6", wordBreak: "break-all", textDecoration: "none" }}
-                                    >
-                                        7app.online/i/{projectSlug}
-                                    </a>
-                                </div>
-
-                                {/* Watermark */}
-                                <div style={{
-                                    marginTop: 16, padding: 12, borderRadius: 10,
-                                    background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
-                                    border: "1px solid #fde68a",
-                                }}>
-                                    <p style={{ fontSize: 11, fontWeight: 700, color: "#92400e", margin: "0 0 4px" }}>
-                                        ✨ Tính năng nâng cao
-                                    </p>
-                                    <p style={{ fontSize: 10, color: "#a16207", margin: 0, lineHeight: 1.5 }}>
-                                        Nâng cấp lên Basic+ để xóa watermark và mở khóa template premium.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* ══ Quick Image Replace Bar (CineLove parity) ══ */}
-            <QuickImageBar projectId={projectId} onReplace={triggerAutosave} />
+          {/* Zoom Controls Overlay */}
+          <div
+            style={{
+              position: "sticky",
+              bottom: 12,
+              right: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              background: "rgba(255,255,255,0.95)",
+              borderRadius: 10,
+              padding: "4px 8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              marginLeft: "auto",
+              marginRight: 12,
+              marginTop: -44,
+              zIndex: 10,
+              width: "fit-content",
+            }}
+          >
+            <button
+              onClick={() => setZoom((z) => Math.max(50, z - 10))}
+              title="Thu nhỏ"
+              style={{
+                width: 28,
+                height: 28,
+                border: "none",
+                borderRadius: 6,
+                background: "transparent",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#374151",
+              }}
+            >
+              <ZoomOut size={14} />
+            </button>
+            <button
+              onClick={() => setZoom(100)}
+              title="Reset 100%"
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#6b7280",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                padding: "2px 6px",
+                minWidth: 36,
+                textAlign: "center",
+              }}
+            >
+              {zoom}%
+            </button>
+            <button
+              onClick={() => setZoom((z) => Math.min(200, z + 10))}
+              title="Phóng to"
+              style={{
+                width: 28,
+                height: 28,
+                border: "none",
+                borderRadius: 6,
+                background: "transparent",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#374151",
+              }}
+            >
+              <ZoomIn size={14} />
+            </button>
+          </div>
         </div>
-    );
+
+        {/* ══ Right Settings Panel — CineLove accordion style ══ */}
+        <div
+          style={{
+            width: 350,
+            background: "#fafafa",
+            borderLeft: "1px solid #e5e7eb",
+            overflowY: "auto",
+            flexShrink: 0,
+            boxShadow: "-2px 0 12px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div
+            style={{
+              padding: "14px 16px",
+              borderBottom: "1px solid #f0f0f0",
+              background: "linear-gradient(180deg, #fff 0%, #fafafa 100%)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#374151",
+                margin: 0,
+                letterSpacing: 0.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              ✏️ Tuỳ chỉnh
+            </h3>
+          </div>
+          <div style={{ padding: 16 }}>
+            {selected ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                {/* Element tag — CineLove style */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 12,
+                  }}
+                >
+                  <span
+                    style={{
+                      background: "#3b82f6",
+                      color: "#fff",
+                      fontSize: 10,
+                      padding: "3px 10px",
+                      borderRadius: 4,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {selected.name}
+                  </span>
+                  {selected.isDeletable && (
+                    <button
+                      onClick={() => {
+                        actions.delete(selected.id);
+                        triggerAutosave();
+                      }}
+                      style={{
+                        marginLeft: "auto",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        color: "#dc2626",
+                        padding: "2px 6px",
+                      }}
+                      title="Xóa phần tử"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+
+                {/* Component-specific settings (auto from craft.js related) */}
+                {selected.settings && React.createElement(selected.settings)}
+
+                {/* ── CineLove accordion sections ── */}
+                <div
+                  style={{
+                    marginTop: 16,
+                    borderTop: "1px solid #e5e7eb",
+                    paddingTop: 12,
+                  }}
+                >
+                  {/* Hiệu ứng chuyển động (Entrance animation) */}
+                  <AccordionSection title="Hiệu ứng chuyển động" icon="🎬">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      {[
+                        { id: "none", label: "Không" },
+                        { id: "fadeIn", label: "Fade In" },
+                        { id: "slideUp", label: "Slide Up" },
+                        { id: "slideLeft", label: "Slide Left" },
+                        { id: "slideRight", label: "Slide Right" },
+                        { id: "scaleIn", label: "Scale In" },
+                        { id: "bounceIn", label: "Bounce In" },
+                        { id: "flipIn", label: "Flip In" },
+                      ].map((a) => (
+                        <button
+                          key={a.id}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #e5e7eb",
+                            background: "#fff",
+                            cursor: "pointer",
+                            fontSize: 11,
+                            color: "#374151",
+                            textAlign: "left",
+                          }}
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  </AccordionSection>
+
+                  {/* Chuyển động liên tục */}
+                  <AccordionSection title="Chuyển động liên tục" icon="🔄">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      {[
+                        { id: "none", label: "Không" },
+                        { id: "float", label: "Float (lên xuống)" },
+                        { id: "pulse", label: "Pulse (nhịp đập)" },
+                        { id: "shake", label: "Shake (rung)" },
+                        { id: "spin", label: "Spin (xoay)" },
+                        { id: "bounce", label: "Bounce (nảy)" },
+                      ].map((a) => (
+                        <button
+                          key={a.id}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #e5e7eb",
+                            background: "#fff",
+                            cursor: "pointer",
+                            fontSize: 11,
+                            color: "#374151",
+                            textAlign: "left",
+                          }}
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  </AccordionSection>
+
+                  {/* Liên kết */}
+                  <AccordionSection title="Liên kết" icon="🔗">
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      style={{
+                        width: "100%",
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb",
+                        fontSize: 11,
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </AccordionSection>
+                </div>
+              </div>
+            ) : (
+              <div style={{ paddingTop: 16 }}>
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "#9ca3af",
+                    fontStyle: "italic",
+                    textAlign: "center",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  Click vào phần tử trên canvas để chỉnh sửa
+                </p>
+
+                {/* ── Danh mục dropdown ── */}
+                <div style={{ marginBottom: 12 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#374151",
+                      margin: "0 0 6px",
+                    }}
+                  >
+                    Danh mục
+                  </p>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                      color: "#374151",
+                      background: "#fff",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="wedding">Thiệp cưới</option>
+                    <option value="birthday">Thiệp sinh nhật</option>
+                    <option value="graduation">Thiệp tốt nghiệp</option>
+                    <option value="event">Sự kiện</option>
+                    <option value="anniversary">Kỷ niệm</option>
+                    <option value="wish">Lời chúc</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+
+                {/* ── Trạng thái dropdown ── */}
+                <div style={{ marginBottom: 12 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#374151",
+                      margin: "0 0 6px",
+                    }}
+                  >
+                    Trạng thái
+                  </p>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                      color: "#374151",
+                      background: "#fff",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="draft">Nháp</option>
+                    <option value="public">Công khai</option>
+                  </select>
+                </div>
+
+                {/* ── Bản xem trước ── */}
+                <div style={{ marginBottom: 12 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#374151",
+                      margin: "0 0 6px",
+                    }}
+                  >
+                    Bản xem trước
+                  </p>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: 140,
+                      borderRadius: 10,
+                      border: "1px solid #e5e7eb",
+                      background: "#f9fafb",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <a
+                      href={`/i/${projectSlug}`}
+                      target="_blank"
+                      rel="noopener"
+                      style={{
+                        fontSize: 11,
+                        color: "#3b82f6",
+                        textDecoration: "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <Eye size={24} strokeWidth={1.5} />
+                      <span>Xem thiệp: 7app.online/i/{projectSlug}</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* ── Link thiệp ── */}
+                <div style={{ marginBottom: 16 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: "#9ca3af",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    Link thiệp
+                  </p>
+                  <a
+                    href={`/i/${projectSlug}`}
+                    target="_blank"
+                    rel="noopener"
+                    style={{
+                      fontSize: 11,
+                      color: "#3b82f6",
+                      wordBreak: "break-all",
+                      textDecoration: "none",
+                    }}
+                  >
+                    7app.online/i/{projectSlug}
+                  </a>
+                </div>
+
+                {/* ── Tính năng nâng cao ── */}
+                <div
+                  style={{
+                    padding: 12,
+                    borderRadius: 10,
+                    background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+                    border: "1px solid #fde68a",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#92400e",
+                      margin: "0 0 8px",
+                    }}
+                  >
+                    Tính năng nâng cao
+                  </p>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
+                    {/* Xóa watermark toggle */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ fontSize: 11, color: "#78350f" }}>
+                        Xóa watermark
+                      </span>
+                      <label
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                          width: 36,
+                          height: 20,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          disabled
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span
+                          style={{
+                            position: "absolute",
+                            cursor: "not-allowed",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "#d1d5db",
+                            borderRadius: 10,
+                            transition: "0.2s",
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: "absolute",
+                              height: 16,
+                              width: 16,
+                              left: 2,
+                              bottom: 2,
+                              background: "#fff",
+                              borderRadius: "50%",
+                              transition: "0.2s",
+                            }}
+                          />
+                        </span>
+                      </label>
+                    </div>
+                    {/* QR Bank */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ fontSize: 11, color: "#78350f" }}>
+                        QR Bank
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 9,
+                          color: "#a16207",
+                          background: "#fef3c7",
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          fontWeight: 600,
+                        }}
+                      >
+                        PRO
+                      </span>
+                    </div>
+                    {/* Tùy chỉnh tự động cuộn */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ fontSize: 11, color: "#78350f" }}>
+                        Tùy chỉnh tự động cuộn
+                      </span>
+                      <label
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                          width: 36,
+                          height: 20,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          disabled
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span
+                          style={{
+                            position: "absolute",
+                            cursor: "not-allowed",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "#d1d5db",
+                            borderRadius: 10,
+                            transition: "0.2s",
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: "absolute",
+                              height: 16,
+                              width: 16,
+                              left: 2,
+                              bottom: 2,
+                              background: "#fff",
+                              borderRadius: "50%",
+                              transition: "0.2s",
+                            }}
+                          />
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: "#a16207",
+                      margin: "8px 0 0",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Nâng cấp lên Basic+ để mở khóa tất cả tính năng.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* close content padding wrapper */}
+        </div>
+      </div>
+
+      {/* ══ Quick Image Replace Bar (CineLove parity) ══ */}
+      <QuickImageBar projectId={projectId} onReplace={triggerAutosave} />
+    </div>
+  );
 }
 
 /* ── Quick Image Replace Bar ── */
-function QuickImageBar({ projectId, onReplace }: { projectId: string; onReplace: () => void }) {
-    const { actions, query } = useEditor();
-    const replaceRef = useRef<HTMLInputElement>(null);
-    const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
+function QuickImageBar({
+  projectId,
+  onReplace,
+}: {
+  projectId: string;
+  onReplace: () => void;
+}) {
+  const { actions, query } = useEditor();
+  const replaceRef = useRef<HTMLInputElement>(null);
+  const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
 
-    // Scan all nodes for CraftImage components
-    const imageNodes = useMemo(() => {
-        try {
-            const serialized = query.serialize();
-            const nodes = JSON.parse(serialized);
-            const images: { id: string; src: string }[] = [];
-            for (const [id, node] of Object.entries(nodes)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const n = node as any;
-                if (n?.type?.resolvedName === "CraftImage" && n?.props?.src) {
-                    images.push({ id, src: n.props.src });
-                }
+  // Scan all nodes for CraftImage components
+  const imageNodes = useMemo(() => {
+    try {
+      const serialized = query.serialize();
+      const nodes = JSON.parse(serialized);
+      const images: { id: string; src: string }[] = [];
+      for (const [id, node] of Object.entries(nodes)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const n = node as any;
+        if (n?.type?.resolvedName === "CraftImage" && n?.props?.src) {
+          images.push({ id, src: n.props.src });
+        }
+      }
+      return images;
+    } catch {
+      return [];
+    }
+  }, [query]);
+
+  const handleReplace = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !targetNodeId) return;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("projectId", projectId);
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.url) {
+          actions.setProp(targetNodeId, (props: { src: string }) => {
+            props.src = data.url;
+          });
+          onReplace();
+        }
+      } catch {
+        alert("Upload thất bại");
+      }
+      e.target.value = "";
+      setTargetNodeId(null);
+    },
+    [targetNodeId, projectId, actions, onReplace],
+  );
+
+  if (imageNodes.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        height: 64,
+        background: "#fff",
+        borderTop: "1px solid #e5e7eb",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 12px",
+        gap: 8,
+        flexShrink: 0,
+        overflow: "hidden",
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          color: "#6b7280",
+          whiteSpace: "nowrap",
+          letterSpacing: 0.5,
+        }}
+      >
+        🖼️ Thay nhanh ({imageNodes.length})
+      </span>
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          overflowX: "auto",
+          flex: 1,
+          padding: "4px 0",
+          scrollbarWidth: "none",
+        }}
+      >
+        {imageNodes.map((img: { id: string; src: string }) => (
+          <button
+            key={img.id}
+            onClick={() => {
+              setTargetNodeId(img.id);
+              replaceRef.current?.click();
+            }}
+            title="Click để thay ảnh"
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 8,
+              border: "2px solid #e5e7eb",
+              background: `url(${img.src}) center/cover no-repeat`,
+              flexShrink: 0,
+              cursor: "pointer",
+              position: "relative",
+              overflow: "hidden",
+              transition: "border-color 0.15s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "#ff6b9d")
             }
-            return images;
-        } catch { return []; }
-    }, [query]);
-
-    const handleReplace = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !targetNodeId) return;
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("projectId", projectId);
-        try {
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
-            const data = await res.json();
-            if (data.url) {
-                actions.setProp(targetNodeId, (props: { src: string }) => { props.src = data.url; });
-                onReplace();
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "#e5e7eb")
             }
-        } catch { alert("Upload thất bại"); }
-        e.target.value = "";
-        setTargetNodeId(null);
-    }, [targetNodeId, projectId, actions, onReplace]);
-
-    if (imageNodes.length === 0) return null;
-
-    return (
-        <div style={{
-            height: 64, background: "#fff",
-            borderTop: "1px solid #e5e7eb",
-            display: "flex", alignItems: "center",
-            padding: "0 12px", gap: 8,
-            flexShrink: 0, overflow: "hidden",
-        }}>
-            <span style={{
-                fontSize: 11, fontWeight: 700, color: "#6b7280",
-                whiteSpace: "nowrap", letterSpacing: 0.5,
-            }}>
-                🖼️ Thay nhanh ({imageNodes.length})
+          >
+            <span
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: "rgba(0,0,0,0.5)",
+                color: "#fff",
+                fontSize: 8,
+                textAlign: "center",
+                padding: "1px 0",
+              }}
+            >
+              thay
             </span>
-            <div style={{
-                display: "flex", gap: 6, overflowX: "auto",
-                flex: 1, padding: "4px 0",
-                scrollbarWidth: "none",
-            }}>
-                {imageNodes.map((img: { id: string; src: string }) => (
-                    <button
-                        key={img.id}
-                        onClick={() => { setTargetNodeId(img.id); replaceRef.current?.click(); }}
-                        title="Click để thay ảnh"
-                        style={{
-                            width: 48, height: 48, borderRadius: 8,
-                            border: "2px solid #e5e7eb",
-                            background: `url(${img.src}) center/cover no-repeat`,
-                            flexShrink: 0, cursor: "pointer",
-                            position: "relative", overflow: "hidden",
-                            transition: "border-color 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.borderColor = "#ff6b9d")}
-                        onMouseLeave={e => (e.currentTarget.style.borderColor = "#e5e7eb")}
-                    >
-                        <span style={{
-                            position: "absolute", bottom: 0, left: 0, right: 0,
-                            background: "rgba(0,0,0,0.5)", color: "#fff",
-                            fontSize: 8, textAlign: "center", padding: "1px 0",
-                        }}>
-                            thay
-                        </span>
-                    </button>
-                ))}
-            </div>
-            <input ref={replaceRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleReplace} />
-        </div>
-    );
+          </button>
+        ))}
+      </div>
+      <input
+        ref={replaceRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleReplace}
+      />
+    </div>
+  );
 }
 
 /* ── Shared styles ── */
 const panelLabelStyle: React.CSSProperties = {
-    fontSize: 11, color: "#6b7280", margin: "0 0 8px",
-    fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
+  fontSize: 11,
+  color: "#6b7280",
+  margin: "0 0 8px",
+  fontWeight: 600,
+  letterSpacing: 1,
+  textTransform: "uppercase",
 };
 
 function topBtnStyle(disabled: boolean): React.CSSProperties {
-    return {
-        width: 32, height: 32, border: "1px solid #e5e7eb",
-        borderRadius: 8, background: "#fff",
-        cursor: disabled ? "not-allowed" : "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        color: disabled ? "#d1d5db" : "#374151",
-    };
+  return {
+    width: 32,
+    height: 32,
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    background: "#fff",
+    cursor: disabled ? "not-allowed" : "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: disabled ? "#d1d5db" : "#374151",
+  };
 }
