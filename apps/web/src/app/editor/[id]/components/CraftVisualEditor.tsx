@@ -65,9 +65,12 @@ import {
   CanvasRenderer,
   CanvasContextMenu,
   CanvasRightPanel,
+  SelectionOverlay,
+  ElementToolbar,
   EditorContext,
   editorReducer,
   initialState,
+  useKeyboard,
 } from "./canvas-engine";
 import type { CanvasElement } from "./canvas-engine/types";
 
@@ -792,6 +795,12 @@ export function CraftVisualEditor({
 }
 
 /* ── Inner component with useEditor access ── */
+/** Wrapper component to activate useKeyboard hook inside EditorContext */
+function CanvasKeyboardHandler() {
+  useKeyboard();
+  return null;
+}
+
 function CraftEditorInner({
   projectId,
   initialCanvasJson,
@@ -4362,6 +4371,7 @@ function CraftEditorInner({
             <EditorContext.Provider value={editorCtx}>
               <CanvasRenderer />
               <CanvasContextMenu />
+              <CanvasKeyboardHandler />
             </EditorContext.Provider>
           ) : (
             <div

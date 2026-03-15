@@ -1,6 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorContext } from "./useEditorState";
+import { SelectionOverlay } from "./SelectionOverlay";
+import { ElementToolbar } from "./ElementToolbar";
 import type { CanvasElement, TextProps, ImageProps } from "./types";
 
 /** Render a single text element */
@@ -224,6 +226,8 @@ export function CanvasRenderer() {
             onSelect={handleSelect}
           />
         ))}
+        <SelectionOverlay />
+        <ElementToolbar />
       </div>
     </div>
   );
