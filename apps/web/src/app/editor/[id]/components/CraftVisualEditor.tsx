@@ -200,6 +200,11 @@ function CraftEditorInner({
 
   // ── Custom Canvas Engine State ──
   const [editorState, editorDispatch] = useReducer(editorReducer, initialState);
+  // Stable ref for save() to avoid stale closure race condition
+  const editorStateRef = useRef(editorState);
+  useEffect(() => {
+    editorStateRef.current = editorState;
+  });
   const selectedCanvasElement = useMemo(
     () =>
       editorState.elements.find(
@@ -320,19 +325,20 @@ function CraftEditorInner({
 
   // ── Save ──
   const save = useCallback(async () => {
+    const currentEditorState = editorStateRef.current;
     setSaveStatus("saving");
     let canvasJson: string;
     canvasJson = JSON.stringify({
       version: 2,
       engine: "custom-canvas",
       canvas: {
-        width: editorState.canvasWidth,
-        height: editorState.canvasHeight,
-        background: editorState.canvasBackground,
+        width: currentEditorState.canvasWidth,
+        height: currentEditorState.canvasHeight,
+        background: currentEditorState.canvasBackground,
         bg: background,
         bgOpacity,
       },
-      elements: editorState.elements,
+      elements: currentEditorState.elements,
       meta: {
         musicUrl,
         musicName,
@@ -429,24 +435,28 @@ function CraftEditorInner({
     projectStatus,
     showInLibrary,
     uploadedImages,
-    editorState,
-  ]);
+    removeWatermark,
+    autoScroll,
+    scrollSpeed,
+    qrBank,
+  ]); // editorState read from editorStateRef to avoid stale closure
 
   // ── Publish ──
   const handlePublish = useCallback(async () => {
     if (publishStatus === "publishing") return;
     setPublishStatus("publishing");
+    const pubState = editorStateRef.current;
     const canvasJson = JSON.stringify({
       version: 2,
       engine: "custom-canvas",
       canvas: {
-        width: editorState.canvasWidth,
-        height: editorState.canvasHeight,
-        background: editorState.canvasBackground,
+        width: pubState.canvasWidth,
+        height: pubState.canvasHeight,
+        background: pubState.canvasBackground,
         bg: background,
         bgOpacity,
       },
-      elements: editorState.elements,
+      elements: pubState.elements,
       meta: {
         musicUrl,
         musicName,
@@ -456,6 +466,10 @@ function CraftEditorInner({
         projectStatus,
         showInLibrary,
         uploadedImages,
+        removeWatermark,
+        autoScroll,
+        scrollSpeed,
+        qrBank,
       },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
