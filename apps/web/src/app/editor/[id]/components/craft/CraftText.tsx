@@ -299,6 +299,7 @@ function CraftTextSettings() {
   }));
 
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false);
+  const [showFontDropdown, setShowFontDropdown] = useState(false);
 
   const FONTS = [
     "'Inter', sans-serif",
@@ -569,26 +570,89 @@ function CraftTextSettings() {
           </button>
         </div>
 
-        {/* Font Family */}
-        <div style={{ marginBottom: 8 }}>
+        {/* Font Family — custom styled dropdown */}
+        <div style={{ marginBottom: 8, position: "relative" }}>
           <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>
             Font
           </span>
-          <select
-            value={fontFamily}
-            onChange={(e) =>
-              setProp((p: CraftTextProps) => {
-                p.fontFamily = e.target.value;
-              })
-            }
-            style={{ ...selectStyle, width: "100%", marginTop: 4 }}
+          {/* Trigger button — shows current font in its own typeface */}
+          <button
+            onClick={() => setShowFontDropdown(!showFontDropdown)}
+            style={{
+              ...selectStyle,
+              width: "100%",
+              marginTop: 4,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontFamily: fontFamily,
+              fontWeight: 500,
+              fontSize: 13,
+            }}
           >
-            {FONTS.map((f) => (
-              <option key={f} value={f} style={{ fontFamily: f }}>
-                {f.split("'")[1] || f}
-              </option>
-            ))}
-          </select>
+            <span style={{ fontFamily: fontFamily }}>
+              {fontFamily.split("'")[1] || fontFamily}
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                color: "#9ca3af",
+                fontFamily: "sans-serif",
+              }}
+            >
+              ▾
+            </span>
+          </button>
+          {/* Dropdown panel */}
+          {showFontDropdown && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 2px)",
+                left: 0,
+                right: 0,
+                zIndex: 300,
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 8,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                maxHeight: 220,
+                overflowY: "auto",
+              }}
+            >
+              {FONTS.map((f) => {
+                const label = f.split("'")[1] || f;
+                const isSelected = fontFamily === f;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => {
+                      setProp((p: CraftTextProps) => {
+                        p.fontFamily = f;
+                      });
+                      setShowFontDropdown(false);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      border: "none",
+                      background: isSelected ? "#eff6ff" : "transparent",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontFamily: f,
+                      fontSize: 14,
+                      fontWeight: isSelected ? 700 : 400,
+                      color: isSelected ? "#3b82f6" : "#374151",
+                      borderBottom: "1px solid #f3f4f6",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Colors: text + background */}

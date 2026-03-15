@@ -754,7 +754,13 @@ function CraftEditorInner({
       const [currentNodeId] = state.events.selected;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let sel:
-        | { id: string; name: string; settings: any; isDeletable: boolean }
+        | {
+            id: string;
+            name: string;
+            settings: any;
+            isDeletable: boolean;
+            props: any;
+          }
         | undefined;
       if (currentNodeId) {
         sel = {
@@ -763,6 +769,7 @@ function CraftEditorInner({
           settings:
             (state.nodes[currentNodeId] as any)?.related?.settings || null,
           isDeletable: query.node(currentNodeId).isDeletable(),
+          props: (state.nodes[currentNodeId] as any)?.data?.props ?? {},
         };
       }
       return {
@@ -816,6 +823,7 @@ function CraftEditorInner({
   const [zoom, setZoom] = useState(100);
   const [projectCategory, setProjectCategory] = useState("wedding");
   const [projectStatus, setProjectStatus] = useState("draft");
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1633,6 +1641,42 @@ function CraftEditorInner({
               <span>{tab.label}</span>
             </button>
           ))}
+          {/* ── Fixed "Hỗ trợ" button at bottom (CineLove parity) ── */}
+          <div
+            style={{
+              marginTop: "auto",
+              borderTop: "1px solid #f0f0f0",
+              paddingTop: 8,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <button
+              onClick={() => window.open("https://lovestory.vn/help", "_blank")}
+              title="Hỗ trợ"
+              style={{
+                width: 74,
+                padding: "8px 2px",
+                border: "none",
+                borderRadius: 10,
+                background: "transparent",
+                color: "#6b7280",
+                cursor: "pointer",
+                fontSize: 9,
+                fontWeight: 400,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s",
+                marginBottom: 8,
+              }}
+            >
+              <HelpCircle size={20} />
+              <span>Hỗ trợ</span>
+            </button>
+          </div>
         </div>
 
         {/* ── Overlay Left Panel (floats over canvas) ── */}
@@ -3377,11 +3421,11 @@ function CraftEditorInner({
                     ))}
                   </div>
 
-                  {/* Section preset cards */}
+                  {/* Section preset cards — 2-column visual grid */}
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
                       gap: 8,
                       marginTop: 4,
                     }}
@@ -3486,6 +3530,8 @@ function CraftEditorInner({
                           textAlign: "left",
                           overflow: "hidden",
                           transition: "all 0.15s",
+                          display: "flex",
+                          flexDirection: "column",
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = "#ff6b9d";
@@ -3497,53 +3543,226 @@ function CraftEditorInner({
                           e.currentTarget.style.boxShadow = "none";
                         }}
                       >
-                        {/* Preview area */}
+                        {/* Visual preview thumbnail — aspect ratio 3:4 */}
                         <div
                           style={{
-                            height: Math.round(preset.previewHeight * 0.4),
+                            aspectRatio: "3/4",
                             background: preset.previewBg,
+                            overflow: "hidden",
                             display: "flex",
+                            flexDirection: "column",
                             alignItems: "center",
                             justifyContent: "center",
+                            gap: 6,
+                            padding: 8,
                           }}
                         >
-                          <span style={{ fontSize: 20 }}>
-                            {
-                              SECTION_CATEGORIES.find(
-                                (c) => c.id === preset.category,
-                              )?.icon
-                            }
-                          </span>
+                          {preset.category === "photo" && (
+                            <>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 1fr",
+                                  gap: 3,
+                                  width: "100%",
+                                }}
+                              >
+                                {[0, 1, 2, 3].map((i) => (
+                                  <div
+                                    key={i}
+                                    style={{
+                                      height: 28,
+                                      background: "rgba(255,255,255,0.45)",
+                                      borderRadius: 4,
+                                      border: "1px solid rgba(255,255,255,0.6)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontSize: 10,
+                                    }}
+                                  >
+                                    🖼
+                                  </div>
+                                ))}
+                              </div>
+                              <div
+                                style={{
+                                  width: "70%",
+                                  height: 6,
+                                  background: "rgba(255,255,255,0.5)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                            </>
+                          )}
+                          {preset.category === "info" && (
+                            <>
+                              <div
+                                style={{
+                                  width: "60%",
+                                  height: 7,
+                                  background: "rgba(255,255,255,0.7)",
+                                  borderRadius: 3,
+                                  marginBottom: 2,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "80%",
+                                  height: 5,
+                                  background: "rgba(255,255,255,0.5)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "70%",
+                                  height: 5,
+                                  background: "rgba(255,255,255,0.4)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "50%",
+                                  height: 5,
+                                  background: "rgba(255,255,255,0.3)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                            </>
+                          )}
+                          {preset.category === "timeline" && (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 8,
+                                width: "80%",
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              {[0, 1, 2].map((i) => (
+                                <div
+                                  key={i}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      background: "rgba(255,255,255,0.9)",
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  <div
+                                    style={{
+                                      height: 5,
+                                      background: "rgba(255,255,255,0.5)",
+                                      borderRadius: 3,
+                                      width: `${55 + i * 10}%`,
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {preset.category === "invitation" && (
+                            <div
+                              style={{
+                                width: "75%",
+                                height: "60%",
+                                border: "2px solid rgba(255,255,255,0.7)",
+                                borderRadius: 6,
+                                background: "rgba(255,255,255,0.25)",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 4,
+                              }}
+                            >
+                              <span style={{ fontSize: 16 }}>💌</span>
+                              <div
+                                style={{
+                                  width: "60%",
+                                  height: 4,
+                                  background: "rgba(255,255,255,0.6)",
+                                  borderRadius: 2,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "45%",
+                                  height: 4,
+                                  background: "rgba(255,255,255,0.4)",
+                                  borderRadius: 2,
+                                }}
+                              />
+                            </div>
+                          )}
+                          {![
+                            "photo",
+                            "info",
+                            "timeline",
+                            "invitation",
+                          ].includes(preset.category) && (
+                            <div
+                              style={{
+                                width: "80%",
+                                border: "1px solid rgba(255,255,255,0.5)",
+                                borderRadius: 6,
+                                background: "rgba(255,255,255,0.2)",
+                                padding: 8,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 4,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "50%",
+                                  height: 6,
+                                  background: "rgba(255,255,255,0.7)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "80%",
+                                  height: 4,
+                                  background: "rgba(255,255,255,0.4)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "65%",
+                                  height: 4,
+                                  background: "rgba(255,255,255,0.3)",
+                                  borderRadius: 3,
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
-                        {/* Info */}
-                        <div style={{ padding: "8px 10px" }}>
+                        {/* Card name below thumbnail */}
+                        <div style={{ padding: "6px 8px" }}>
                           <p
                             style={{
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: 700,
                               color: "#374151",
-                              margin: "0 0 2px",
+                              margin: 0,
+                              lineHeight: 1.3,
                             }}
                           >
                             {preset.name}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: 9,
-                              color: "#9ca3af",
-                              margin: "0 0 4px",
-                            }}
-                          >
-                            {preset.description}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: 9,
-                              color: "#d1d5db",
-                              margin: 0,
-                            }}
-                          >
-                            {preset.elements.length} thành phần
                           </p>
                         </div>
                       </button>
@@ -3695,6 +3914,147 @@ function CraftEditorInner({
                   <Trash2 size={13} />
                 </button>
               )}
+
+              {/* More options "..." */}
+              <div style={{ position: "relative" }}>
+                <button
+                  title="Thêm tùy chọn"
+                  onClick={() => setShowMoreMenu((p) => !p)}
+                  style={floatBtnStyle}
+                >
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: "#e5e7eb",
+                      letterSpacing: 1,
+                      lineHeight: 1,
+                    }}
+                  >
+                    •••
+                  </span>
+                </button>
+                {showMoreMenu && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 4px)",
+                      right: 0,
+                      background: "#1f2937",
+                      borderRadius: 8,
+                      padding: "4px 0",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+                      zIndex: 100,
+                      minWidth: 160,
+                      border: "1px solid #374151",
+                    }}
+                  >
+                    {/* Khóa — UI only */}
+                    <button
+                      onClick={() => setShowMoreMenu(false)}
+                      style={{
+                        width: "100%",
+                        padding: "7px 14px",
+                        background: "none",
+                        border: "none",
+                        color: "#e5e7eb",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      🔒 Khóa
+                    </button>
+                    {/* Sao chép kiểu — UI only */}
+                    <button
+                      onClick={() => setShowMoreMenu(false)}
+                      style={{
+                        width: "100%",
+                        padding: "7px 14px",
+                        background: "none",
+                        border: "none",
+                        color: "#e5e7eb",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      🎨 Sao chép kiểu
+                    </button>
+                    {/* Đưa lên trước */}
+                    <button
+                      onClick={() => {
+                        try {
+                          const serialized = query.serialize();
+                          const nodes = JSON.parse(serialized);
+                          const node = nodes[selected.id];
+                          if (!node || !node.parent) return;
+                          const parent = nodes[node.parent];
+                          if (!parent || !parent.nodes) return;
+                          actions.move(
+                            selected.id,
+                            node.parent,
+                            parent.nodes.length,
+                          );
+                        } catch {
+                          /* ignore */
+                        }
+                        setShowMoreMenu(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "7px 14px",
+                        background: "none",
+                        border: "none",
+                        color: "#e5e7eb",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      ⬆️ Đưa lên trước
+                    </button>
+                    {/* Đưa ra sau */}
+                    <button
+                      onClick={() => {
+                        try {
+                          const serialized = query.serialize();
+                          const nodes = JSON.parse(serialized);
+                          const node = nodes[selected.id];
+                          if (!node || !node.parent) return;
+                          actions.move(selected.id, node.parent, 0);
+                        } catch {
+                          /* ignore */
+                        }
+                        setShowMoreMenu(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "7px 14px",
+                        background: "none",
+                        border: "none",
+                        color: "#e5e7eb",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      ⬇️ Đưa ra sau
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           <div
@@ -4232,23 +4592,42 @@ function CraftEditorInner({
                         { id: "scaleIn", label: "Scale In" },
                         { id: "bounceIn", label: "Bounce In" },
                         { id: "flipIn", label: "Flip In" },
-                      ].map((a) => (
-                        <button
-                          key={a.id}
-                          style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "1px solid #e5e7eb",
-                            background: "#fff",
-                            cursor: "pointer",
-                            fontSize: 11,
-                            color: "#374151",
-                            textAlign: "left",
-                          }}
-                        >
-                          {a.label}
-                        </button>
-                      ))}
+                      ].map((a) => {
+                        const isActive =
+                          (selected?.props?.entranceAnimation ?? "none") ===
+                          a.id;
+                        return (
+                          <button
+                            key={a.id}
+                            onClick={() => {
+                              if (!selected) return;
+                              actions.setProp(
+                                selected.id,
+                                (props: { entranceAnimation: string }) => {
+                                  props.entranceAnimation = a.id;
+                                },
+                              );
+                              triggerAutosave();
+                            }}
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 8,
+                              border: isActive
+                                ? "2px solid #3b82f6"
+                                : "1px solid #e5e7eb",
+                              background: isActive ? "#eff6ff" : "#fff",
+                              cursor: "pointer",
+                              fontSize: 11,
+                              color: isActive ? "#1d4ed8" : "#374151",
+                              textAlign: "left",
+                              fontWeight: isActive ? 600 : 400,
+                              transition: "all 0.1s",
+                            }}
+                          >
+                            {a.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </AccordionSection>
 
@@ -4268,23 +4647,41 @@ function CraftEditorInner({
                         { id: "shake", label: "Shake (rung)" },
                         { id: "spin", label: "Spin (xoay)" },
                         { id: "bounce", label: "Bounce (nảy)" },
-                      ].map((a) => (
-                        <button
-                          key={a.id}
-                          style={{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "1px solid #e5e7eb",
-                            background: "#fff",
-                            cursor: "pointer",
-                            fontSize: 11,
-                            color: "#374151",
-                            textAlign: "left",
-                          }}
-                        >
-                          {a.label}
-                        </button>
-                      ))}
+                      ].map((a) => {
+                        const isActive =
+                          (selected?.props?.loopAnimation ?? "none") === a.id;
+                        return (
+                          <button
+                            key={a.id}
+                            onClick={() => {
+                              if (!selected) return;
+                              actions.setProp(
+                                selected.id,
+                                (props: { loopAnimation: string }) => {
+                                  props.loopAnimation = a.id;
+                                },
+                              );
+                              triggerAutosave();
+                            }}
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 8,
+                              border: isActive
+                                ? "2px solid #ff6b9d"
+                                : "1px solid #e5e7eb",
+                              background: isActive ? "#fdf2f8" : "#fff",
+                              cursor: "pointer",
+                              fontSize: 11,
+                              color: isActive ? "#be185d" : "#374151",
+                              textAlign: "left",
+                              fontWeight: isActive ? 600 : 400,
+                              transition: "all 0.1s",
+                            }}
+                          >
+                            {a.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </AccordionSection>
 
