@@ -67,8 +67,8 @@ import {
   EditorContext,
   editorReducer,
   initialState,
-} from "./canvas";
-import type { CanvasElement } from "./canvas/types";
+} from "./canvas-engine";
+import type { CanvasElement } from "./canvas-engine/types";
 
 /* ── Tab config (CineLove parity: 10 tabs) ── */
 const TABS = [
@@ -937,8 +937,22 @@ function CraftEditorInner({
           setShowInLibrary(parsed.meta.showInLibrary);
         if (parsed.meta?.uploadedImages)
           setUploadedImages(parsed.meta.uploadedImages);
-        // Load saved craft.js node tree into editor
-        if (parsed.craftState) {
+        // Detect engine type and load accordingly
+        if (parsed.engine === "custom-canvas" && parsed.elements) {
+          // New custom canvas format
+          setUseCustomCanvas(true);
+          editorDispatch({ type: "SET_ELEMENTS", elements: parsed.elements });
+          if (parsed.canvas?.width && parsed.canvas?.height) {
+            editorDispatch({
+              type: "SET_CANVAS",
+              width: parsed.canvas.width,
+              height: parsed.canvas.height,
+              background: parsed.canvas.background || "#f8f3eb",
+            });
+          }
+        } else if (parsed.craftState) {
+          // Legacy CraftJS format
+          setUseCustomCanvas(false);
           const stateStr =
             typeof parsed.craftState === "string"
               ? parsed.craftState
@@ -1063,24 +1077,53 @@ function CraftEditorInner({
   // ── Save ──
   const save = useCallback(async () => {
     setSaveStatus("saving");
-    const craftJson = query.serialize();
-    const canvasJson = JSON.stringify({
-      version: 2,
-      engine: "craftjs",
-      canvas: { width: 390, height: 5000, bg: background, bgOpacity },
-      craftState: craftJson,
-      meta: {
-        musicUrl,
-        musicName,
-        musicWidgetStyle,
-        musicWidgetColor,
-        projectCategory,
-        projectStatus,
-        showInLibrary,
-        uploadedImages,
-      },
-      effects: { particleEffect, pageAnimation, curtainEffect },
-    });
+    let canvasJson: string;
+    if (useCustomCanvas) {
+      // New custom canvas engine format
+      canvasJson = JSON.stringify({
+        version: 2,
+        engine: "custom-canvas",
+        canvas: {
+          width: editorState.canvasWidth,
+          height: editorState.canvasHeight,
+          background: editorState.canvasBackground,
+          bg: background,
+          bgOpacity,
+        },
+        elements: editorState.elements,
+        meta: {
+          musicUrl,
+          musicName,
+          musicWidgetStyle,
+          musicWidgetColor,
+          projectCategory,
+          projectStatus,
+          showInLibrary,
+          uploadedImages,
+        },
+        effects: { particleEffect, pageAnimation, curtainEffect },
+      });
+    } else {
+      // Legacy CraftJS format
+      const craftJson = query.serialize();
+      canvasJson = JSON.stringify({
+        version: 2,
+        engine: "craftjs",
+        canvas: { width: 390, height: 5000, bg: background, bgOpacity },
+        craftState: craftJson,
+        meta: {
+          musicUrl,
+          musicName,
+          musicWidgetStyle,
+          musicWidgetColor,
+          projectCategory,
+          projectStatus,
+          showInLibrary,
+          uploadedImages,
+        },
+        effects: { particleEffect, pageAnimation, curtainEffect },
+      });
+    }
     // Save backup to localStorage
     try {
       localStorage.setItem(
@@ -1162,6 +1205,8 @@ function CraftEditorInner({
     projectStatus,
     showInLibrary,
     uploadedImages,
+    useCustomCanvas,
+    editorState,
   ]);
 
   // ── Publish ──
