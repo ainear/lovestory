@@ -9,6 +9,12 @@ import {
   Great_Vibes,
   Cormorant_Garamond,
   Pacifico,
+  Sacramento,
+  Alex_Brush,
+  Satisfy,
+  Allura,
+  Pinyon_Script,
+  Cinzel_Decorative,
 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -80,12 +86,56 @@ const pacifico = Pacifico({
   display: "swap",
 });
 
+const sacramento = Sacramento({
+  variable: "--font-sacramento",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const alexBrush = Alex_Brush({
+  variable: "--font-alex-brush",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const satisfy = Satisfy({
+  variable: "--font-satisfy",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const allura = Allura({
+  variable: "--font-allura",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const pinyonScript = Pinyon_Script({
+  variable: "--font-pinyon-script",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const cinzelDecorative = Cinzel_Decorative({
+  variable: "--font-cinzel-decorative",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
 /*
- * CineLove custom fonts that need self-hosting later:
- * - BucThu (calligraphy) -> closest Google: Great Vibes
- * - Aquarelle (watercolor script) -> closest Google: Pacifico
- * - Mallong (elegant serif) -> closest Google: Cormorant Garamond
- * For now using Google Font equivalents above.
+ * CineLove custom fonts → free Google Font equivalents:
+ * - BucThu (Vietnamese decorative/brush) → Dancing Script / Pacifico
+ * - Aquarelle (handwritten/brush) → Sacramento / Alex Brush
+ * - Mallong (decorative) → Satisfy
+ * - RetroSignature (script/signature) → Allura
+ * - Carlytte (calligraphy) → Pinyon Script
+ * - Soul Note Display (display/decorative) → Cinzel Decorative
  */
 
 export const metadata: Metadata = {
@@ -145,7 +195,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} antialiased`}
+        className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} ${sacramento.variable} ${alexBrush.variable} ${satisfy.variable} ${allura.variable} ${pinyonScript.variable} ${cinzelDecorative.variable} antialiased`}
         style={{ margin: 0 }}
       >
         <TRPCProvider>{children}</TRPCProvider>

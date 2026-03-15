@@ -313,6 +313,13 @@ function CraftTextSettings() {
     "'Georgia', serif",
     "'Roboto', sans-serif",
     "'Merriweather', serif",
+    // CineLove-style wedding fonts
+    "'Sacramento', cursive",
+    "'Alex Brush', cursive",
+    "'Satisfy', cursive",
+    "'Allura', cursive",
+    "'Pinyon Script', cursive",
+    "'Cinzel Decorative', serif",
   ];
 
   const FONT_SIZE_PRESETS = [

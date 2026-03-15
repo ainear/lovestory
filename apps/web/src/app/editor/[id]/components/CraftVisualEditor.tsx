@@ -31,7 +31,9 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  RefreshCw,
 } from "lucide-react";
+import html2canvas from "html2canvas";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { CraftText } from "./craft/CraftText";
 import { CraftImage } from "./craft/CraftImage";
@@ -113,6 +115,49 @@ const TEXT_PRESETS = [
     fontFamily: "'Lora', serif",
     fontWeight: "normal",
     fontStyle: "italic",
+  },
+  // CineLove-style wedding fonts
+  {
+    label: "Sacramento",
+    fontSize: 28,
+    fontFamily: "'Sacramento', cursive",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Alex Brush",
+    fontSize: 28,
+    fontFamily: "'Alex Brush', cursive",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Satisfy",
+    fontSize: 24,
+    fontFamily: "'Satisfy', cursive",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Allura",
+    fontSize: 28,
+    fontFamily: "'Allura', cursive",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Pinyon Script",
+    fontSize: 28,
+    fontFamily: "'Pinyon Script', cursive",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  {
+    label: "Cinzel Decorative",
+    fontSize: 18,
+    fontFamily: "'Cinzel Decorative', serif",
+    fontWeight: "normal",
+    fontStyle: "normal",
   },
 ];
 
@@ -764,6 +809,10 @@ function CraftEditorInner({
   const [musicSearch, setMusicSearch] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const thumbnailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [projectCategory, setProjectCategory] = useState("wedding");
   const [projectStatus, setProjectStatus] = useState("draft");
@@ -967,6 +1016,44 @@ function CraftEditorInner({
         })
         .eq("id", projectId);
       setSaveStatus("saved");
+      // Schedule thumbnail generation after save
+      if (thumbnailTimer.current) clearTimeout(thumbnailTimer.current);
+      thumbnailTimer.current = setTimeout(() => {
+        const el = canvasRef.current;
+        if (!el) return;
+        setThumbnailLoading(true);
+        html2canvas(el, {
+          useCORS: true,
+          allowTaint: true,
+          scale: 0.5,
+          width: el.offsetWidth,
+          height: Math.min(el.offsetHeight, 1200),
+          windowWidth: el.offsetWidth,
+          windowHeight: Math.min(el.offsetHeight, 1200),
+        })
+          .then((capturedCanvas) => {
+            const thumbCanvas = document.createElement("canvas");
+            const maxW = 200;
+            const ratio = maxW / capturedCanvas.width;
+            thumbCanvas.width = maxW;
+            thumbCanvas.height = Math.round(capturedCanvas.height * ratio);
+            const ctx = thumbCanvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(
+                capturedCanvas,
+                0,
+                0,
+                thumbCanvas.width,
+                thumbCanvas.height,
+              );
+              setThumbnailUrl(thumbCanvas.toDataURL("image/jpeg", 0.8));
+            }
+          })
+          .catch(() => {
+            /* silently skip */
+          })
+          .finally(() => setThumbnailLoading(false));
+      }, 1500);
     } catch {
       setSaveStatus("unsaved");
     }
@@ -3303,9 +3390,8 @@ function CraftEditorInner({
                       <button
                         key={preset.id}
                         onClick={() => {
-                          const rootNodeId = query
-                            .node("ROOT")
-                            .get().data.nodes?.[0];
+                          const rootNodeId = query.node("ROOT").get().data
+                            .nodes?.[0];
                           if (!rootNodeId) return;
                           preset.elements.forEach((el) => {
                             let reactEl: React.ReactElement;
@@ -3610,6 +3696,7 @@ function CraftEditorInner({
             </div>
           )}
           <div
+            ref={canvasRef}
             style={{
               width: 390,
               minHeight: 5000,
@@ -4301,16 +4388,87 @@ function CraftEditorInner({
 
                 {/* ── Bản xem trước ── */}
                 <div style={{ marginBottom: 12 }}>
-                  <p
+                  <div
                     style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#374151",
-                      margin: "0 0 6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 6,
                     }}
                   >
-                    Bản xem trước
-                  </p>
+                    <p
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#374151",
+                        margin: 0,
+                      }}
+                    >
+                      Bản xem trước
+                    </p>
+                    <button
+                      title="Làm mới ảnh xem trước"
+                      onClick={() => {
+                        const el = canvasRef.current;
+                        if (!el || thumbnailLoading) return;
+                        setThumbnailLoading(true);
+                        html2canvas(el, {
+                          useCORS: true,
+                          allowTaint: true,
+                          scale: 0.5,
+                          width: el.offsetWidth,
+                          height: Math.min(el.offsetHeight, 1200),
+                          windowWidth: el.offsetWidth,
+                          windowHeight: Math.min(el.offsetHeight, 1200),
+                        })
+                          .then((capturedCanvas) => {
+                            const thumbCanvas =
+                              document.createElement("canvas");
+                            const maxW = 200;
+                            const ratio = maxW / capturedCanvas.width;
+                            thumbCanvas.width = maxW;
+                            thumbCanvas.height = Math.round(
+                              capturedCanvas.height * ratio,
+                            );
+                            const ctx = thumbCanvas.getContext("2d");
+                            if (ctx) {
+                              ctx.drawImage(
+                                capturedCanvas,
+                                0,
+                                0,
+                                thumbCanvas.width,
+                                thumbCanvas.height,
+                              );
+                              setThumbnailUrl(
+                                thumbCanvas.toDataURL("image/jpeg", 0.8),
+                              );
+                            }
+                          })
+                          .catch(() => {
+                            /* silently skip */
+                          })
+                          .finally(() => setThumbnailLoading(false));
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: thumbnailLoading ? "not-allowed" : "pointer",
+                        color: thumbnailLoading ? "#9ca3af" : "#3b82f6",
+                        padding: 2,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <RefreshCw
+                        size={13}
+                        style={{
+                          animation: thumbnailLoading
+                            ? "spin 1s linear infinite"
+                            : "none",
+                        }}
+                      />
+                    </button>
+                  </div>
                   <div
                     style={{
                       width: "100%",
@@ -4322,26 +4480,47 @@ function CraftEditorInner({
                       alignItems: "center",
                       justifyContent: "center",
                       overflow: "hidden",
+                      position: "relative",
                     }}
                   >
-                    <a
-                      href={`/i/${projectSlug}`}
-                      target="_blank"
-                      rel="noopener"
-                      style={{
-                        fontSize: 11,
-                        color: "#3b82f6",
-                        textDecoration: "none",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <Eye size={24} strokeWidth={1.5} />
-                      <span>Xem thiệp: 7app.online/i/{projectSlug}</span>
-                    </a>
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt="Bản xem trước"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 9,
+                        }}
+                      />
+                    ) : thumbnailLoading ? (
+                      <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                        Đang tạo ảnh...
+                      </span>
+                    ) : (
+                      <a
+                        href={`/i/${projectSlug}`}
+                        target="_blank"
+                        rel="noopener"
+                        style={{
+                          fontSize: 11,
+                          color: "#3b82f6",
+                          textDecoration: "none",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Eye size={24} strokeWidth={1.5} />
+                        <span>Lưu để xem ảnh xem trước</span>
+                      </a>
+                    )}
                   </div>
+                  <style>{`
+                    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                  `}</style>
                 </div>
 
                 {/* ── Link thiệp ── */}
