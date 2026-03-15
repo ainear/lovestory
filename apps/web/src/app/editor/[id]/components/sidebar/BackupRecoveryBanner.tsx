@@ -54,9 +54,11 @@ export function BackupRecoveryBanner({
                 setMusicName(data.meta.musicName || "");
               }
               if (data.elements) {
+                const { sanitizeElements } =
+                  await import("../canvas-engine/types");
                 editorDispatch({
                   type: "SET_ELEMENTS",
-                  elements: data.elements,
+                  elements: sanitizeElements(data.elements),
                 });
               }
               triggerAutosave();

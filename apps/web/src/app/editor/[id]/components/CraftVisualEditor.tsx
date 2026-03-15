@@ -293,6 +293,16 @@ function CraftEditorInner({
     }
   }, [projectId]);
 
+  // ── Cleanup on unmount: stop audio, clear timers ──
+  useEffect(() => {
+    return () => {
+      musicAudioRef.current?.pause();
+      musicAudioRef.current = null;
+      if (thumbnailTimer.current) clearTimeout(thumbnailTimer.current);
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, []);
+
   // ── Clipboard for copy/paste ──
   // Keyboard shortcuts are handled by CanvasKeyboardHandler inside EditorContext
 

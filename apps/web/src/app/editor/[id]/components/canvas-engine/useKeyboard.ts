@@ -4,8 +4,14 @@ import { useEditorContext } from "./useEditorState";
 
 export function useKeyboard() {
   const { state, dispatch } = useEditorContext();
+  const stateRef = useRef(state);
   const nudgeSnapshotRef = useRef(false);
   const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep stateRef in sync without re-registering listener
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -17,13 +23,14 @@ export function useKeyboard() {
       )
         return;
 
-      const el = state.elements.find((el) => el.id === state.selectedId);
+      const { elements, selectedId } = stateRef.current;
+      const el = elements.find((el) => el.id === selectedId);
 
       // Delete selected element
-      if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId) {
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
         e.preventDefault();
         dispatch({ type: "SNAPSHOT" });
-        dispatch({ type: "DELETE_ELEMENT", id: state.selectedId });
+        dispatch({ type: "DELETE_ELEMENT", id: selectedId });
         return;
       }
 
@@ -80,5 +87,5 @@ export function useKeyboard() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [state.selectedId, state.elements, dispatch]);
+  }, [dispatch]); // dispatch is stable from useReducer
 }

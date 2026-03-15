@@ -72,7 +72,9 @@ export function ComponentsTab({
   const useCanvasEngine = Boolean(editorDispatch && editorState);
 
   /* Determine which category set and presets to show */
-  const categories = useCanvasEngine ? SECTION_PRESET_CATEGORIES : SECTION_CATEGORIES;
+  const categories = useCanvasEngine
+    ? SECTION_PRESET_CATEGORIES
+    : SECTION_CATEGORIES;
   const filteredCanvasPresets = CANVAS_PRESETS.filter(
     (p) => sectionCat === "all" || p.category === sectionCat,
   );
@@ -91,6 +93,7 @@ export function ComponentsTab({
       0,
     );
 
+    editorDispatch({ type: "SNAPSHOT" });
     preset.elements.forEach((elTemplate, idx) => {
       const element: CanvasElement = {
         ...elTemplate,
@@ -100,7 +103,6 @@ export function ComponentsTab({
       };
       editorDispatch({ type: "ADD_ELEMENT", element });
     });
-    editorDispatch({ type: "SNAPSHOT" });
     triggerAutosave();
   }
 
@@ -130,9 +132,7 @@ export function ComponentsTab({
             fontWeight={p.fontWeight ?? "normal"}
             fontStyle={p.fontStyle ?? "normal"}
             color={p.color ?? "#374151"}
-            textAlign={
-              (p.textAlign as "left" | "center" | "right") ?? "center"
-            }
+            textAlign={(p.textAlign as "left" | "center" | "right") ?? "center"}
             lineHeight={1.5}
             letterSpacing={p.letterSpacing ?? 0}
             opacity={1}
@@ -146,9 +146,7 @@ export function ComponentsTab({
         reactEl = (
           <CraftImage
             src=""
-            objectFit={
-              (p.objectFit as "cover" | "contain" | "fill") ?? "cover"
-            }
+            objectFit={(p.objectFit as "cover" | "contain" | "fill") ?? "cover"}
             borderRadius={p.borderRadius ?? 8}
             borderWidth={0}
             borderColor="transparent"
@@ -216,8 +214,7 @@ export function ComponentsTab({
               padding: "4px 10px",
               borderRadius: 20,
               border: "none",
-              background:
-                sectionCat === cat.id ? "#ff6b9d" : "#f3f4f6",
+              background: sectionCat === cat.id ? "#ff6b9d" : "#f3f4f6",
               color: sectionCat === cat.id ? "#fff" : "#6b7280",
               fontSize: 10,
               fontWeight: 600,
