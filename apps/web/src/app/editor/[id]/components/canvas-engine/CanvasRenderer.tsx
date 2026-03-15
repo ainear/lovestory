@@ -375,7 +375,7 @@ function WidgetRendererInline({
       const gap = Number(c.gap ?? 4);
       return (
         <div>
-          {c.title && (
+          {String(c.title || "") && (
             <div
               style={{
                 fontSize: 13,
