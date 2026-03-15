@@ -55,9 +55,17 @@ export interface ShapeProps {
 
 export interface WidgetProps {
   widgetType:
-    | "countdown" | "calendar" | "map" | "rsvp" | "qrbox"
-    | "album" | "envelope" | "youtube" | "callbutton"
-    | "guestname" | "formbuilder";
+    | "countdown"
+    | "calendar"
+    | "map"
+    | "rsvp"
+    | "qrbox"
+    | "album"
+    | "envelope"
+    | "youtube"
+    | "callbutton"
+    | "guestname"
+    | "formbuilder";
   config: Record<string, unknown>;
 }
 
@@ -127,6 +135,43 @@ export function createTextElement(
       lineHeight: 1.4,
       letterSpacing: 0,
     } as TextProps,
+    ...overrides,
+  };
+}
+
+/** Factory: create default shape element */
+export function createShapeElement(
+  id: string,
+  top: number,
+  left: number,
+  shapeType: ShapeProps["shapeType"] = "rectangle",
+  overrides?: Partial<CanvasElement>,
+): CanvasElement {
+  return {
+    id,
+    type: "shape",
+    top,
+    left,
+    width: 150,
+    height: 150,
+    rotation: 0,
+    scaleX: 1,
+    scaleY: 1,
+    zIndex: 0,
+    locked: false,
+    visible: true,
+    opacity: 1,
+    borderRadius: 0,
+    border: { width: 0, color: "transparent", style: "solid" },
+    shadow: null,
+    entrance: null,
+    continuous: null,
+    props: {
+      shapeType,
+      fill: "#3b82f6",
+      stroke: "transparent",
+      strokeWidth: 0,
+    } as ShapeProps,
     ...overrides,
   };
 }

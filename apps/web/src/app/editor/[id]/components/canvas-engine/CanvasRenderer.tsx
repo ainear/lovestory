@@ -7,8 +7,10 @@ import type {
   CanvasElement,
   TextProps,
   ImageProps,
+  ShapeProps,
   WidgetProps,
 } from "./types";
+import { useDrag } from "./useDrag";
 import {
   ENTRANCE_KEYFRAMES,
   getEntranceAnimation,
@@ -84,6 +86,52 @@ function TextElement({
     >
       {p.text}
     </div>
+  );
+}
+
+/** Render a single shape element */
+function ShapeElement({ el }: { el: CanvasElement }) {
+  const p = el.props as ShapeProps;
+  const common = {
+    fill: p.fill,
+    stroke: p.stroke,
+    strokeWidth: p.strokeWidth,
+  };
+
+  const svgContent = (() => {
+    switch (p.shapeType) {
+      case "circle":
+        return <ellipse cx="50" cy="50" rx="49" ry="49" {...common} />;
+      case "line":
+        return <line x1="0" y1="50" x2="100" y2="50" {...common} />;
+      case "star":
+        return (
+          <polygon
+            points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35"
+            {...common}
+          />
+        );
+      case "heart":
+        return (
+          <path
+            d="M50,88 C25,65 5,50 5,30 A20,20,0,0,1,50,30 A20,20,0,0,1,95,30 C95,50 75,65 50,88Z"
+            {...common}
+          />
+        );
+      case "rectangle":
+      default:
+        return <rect x="1" y="1" width="98" height="98" rx="4" {...common} />;
+    }
+  })();
+
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style={{ width: "100%", height: "100%", display: "block" }}
+    >
+      {svgContent}
+    </svg>
   );
 }
 
@@ -642,11 +690,9 @@ function WidgetRendererInline({
 function CanvasElementWrapper({
   el,
   isSelected,
-  onSelect,
 }: {
   el: CanvasElement;
   isSelected: boolean;
-  onSelect: (id: string) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -662,13 +708,18 @@ function CanvasElementWrapper({
     }
   }, [isSelected]);
 
+  const {
+    onPointerDown: dragDown,
+    onPointerMove,
+    onPointerUp,
+  } = useDrag(el.id);
+
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (el.locked) return;
-      e.stopPropagation();
-      onSelect(el.id);
+      if (isEditing) return; // Don't drag while editing text
+      dragDown(e);
     },
-    [el.id, el.locked, onSelect],
+    [isEditing, dragDown],
   );
 
   const shadow = el.shadow
@@ -679,6 +730,8 @@ function CanvasElementWrapper({
     <div
       data-element-id={el.id}
       onPointerDown={handlePointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       style={{
         position: "absolute",
         top: el.top,
@@ -715,6 +768,7 @@ function CanvasElementWrapper({
       {(el.type === "image" || el.type === "sticker") && (
         <ImageElement el={el} />
       )}
+      {el.type === "shape" && <ShapeElement el={el} />}
       {el.type === "widget" && <WidgetElement el={el} />}
     </div>
   );
@@ -724,13 +778,6 @@ function CanvasElementWrapper({
 export function CanvasRenderer() {
   const { state, dispatch } = useEditorContext();
   const canvasRef = useRef<HTMLDivElement>(null);
-
-  const handleSelect = useCallback(
-    (id: string) => {
-      dispatch({ type: "SELECT", id });
-    },
-    [dispatch],
-  );
 
   const handleCanvasClick = useCallback(
     (e: React.PointerEvent) => {
@@ -777,7 +824,6 @@ export function CanvasRenderer() {
             key={el.id}
             el={el}
             isSelected={state.selectedId === el.id}
-            onSelect={handleSelect}
           />
         ))}
         <SelectionOverlay />

@@ -35,23 +35,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 // html2canvas loaded dynamically to avoid large static bundle (PERF-02)
-import { Editor, Frame, Element, useEditor } from "@craftjs/core";
-import { CraftText } from "./craft/CraftText";
-import { CraftImage } from "./craft/CraftImage";
-import { CraftContainer, RootContainer } from "./craft/CraftContainer";
-import { CraftCountdown } from "./craft/CraftCountdown";
-import { CraftCalendar } from "./craft/CraftCalendar";
-import { CraftMap } from "./craft/CraftMap";
-import { CraftRSVP } from "./craft/CraftRSVP";
-import { CraftCallButton } from "./craft/CraftCallButton";
-import { CraftPhotoAlbum } from "./craft/CraftPhotoAlbum";
-import { CraftYouTube } from "./craft/CraftYouTube";
-import { CraftQRBox } from "./craft/CraftQRBox";
-import { CraftGuestName } from "./craft/CraftGuestName";
-import { CraftFormBuilder } from "./craft/CraftFormBuilder";
-import { CraftEnvelope } from "./craft/CraftEnvelope";
-import { CraftSticker } from "./craft/CraftSticker";
-import { CraftShape } from "./craft/CraftShape";
 import {
   CLIPART_CATEGORIES,
   CLIPART_ITEMS,
@@ -744,7 +727,7 @@ const TEMPLATE_STYLES: {
 
 /* ═══════════════════════════════════════════════
    CraftVisualEditor — Main Editor Component
-   Uses craft.js for drag-drop canvas
+   Custom canvas engine (CraftJS removed)
    ═══════════════════════════════════════════════ */
 
 interface CraftVisualEditorProps {
@@ -761,40 +744,16 @@ export function CraftVisualEditor({
   onPublish,
 }: CraftVisualEditorProps) {
   return (
-    <Editor
-      resolver={{
-        div: "div" as any,
-        CraftText,
-        CraftImage,
-        CraftContainer,
-        RootContainer,
-        CraftCountdown,
-        CraftCalendar,
-        CraftMap,
-        CraftRSVP,
-        CraftCallButton,
-        CraftPhotoAlbum,
-        CraftYouTube,
-        CraftQRBox,
-        CraftGuestName,
-        CraftFormBuilder,
-        CraftEnvelope,
-        CraftSticker,
-        CraftShape,
-      }}
-      enabled={true}
-    >
-      <CraftEditorInner
-        projectId={projectId}
-        initialCanvasJson={initialCanvasJson}
-        projectSlug={projectSlug}
-        onPublish={onPublish}
-      />
-    </Editor>
+    <CraftEditorInner
+      projectId={projectId}
+      initialCanvasJson={initialCanvasJson}
+      projectSlug={projectSlug}
+      onPublish={onPublish}
+    />
   );
 }
 
-/* ── Inner component with useEditor access ── */
+/* ── Inner editor component ── */
 /** Wrapper component to activate useKeyboard hook inside EditorContext */
 function CanvasKeyboardHandler() {
   useKeyboard();
@@ -807,36 +766,65 @@ function CraftEditorInner({
   projectSlug,
   onPublish,
 }: CraftVisualEditorProps) {
-  const { actions, query, selected, canUndo, canRedo } = useEditor(
-    (state, query) => {
-      const [currentNodeId] = state.events.selected;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let sel:
-        | {
-            id: string;
-            name: string;
-            settings: any;
-            isDeletable: boolean;
-            props: any;
-          }
-        | undefined;
-      if (currentNodeId) {
-        sel = {
-          id: currentNodeId,
-          name: state.nodes[currentNodeId]?.data?.name || "Unknown",
-          settings:
-            (state.nodes[currentNodeId] as any)?.related?.settings || null,
-          isDeletable: query.node(currentNodeId).isDeletable(),
-          props: (state.nodes[currentNodeId] as any)?.data?.props ?? {},
-        };
+  // CraftJS removed — these stubs keep remaining sidebar UI code compiling.
+  // The sidebar tab buttons (text, image, sticker, etc.) still reference
+  // actions/query but are effectively no-ops. The custom canvas engine
+  // handles element management via EditorContext.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selected:
+    | {
+        id: string;
+        name: string;
+        settings: any;
+        isDeletable: boolean;
+        props: any;
       }
-      return {
-        selected: sel,
-        canUndo: query.history.canUndo(),
-        canRedo: query.history.canRedo(),
-      };
-    },
-  );
+    | undefined = undefined as any;
+  const canUndo = false;
+  const canRedo = false;
+  // Stub components for dead sidebar code that still references them in JSX.
+  // These are never rendered — only passed to query.parseReactElement (also a stub).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const StubComponent = (_props: any) => null;
+  const CraftText = StubComponent;
+  const CraftImage = StubComponent;
+  const CraftContainer = StubComponent;
+  const RootContainer = StubComponent;
+  const CraftCountdown = StubComponent;
+  const CraftCalendar = StubComponent;
+  const CraftMap = StubComponent;
+  const CraftRSVP = StubComponent;
+  const CraftCallButton = StubComponent;
+  const CraftPhotoAlbum = StubComponent;
+  const CraftYouTube = StubComponent;
+  const CraftQRBox = StubComponent;
+  const CraftGuestName = StubComponent;
+  const CraftFormBuilder = StubComponent;
+  const CraftEnvelope = StubComponent;
+  const CraftSticker = StubComponent;
+  const CraftShape = StubComponent;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const noop = (..._args: any[]) => {};
+  const actions = {
+    history: { undo: noop, redo: noop },
+    delete: noop,
+    addNodeTree: noop,
+    move: noop,
+    setProp: noop,
+    deserialize: noop,
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query: any = {
+    serialize: () => "{}",
+    getSerializedNodes: () => ({}),
+    node: (_id: string) => ({
+      get: () => ({ data: { nodes: [] } }),
+      toNodeTree: () => ({}),
+      isDeletable: () => false,
+    }),
+    parseReactElement: (_el: any) => ({ toNodeTree: () => ({}) }),
+  };
 
   const [activeTab, setActiveTab] = useState("text");
   const [clipartCat, setClipartCat] = useState("all");
@@ -906,8 +894,6 @@ function CraftEditorInner({
     }),
     [editorState, selectedCanvasElement],
   );
-  const [useCustomCanvas, setUseCustomCanvas] = useState(true);
-
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -947,10 +933,8 @@ function CraftEditorInner({
           setShowInLibrary(parsed.meta.showInLibrary);
         if (parsed.meta?.uploadedImages)
           setUploadedImages(parsed.meta.uploadedImages);
-        // Detect engine type and load accordingly
-        if (parsed.engine === "custom-canvas" && parsed.elements) {
-          // New custom canvas format
-          setUseCustomCanvas(true);
+        // Load custom canvas format
+        if (parsed.elements) {
           editorDispatch({ type: "SET_ELEMENTS", elements: parsed.elements });
           if (parsed.canvas?.width && parsed.canvas?.height) {
             editorDispatch({
@@ -960,14 +944,6 @@ function CraftEditorInner({
               background: parsed.canvas.background || "#f8f3eb",
             });
           }
-        } else if (parsed.craftState) {
-          // Legacy CraftJS format
-          setUseCustomCanvas(false);
-          const stateStr =
-            typeof parsed.craftState === "string"
-              ? parsed.craftState
-              : JSON.stringify(parsed.craftState);
-          actions.deserialize(stateStr);
         }
       } catch {
         /* ignore */
@@ -996,144 +972,35 @@ function CraftEditorInner({
   }, [projectId]);
 
   // ── Clipboard for copy/paste ──
-  const clipboardRef = useRef<string | null>(null);
-
-  // ── Keyboard shortcuts ──
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      // Don't intercept keyboard events from input/textarea
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      )
-        return;
-
-      const isMac = navigator.platform.toUpperCase().includes("MAC");
-      const ctrl = isMac ? e.metaKey : e.ctrlKey;
-
-      // Undo: Ctrl+Z
-      if (ctrl && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        actions.history.undo();
-        return;
-      }
-      // Redo: Ctrl+Shift+Z or Ctrl+Y
-      if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
-        e.preventDefault();
-        actions.history.redo();
-        return;
-      }
-
-      if (!selected) return;
-
-      // Delete / Backspace: remove selected element
-      if (
-        (e.key === "Delete" || e.key === "Backspace") &&
-        selected.isDeletable
-      ) {
-        e.preventDefault();
-        actions.delete(selected.id);
-        return;
-      }
-
-      // Copy: Ctrl+C
-      if (ctrl && e.key === "c") {
-        e.preventDefault();
-        try {
-          const serialized = query.serialize();
-          const nodes = JSON.parse(serialized);
-          const nodeData = nodes[selected.id];
-          if (nodeData) {
-            clipboardRef.current = JSON.stringify({
-              node: nodeData,
-              id: selected.id,
-            });
-          }
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-
-      // Duplicate: Ctrl+D
-      if (ctrl && e.key === "d") {
-        e.preventDefault();
-        try {
-          const freshSerialized = query.serialize();
-          const freshNodes = JSON.parse(freshSerialized);
-          const currentNode = freshNodes[selected.id];
-          if (!currentNode) return;
-          // Use CraftJS clone approach via parseSerializedNode
-          const parentId = currentNode.parent;
-          if (!parentId) return;
-          const tree = query.node(selected.id).toNodeTree();
-          actions.addNodeTree(tree, parentId);
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-
-      // Arrow key nudge: CraftJS components use internal drag positioning,
-      // not top/left/x/y props, so nudge via arrow keys is not supported.
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [actions, query, selected]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Keyboard shortcuts are handled by CanvasKeyboardHandler inside EditorContext
 
   // ── Save ──
   const save = useCallback(async () => {
     setSaveStatus("saving");
     let canvasJson: string;
-    if (useCustomCanvas) {
-      // New custom canvas engine format
-      canvasJson = JSON.stringify({
-        version: 2,
-        engine: "custom-canvas",
-        canvas: {
-          width: editorState.canvasWidth,
-          height: editorState.canvasHeight,
-          background: editorState.canvasBackground,
-          bg: background,
-          bgOpacity,
-        },
-        elements: editorState.elements,
-        meta: {
-          musicUrl,
-          musicName,
-          musicWidgetStyle,
-          musicWidgetColor,
-          projectCategory,
-          projectStatus,
-          showInLibrary,
-          uploadedImages,
-        },
-        effects: { particleEffect, pageAnimation, curtainEffect },
-      });
-    } else {
-      // Legacy CraftJS format
-      const craftJson = query.serialize();
-      canvasJson = JSON.stringify({
-        version: 2,
-        engine: "craftjs",
-        canvas: { width: 390, height: 5000, bg: background, bgOpacity },
-        craftState: craftJson,
-        meta: {
-          musicUrl,
-          musicName,
-          musicWidgetStyle,
-          musicWidgetColor,
-          projectCategory,
-          projectStatus,
-          showInLibrary,
-          uploadedImages,
-        },
-        effects: { particleEffect, pageAnimation, curtainEffect },
-      });
-    }
+    canvasJson = JSON.stringify({
+      version: 2,
+      engine: "custom-canvas",
+      canvas: {
+        width: editorState.canvasWidth,
+        height: editorState.canvasHeight,
+        background: editorState.canvasBackground,
+        bg: background,
+        bgOpacity,
+      },
+      elements: editorState.elements,
+      meta: {
+        musicUrl,
+        musicName,
+        musicWidgetStyle,
+        musicWidgetColor,
+        projectCategory,
+        projectStatus,
+        showInLibrary,
+        uploadedImages,
+      },
+      effects: { particleEffect, pageAnimation, curtainEffect },
+    });
     // Save backup to localStorage
     try {
       localStorage.setItem(
@@ -1199,7 +1066,6 @@ function CraftEditorInner({
       setSaveStatus("unsaved");
     }
   }, [
-    query,
     background,
     bgOpacity,
     projectId,
@@ -1215,7 +1081,6 @@ function CraftEditorInner({
     projectStatus,
     showInLibrary,
     uploadedImages,
-    useCustomCanvas,
     editorState,
   ]);
 
@@ -1223,12 +1088,17 @@ function CraftEditorInner({
   const handlePublish = useCallback(async () => {
     if (publishStatus === "publishing") return;
     setPublishStatus("publishing");
-    const craftJson = query.serialize();
     const canvasJson = JSON.stringify({
       version: 2,
-      engine: "craftjs",
-      canvas: { width: 390, height: 5000, bg: background, bgOpacity },
-      craftState: craftJson,
+      engine: "custom-canvas",
+      canvas: {
+        width: editorState.canvasWidth,
+        height: editorState.canvasHeight,
+        background: editorState.canvasBackground,
+        bg: background,
+        bgOpacity,
+      },
+      elements: editorState.elements,
       meta: {
         musicUrl,
         musicName,
@@ -1260,18 +1130,24 @@ function CraftEditorInner({
       alert("Xuất bản thất bại. Vui lòng thử lại.");
     }
   }, [
-    query,
     background,
+    bgOpacity,
     projectId,
     supabase,
     musicUrl,
     musicName,
+    musicWidgetStyle,
+    musicWidgetColor,
     onPublish,
     publishStatus,
+    particleEffect,
+    pageAnimation,
+    curtainEffect,
     projectCategory,
     projectStatus,
     showInLibrary,
     uploadedImages,
+    editorState,
   ]);
 
   // Auto-save on changes (debounced)
@@ -1281,37 +1157,48 @@ function CraftEditorInner({
     saveTimer.current = setTimeout(save, 3000);
   }, [save]);
 
-  // ── Add Text via craft.js ──
+  // ── Add Text via custom canvas engine ──
   const addCraftText = useCallback(
     (preset: (typeof TEXT_PRESETS)[0]) => {
-      const tree = query
-        .parseReactElement(
-          <CraftText
-            text={preset.label}
-            fontSize={preset.fontSize}
-            fontFamily={preset.fontFamily}
-            fontWeight={preset.fontWeight}
-            fontStyle={preset.fontStyle}
-            color={
-              background.includes("0f0825") || background.includes("111827")
-                ? "#ffffff"
-                : "#1f2937"
-            }
-            textAlign="center"
-            lineHeight={1.5}
-            letterSpacing={0}
-            opacity={1}
-          />,
-        )
-        .toNodeTree();
-      // Add to ROOT canvas node
-      const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-      if (rootNodeId) {
-        actions.addNodeTree(tree, rootNodeId);
-      }
+      const newElement: CanvasElement = {
+        id: `text-${Date.now()}`,
+        type: "text",
+        top: 100 + editorState.elements.length * 60,
+        left: 50,
+        width: 300,
+        height: 60,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+        zIndex: editorState.elements.length + 1,
+        locked: false,
+        visible: true,
+        opacity: 1,
+        borderRadius: 0,
+        border: { width: 0, color: "transparent", style: "solid" },
+        shadow: null,
+        entrance: null,
+        continuous: null,
+        props: {
+          text: preset.label,
+          fontSize: preset.fontSize,
+          fontFamily: preset.fontFamily,
+          fontWeight: String(preset.fontWeight),
+          fontStyle: preset.fontStyle || "normal",
+          color:
+            background.includes("0f0825") || background.includes("111827")
+              ? "#ffffff"
+              : "#1f2937",
+          backgroundColor: "transparent",
+          textAlign: "center" as const,
+          lineHeight: 1.5,
+          letterSpacing: 0,
+        },
+      };
+      editorDispatch({ type: "ADD_ELEMENT", element: newElement });
       triggerAutosave();
     },
-    [query, actions, background, triggerAutosave],
+    [background, triggerAutosave, editorState.elements.length, editorDispatch],
   );
 
   // ── Add Image via upload ──
@@ -1333,23 +1220,32 @@ function CraftEditorInner({
             ...prev,
             { url: data.url, name: file.name, size: file.size },
           ]);
-          const tree = query
-            .parseReactElement(
-              <CraftImage
-                src={data.url}
-                objectFit="cover"
-                borderRadius={12}
-                borderWidth={2}
-                borderColor="#f9a8d4"
-                opacity={1}
-                shadow={false}
-              />,
-            )
-            .toNodeTree();
-          const rootNodeId = query.node("ROOT").get().data.nodes?.[0];
-          if (rootNodeId) {
-            actions.addNodeTree(tree, rootNodeId);
-          }
+          const newElement: CanvasElement = {
+            id: `image-${Date.now()}`,
+            type: "image",
+            top: 100 + editorState.elements.length * 60,
+            left: 50,
+            width: 300,
+            height: 200,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            zIndex: editorState.elements.length + 1,
+            locked: false,
+            visible: true,
+            opacity: 1,
+            borderRadius: 12,
+            border: { width: 0, color: "transparent", style: "solid" },
+            shadow: null,
+            entrance: null,
+            continuous: null,
+            props: {
+              src: data.url,
+              objectFit: "cover" as const,
+              crop: null,
+            },
+          };
+          editorDispatch({ type: "ADD_ELEMENT", element: newElement });
           triggerAutosave();
         }
       } catch {
@@ -1357,7 +1253,7 @@ function CraftEditorInner({
       }
       e.target.value = "";
     },
-    [query, actions, projectId, triggerAutosave],
+    [projectId, triggerAutosave, editorState.elements.length, editorDispatch],
   );
 
   return (
@@ -1371,20 +1267,7 @@ function CraftEditorInner({
         overflow: "hidden",
       }}
     >
-      {/* ══ Selection overlay CSS ══ */}
-      <style>{`
-        /* CraftJS selected element — blue dashed border */
-        [data-cy="craft-selected"],
-        .craft-selected-indicator {
-          outline: 2px dashed #3b82f6 !important;
-          outline-offset: 2px !important;
-        }
-        /* CraftJS hover highlight */
-        [data-cy="craft-hovered"] {
-          outline: 1px solid #93c5fd !important;
-          outline-offset: 2px !important;
-        }
-      `}</style>
+      {/* Selection overlay CSS handled by custom canvas engine */}
       {/* ══ Top Bar ══ */}
       <div
         style={{
@@ -1422,7 +1305,7 @@ function CraftEditorInner({
 
         {/* Undo/Redo — craft.js history */}
         <button
-          onClick={() => actions.history.undo()}
+          onClick={() => editorDispatch({ type: "UNDO" })}
           disabled={!canUndo}
           title="Hoàn tác (⌘Z)"
           style={topBtnStyle(!canUndo)}
@@ -1430,7 +1313,7 @@ function CraftEditorInner({
           <Undo2 size={16} />
         </button>
         <button
-          onClick={() => actions.history.redo()}
+          onClick={() => editorDispatch({ type: "REDO" })}
           disabled={!canRedo}
           title="Làm lại (⌘⇧Z)"
           style={topBtnStyle(!canRedo)}
@@ -1683,12 +1566,11 @@ function CraftEditorInner({
                     setMusicUrl(data.meta.musicUrl);
                     setMusicName(data.meta.musicName || "");
                   }
-                  if (data.craftState) {
-                    const stateStr =
-                      typeof data.craftState === "string"
-                        ? data.craftState
-                        : JSON.stringify(data.craftState);
-                    actions.deserialize(stateStr);
+                  if (data.elements) {
+                    editorDispatch({
+                      type: "SET_ELEMENTS",
+                      elements: data.elements,
+                    });
                   }
                   triggerAutosave();
                 }
@@ -4084,7 +3966,7 @@ function CraftEditorInner({
           </div>
         )}
 
-        {/* ══ Canvas Area — craft.js Frame ══ */}
+        {/* ══ Canvas Area ══ */}
         <div
           style={{
             flex: 1,
@@ -4367,59 +4249,11 @@ function CraftEditorInner({
               </div>
             </div>
           )}
-          {useCustomCanvas ? (
-            <EditorContext.Provider value={editorCtx}>
-              <CanvasRenderer />
-              <CanvasContextMenu />
-              <CanvasKeyboardHandler />
-            </EditorContext.Provider>
-          ) : (
-            <div
-              ref={canvasRef}
-              style={{
-                width: 390,
-                minHeight: 5000,
-                margin: "0 auto",
-                boxShadow:
-                  "0 8px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
-                borderRadius: 12,
-                overflow: "hidden",
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top center",
-                transition: "transform 0.2s ease",
-                background: "#fff",
-              }}
-            >
-              {(() => {
-                let savedCraftState: string | undefined;
-                if (initialCanvasJson) {
-                  try {
-                    const parsed = JSON.parse(initialCanvasJson);
-                    if (parsed.craftState) {
-                      savedCraftState =
-                        typeof parsed.craftState === "string"
-                          ? parsed.craftState
-                          : JSON.stringify(parsed.craftState);
-                    }
-                  } catch {
-                    /* fallback */
-                  }
-                }
-                if (savedCraftState) {
-                  return <Frame data={savedCraftState} />;
-                }
-                return (
-                  <Frame>
-                    <Element
-                      canvas
-                      is={RootContainer}
-                      background={background}
-                    ></Element>
-                  </Frame>
-                );
-              })()}
-            </div>
-          )}
+          <EditorContext.Provider value={editorCtx}>
+            <CanvasRenderer />
+            <CanvasContextMenu />
+            <CanvasKeyboardHandler />
+          </EditorContext.Provider>
 
           {/* Zoom Controls Overlay */}
           <div
@@ -4531,868 +4365,15 @@ function CraftEditorInner({
             </h3>
           </div>
           <div style={{ padding: 16 }}>
-            {useCustomCanvas ? (
-              <EditorContext.Provider value={editorCtx}>
-                <CanvasRightPanel />
-              </EditorContext.Provider>
-            ) : selected ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                {/* Element tag — CineLove style */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 12,
-                  }}
-                >
-                  <span
-                    style={{
-                      background: "#3b82f6",
-                      color: "#fff",
-                      fontSize: 10,
-                      padding: "3px 10px",
-                      borderRadius: 4,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {selected.name}
-                  </span>
-                  {selected.isDeletable && (
-                    <button
-                      onClick={() => {
-                        actions.delete(selected.id);
-                        triggerAutosave();
-                      }}
-                      style={{
-                        marginLeft: "auto",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 14,
-                        color: "#dc2626",
-                        padding: "2px 6px",
-                      }}
-                      title="Xóa phần tử"
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-
-                {/* Component-specific settings (auto from craft.js related) */}
-                {selected.settings && React.createElement(selected.settings)}
-
-                {/* ── CineLove accordion sections ── */}
-                <div
-                  style={{
-                    marginTop: 16,
-                    borderTop: "1px solid #e5e7eb",
-                    paddingTop: 12,
-                  }}
-                >
-                  {/* Hiệu ứng chuyển động (Entrance animation) */}
-                  <AccordionSection title="Hiệu ứng chuyển động" icon="🎬">
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6,
-                      }}
-                    >
-                      {[
-                        { id: "none", label: "Không" },
-                        { id: "fadeIn", label: "Fade In" },
-                        { id: "slideUp", label: "Slide Up" },
-                        { id: "slideLeft", label: "Slide Left" },
-                        { id: "slideRight", label: "Slide Right" },
-                        { id: "scaleIn", label: "Scale In" },
-                        { id: "bounceIn", label: "Bounce In" },
-                        { id: "flipIn", label: "Flip In" },
-                      ].map((a) => {
-                        const isActive =
-                          (selected?.props?.entranceAnimation ?? "none") ===
-                          a.id;
-                        return (
-                          <button
-                            key={a.id}
-                            onClick={() => {
-                              if (!selected) return;
-                              actions.setProp(
-                                selected.id,
-                                (props: { entranceAnimation: string }) => {
-                                  props.entranceAnimation = a.id;
-                                },
-                              );
-                              triggerAutosave();
-                            }}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: isActive
-                                ? "2px solid #3b82f6"
-                                : "1px solid #e5e7eb",
-                              background: isActive ? "#eff6ff" : "#fff",
-                              cursor: "pointer",
-                              fontSize: 11,
-                              color: isActive ? "#1d4ed8" : "#374151",
-                              textAlign: "left",
-                              fontWeight: isActive ? 600 : 400,
-                              transition: "all 0.1s",
-                            }}
-                          >
-                            {a.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </AccordionSection>
-
-                  {/* Chuyển động liên tục */}
-                  <AccordionSection title="Chuyển động liên tục" icon="🔄">
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6,
-                      }}
-                    >
-                      {[
-                        { id: "none", label: "Không" },
-                        { id: "float", label: "Float (lên xuống)" },
-                        { id: "pulse", label: "Pulse (nhịp đập)" },
-                        { id: "shake", label: "Shake (rung)" },
-                        { id: "spin", label: "Spin (xoay)" },
-                        { id: "bounce", label: "Bounce (nảy)" },
-                      ].map((a) => {
-                        const isActive =
-                          (selected?.props?.loopAnimation ?? "none") === a.id;
-                        return (
-                          <button
-                            key={a.id}
-                            onClick={() => {
-                              if (!selected) return;
-                              actions.setProp(
-                                selected.id,
-                                (props: { loopAnimation: string }) => {
-                                  props.loopAnimation = a.id;
-                                },
-                              );
-                              triggerAutosave();
-                            }}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: isActive
-                                ? "2px solid #ff6b9d"
-                                : "1px solid #e5e7eb",
-                              background: isActive ? "#fdf2f8" : "#fff",
-                              cursor: "pointer",
-                              fontSize: 11,
-                              color: isActive ? "#be185d" : "#374151",
-                              textAlign: "left",
-                              fontWeight: isActive ? 600 : 400,
-                              transition: "all 0.1s",
-                            }}
-                          >
-                            {a.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </AccordionSection>
-
-                  {/* Liên kết */}
-                  <AccordionSection title="Liên kết" icon="🔗">
-                    <input
-                      type="url"
-                      placeholder="https://..."
-                      style={{
-                        width: "100%",
-                        padding: "6px 10px",
-                        borderRadius: 8,
-                        border: "1px solid #e5e7eb",
-                        fontSize: 11,
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </AccordionSection>
-                </div>
-              </div>
-            ) : (
-              <div style={{ paddingTop: 16 }}>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "#9ca3af",
-                    fontStyle: "italic",
-                    textAlign: "center",
-                    margin: "0 0 12px",
-                  }}
-                >
-                  Click vào phần tử trên canvas để chỉnh sửa
-                </p>
-
-                {/* ── Danh mục dropdown ── */}
-                <div style={{ marginBottom: 12 }}>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#374151",
-                      margin: "0 0 6px",
-                    }}
-                  >
-                    Danh mục
-                  </p>
-                  <select
-                    value={projectCategory}
-                    onChange={(e) => setProjectCategory(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 10px",
-                      borderRadius: 8,
-                      border: "1px solid #e5e7eb",
-                      fontSize: 12,
-                      color: "#374151",
-                      background: "#fff",
-                      cursor: "pointer",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <option value="wedding">Thiệp cưới</option>
-                    <option value="birthday">Thiệp sinh nhật</option>
-                    <option value="graduation">Thiệp tốt nghiệp</option>
-                    <option value="event">Sự kiện</option>
-                    <option value="anniversary">Kỷ niệm</option>
-                    <option value="wish">Lời chúc</option>
-                    <option value="other">Khác</option>
-                  </select>
-                </div>
-
-                {/* ── Trạng thái dropdown ── */}
-                <div style={{ marginBottom: 12 }}>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#374151",
-                      margin: "0 0 6px",
-                    }}
-                  >
-                    Trạng thái
-                  </p>
-                  <select
-                    value={projectStatus}
-                    onChange={(e) => setProjectStatus(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 10px",
-                      borderRadius: 8,
-                      border: "1px solid #e5e7eb",
-                      fontSize: 12,
-                      color: "#374151",
-                      background: "#fff",
-                      cursor: "pointer",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <option value="draft">Nháp</option>
-                    <option value="public">Công khai</option>
-                  </select>
-                </div>
-
-                {/* ── Bản xem trước ── */}
-                <div style={{ marginBottom: 12 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 6,
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#374151",
-                        margin: 0,
-                      }}
-                    >
-                      Bản xem trước
-                    </p>
-                    <button
-                      title="Làm mới ảnh xem trước"
-                      onClick={() => {
-                        const el = canvasRef.current;
-                        if (!el || thumbnailLoading) return;
-                        setThumbnailLoading(true);
-                        import("html2canvas")
-                          .then(({ default: html2canvas }) =>
-                            html2canvas(el, {
-                              useCORS: true,
-                              allowTaint: true,
-                              scale: 0.5,
-                              width: el.offsetWidth,
-                              height: Math.min(el.offsetHeight, 1200),
-                              windowWidth: el.offsetWidth,
-                              windowHeight: Math.min(el.offsetHeight, 1200),
-                            }),
-                          )
-                          .then((capturedCanvas) => {
-                            const thumbCanvas =
-                              document.createElement("canvas");
-                            const maxW = 200;
-                            const ratio = maxW / capturedCanvas.width;
-                            thumbCanvas.width = maxW;
-                            thumbCanvas.height = Math.round(
-                              capturedCanvas.height * ratio,
-                            );
-                            const ctx = thumbCanvas.getContext("2d");
-                            if (ctx) {
-                              ctx.drawImage(
-                                capturedCanvas,
-                                0,
-                                0,
-                                thumbCanvas.width,
-                                thumbCanvas.height,
-                              );
-                              setThumbnailUrl(
-                                thumbCanvas.toDataURL("image/jpeg", 0.8),
-                              );
-                            }
-                          })
-                          .catch(() => {
-                            /* silently skip */
-                          })
-                          .finally(() => setThumbnailLoading(false));
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: thumbnailLoading ? "not-allowed" : "pointer",
-                        color: thumbnailLoading ? "#9ca3af" : "#3b82f6",
-                        padding: 2,
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <RefreshCw
-                        size={13}
-                        style={{
-                          animation: thumbnailLoading
-                            ? "spin 1s linear infinite"
-                            : "none",
-                        }}
-                      />
-                    </button>
-                  </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: 140,
-                      borderRadius: 10,
-                      border: "1px solid #e5e7eb",
-                      background: "#f9fafb",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      position: "relative",
-                    }}
-                  >
-                    {thumbnailUrl ? (
-                      <img
-                        src={thumbnailUrl}
-                        alt="Bản xem trước"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: 9,
-                        }}
-                      />
-                    ) : thumbnailLoading ? (
-                      <span style={{ fontSize: 11, color: "#9ca3af" }}>
-                        Đang tạo ảnh...
-                      </span>
-                    ) : (
-                      <a
-                        href={`/i/${projectSlug}`}
-                        target="_blank"
-                        rel="noopener"
-                        style={{
-                          fontSize: 11,
-                          color: "#3b82f6",
-                          textDecoration: "none",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
-                      >
-                        <Eye size={24} strokeWidth={1.5} />
-                        <span>Lưu để xem ảnh xem trước</span>
-                      </a>
-                    )}
-                  </div>
-                  <style>{`
-                    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                  `}</style>
-                </div>
-
-                {/* ── Link thiệp ── */}
-                <div style={{ marginBottom: 16 }}>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: "#9ca3af",
-                      margin: "0 0 4px",
-                    }}
-                  >
-                    Link thiệp
-                  </p>
-                  <a
-                    href={`/i/${projectSlug}`}
-                    target="_blank"
-                    rel="noopener"
-                    style={{
-                      fontSize: 11,
-                      color: "#3b82f6",
-                      wordBreak: "break-all",
-                      textDecoration: "none",
-                    }}
-                  >
-                    7app.online/i/{projectSlug}
-                  </a>
-                </div>
-
-                {/* ── Tính năng nâng cao ── */}
-                <div
-                  style={{
-                    padding: 12,
-                    borderRadius: 10,
-                    background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
-                    border: "1px solid #fde68a",
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#92400e",
-                      margin: "0 0 8px",
-                    }}
-                  >
-                    Tính năng nâng cao
-                  </p>
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                  >
-                    {/* Xóa watermark toggle */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: "#78350f" }}>
-                        Xóa watermark
-                      </span>
-                      <label
-                        style={{
-                          position: "relative",
-                          display: "inline-block",
-                          width: 36,
-                          height: 20,
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          disabled
-                          style={{ opacity: 0, width: 0, height: 0 }}
-                        />
-                        <span
-                          style={{
-                            position: "absolute",
-                            cursor: "not-allowed",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: "#d1d5db",
-                            borderRadius: 10,
-                            transition: "0.2s",
-                          }}
-                        >
-                          <span
-                            style={{
-                              position: "absolute",
-                              height: 16,
-                              width: 16,
-                              left: 2,
-                              bottom: 2,
-                              background: "#fff",
-                              borderRadius: "50%",
-                              transition: "0.2s",
-                            }}
-                          />
-                        </span>
-                      </label>
-                    </div>
-                    {/* QR Bank */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: "#78350f" }}>
-                        QR Bank
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 9,
-                          color: "#a16207",
-                          background: "#fef3c7",
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                          fontWeight: 600,
-                        }}
-                      >
-                        PRO
-                      </span>
-                    </div>
-                    {/* Tùy chỉnh tự động cuộn */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: "#78350f" }}>
-                        Tùy chỉnh tự động cuộn
-                      </span>
-                      <label
-                        style={{
-                          position: "relative",
-                          display: "inline-block",
-                          width: 36,
-                          height: 20,
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          disabled
-                          style={{ opacity: 0, width: 0, height: 0 }}
-                        />
-                        <span
-                          style={{
-                            position: "absolute",
-                            cursor: "not-allowed",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: "#d1d5db",
-                            borderRadius: 10,
-                            transition: "0.2s",
-                          }}
-                        >
-                          <span
-                            style={{
-                              position: "absolute",
-                              height: 16,
-                              width: 16,
-                              left: 2,
-                              bottom: 2,
-                              background: "#fff",
-                              borderRadius: "50%",
-                              transition: "0.2s",
-                            }}
-                          />
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <p
-                    style={{
-                      fontSize: 10,
-                      color: "#a16207",
-                      margin: "8px 0 0",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Nâng cấp lên Basic+ để mở khóa tất cả tính năng.
-                  </p>
-                </div>
-
-                {/* ── Thư viện thiệp toggle — CineLove parity ── */}
-                <div
-                  style={{
-                    padding: 12,
-                    borderRadius: 10,
-                    background: "#f9fafb",
-                    border: "1px solid #e5e7eb",
-                    marginTop: 12,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div>
-                      <p
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: "#374151",
-                          margin: "0 0 4px",
-                        }}
-                      >
-                        Thư viện thiệp
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 10,
-                          color: "#9ca3af",
-                          margin: 0,
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        Cho phép trang này xuất hiện trong thư viện thiệp mẫu để
-                        người dùng khác có thể xem.
-                      </p>
-                    </div>
-                    <label
-                      style={{
-                        position: "relative",
-                        display: "inline-block",
-                        width: 36,
-                        height: 20,
-                        flexShrink: 0,
-                        marginLeft: 8,
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={showInLibrary}
-                        onChange={(e) => {
-                          setShowInLibrary(e.target.checked);
-                          triggerAutosave();
-                        }}
-                        style={{ opacity: 0, width: 0, height: 0 }}
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          cursor: "pointer",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: showInLibrary ? "#3b82f6" : "#d1d5db",
-                          borderRadius: 10,
-                          transition: "0.2s",
-                        }}
-                      >
-                        <span
-                          style={{
-                            position: "absolute",
-                            height: 16,
-                            width: 16,
-                            left: showInLibrary ? 18 : 2,
-                            bottom: 2,
-                            background: "#fff",
-                            borderRadius: "50%",
-                            transition: "0.2s",
-                          }}
-                        />
-                      </span>
-                    </label>
-                  </div>
-                  {showInLibrary && (
-                    <p
-                      style={{
-                        fontSize: 9,
-                        color: "#6b7280",
-                        margin: "8px 0 0",
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      Khi hiển thị trong thư viện, link sẽ được mã hóa và chỉ
-                      cho phép xem, không thể thao tác trực tiếp.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            <EditorContext.Provider value={editorCtx}>
+              <CanvasRightPanel />
+            </EditorContext.Provider>
           </div>
           {/* close content padding wrapper */}
         </div>
       </div>
 
-      {/* ══ Quick Image Replace Bar (CineLove parity) ══ */}
-      <QuickImageBar projectId={projectId} onReplace={triggerAutosave} />
-    </div>
-  );
-}
-
-/* ── Quick Image Replace Bar ── */
-function QuickImageBar({
-  projectId,
-  onReplace,
-}: {
-  projectId: string;
-  onReplace: () => void;
-}) {
-  const { actions, query } = useEditor();
-  const replaceRef = useRef<HTMLInputElement>(null);
-  const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
-
-  // Scan all nodes for CraftImage components
-  const imageNodes = useMemo(() => {
-    try {
-      const serialized = query.serialize();
-      const nodes = JSON.parse(serialized);
-      const images: { id: string; src: string }[] = [];
-      for (const [id, node] of Object.entries(nodes)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const n = node as any;
-        if (n?.type?.resolvedName === "CraftImage" && n?.props?.src) {
-          images.push({ id, src: n.props.src });
-        }
-      }
-      return images;
-    } catch {
-      return [];
-    }
-  }, [query]);
-
-  const handleReplace = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || !targetNodeId) return;
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("projectId", projectId);
-      try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.url) {
-          actions.setProp(targetNodeId, (props: { src: string }) => {
-            props.src = data.url;
-          });
-          onReplace();
-        }
-      } catch {
-        alert("Upload thất bại");
-      }
-      e.target.value = "";
-      setTargetNodeId(null);
-    },
-    [targetNodeId, projectId, actions, onReplace],
-  );
-
-  if (imageNodes.length === 0) return null;
-
-  return (
-    <div
-      style={{
-        height: 64,
-        background: "#fff",
-        borderTop: "1px solid #e5e7eb",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 12px",
-        gap: 8,
-        flexShrink: 0,
-        overflow: "hidden",
-      }}
-    >
-      <span
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#6b7280",
-          whiteSpace: "nowrap",
-          letterSpacing: 0.5,
-        }}
-      >
-        🖼️ Thay nhanh ({imageNodes.length})
-      </span>
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          overflowX: "auto",
-          flex: 1,
-          padding: "4px 0",
-          scrollbarWidth: "none",
-        }}
-      >
-        {imageNodes.map((img: { id: string; src: string }) => (
-          <button
-            key={img.id}
-            onClick={() => {
-              setTargetNodeId(img.id);
-              replaceRef.current?.click();
-            }}
-            title="Click để thay ảnh"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 8,
-              border: "2px solid #e5e7eb",
-              background: `url(${img.src}) center/cover no-repeat`,
-              flexShrink: 0,
-              cursor: "pointer",
-              position: "relative",
-              overflow: "hidden",
-              transition: "border-color 0.15s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "#ff6b9d")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "#e5e7eb")
-            }
-          >
-            <span
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: "rgba(0,0,0,0.5)",
-                color: "#fff",
-                fontSize: 8,
-                textAlign: "center",
-                padding: "1px 0",
-              }}
-            >
-              thay
-            </span>
-          </button>
-        ))}
-      </div>
-      <input
-        ref={replaceRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleReplace}
-      />
+      {/* Quick Image Replace Bar removed (was CraftJS-dependent) */}
     </div>
   );
 }
