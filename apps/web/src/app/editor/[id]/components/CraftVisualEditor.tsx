@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useMemo,
+  useReducer,
 } from "react";
 import {
   Type,
@@ -60,6 +61,14 @@ import {
   SECTION_PRESETS,
 } from "@/server/data/section-library";
 import { createBrowserClient } from "@supabase/ssr";
+import {
+  CanvasRenderer,
+  CanvasContextMenu,
+  EditorContext,
+  editorReducer,
+  initialState,
+} from "./canvas";
+import type { CanvasElement } from "./canvas/types";
 
 /* ── Tab config (CineLove parity: 10 tabs) ── */
 const TABS = [
@@ -603,6 +612,9 @@ const TEMPLATE_STYLES: {
   textColor: string;
   font: string;
   desc: string;
+  tier: "FREE" | "BASIC" | "PREMIUM";
+  views: number;
+  uses: number;
 }[] = [
   {
     name: "Hoa hồng",
@@ -610,6 +622,9 @@ const TEMPLATE_STYLES: {
     textColor: "#831843",
     font: "'Dancing Script', cursive",
     desc: "Lãng mạn, nhẹ nhàng",
+    tier: "FREE",
+    views: 4182,
+    uses: 312,
   },
   {
     name: "Đêm tím",
@@ -617,6 +632,9 @@ const TEMPLATE_STYLES: {
     textColor: "#e9d5ff",
     font: "'Cormorant Garamond', serif",
     desc: "Sang trọng, huyền bí",
+    tier: "BASIC",
+    views: 3113,
+    uses: 245,
   },
   {
     name: "Hoàng hôn",
@@ -624,6 +642,9 @@ const TEMPLATE_STYLES: {
     textColor: "#92400e",
     font: "'Playfair Display', serif",
     desc: "Ấm áp, rực rỡ",
+    tier: "BASIC",
+    views: 2578,
+    uses: 189,
   },
   {
     name: "Anh đào",
@@ -631,6 +652,9 @@ const TEMPLATE_STYLES: {
     textColor: "#9f1239",
     font: "'Lora', serif",
     desc: "Ngọt ngào, dịu dàng",
+    tier: "FREE",
+    views: 1424,
+    uses: 167,
   },
   {
     name: "Trắng tinh",
@@ -638,6 +662,9 @@ const TEMPLATE_STYLES: {
     textColor: "#1f2937",
     font: "'Inter', sans-serif",
     desc: "Tối giản, hiện đại",
+    tier: "FREE",
+    views: 2414,
+    uses: 209,
   },
   {
     name: "Đen sang trọng",
@@ -645,6 +672,9 @@ const TEMPLATE_STYLES: {
     textColor: "#f9a8d4",
     font: "'Cormorant Garamond', serif",
     desc: "Luxury, premium",
+    tier: "PREMIUM",
+    views: 2177,
+    uses: 154,
   },
   {
     name: "Vintage Gold",
@@ -652,6 +682,9 @@ const TEMPLATE_STYLES: {
     textColor: "#78350f",
     font: "'Playfair Display', serif",
     desc: "Cổ điển, vàng ấm",
+    tier: "PREMIUM",
+    views: 2801,
+    uses: 198,
   },
   {
     name: "Biển xanh",
@@ -659,6 +692,9 @@ const TEMPLATE_STYLES: {
     textColor: "#164e63",
     font: "'Inter', sans-serif",
     desc: "Tươi mát, biển cả",
+    tier: "BASIC",
+    views: 1652,
+    uses: 143,
   },
   {
     name: "Hoa lavender",
@@ -666,6 +702,9 @@ const TEMPLATE_STYLES: {
     textColor: "#581c87",
     font: "'Dancing Script', cursive",
     desc: "Nhẹ nhàng, thanh lịch",
+    tier: "BASIC",
+    views: 1474,
+    uses: 128,
   },
   {
     name: "Rustic",
@@ -673,6 +712,9 @@ const TEMPLATE_STYLES: {
     textColor: "#713f12",
     font: "'Lora', serif",
     desc: "Mộc mạc, ấm cúng",
+    tier: "BASIC",
+    views: 4556,
+    uses: 367,
   },
   {
     name: "Bạc tuyết",
@@ -680,6 +722,9 @@ const TEMPLATE_STYLES: {
     textColor: "#0c4a6e",
     font: "'Cormorant Garamond', serif",
     desc: "Thanh thoát, mùa đông",
+    tier: "PREMIUM",
+    views: 5011,
+    uses: 428,
   },
   {
     name: "Sunset Beach",
@@ -687,6 +732,9 @@ const TEMPLATE_STYLES: {
     textColor: "#9a3412",
     font: "'Playfair Display', serif",
     desc: "Hoàng hôn biển",
+    tier: "BASIC",
+    views: 1062,
+    uses: 98,
   },
 ];
 
@@ -824,8 +872,31 @@ function CraftEditorInner({
   const [projectCategory, setProjectCategory] = useState("wedding");
   const [projectStatus, setProjectStatus] = useState("draft");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<
+    { url: string; name: string; size: number }[]
+  >([]);
+  const [showInLibrary, setShowInLibrary] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Custom Canvas Engine State ──
+  const [editorState, editorDispatch] = useReducer(editorReducer, initialState);
+  const selectedCanvasElement = useMemo(
+    () =>
+      editorState.elements.find(
+        (el: CanvasElement) => el.id === editorState.selectedId,
+      ) || null,
+    [editorState.elements, editorState.selectedId],
+  );
+  const editorCtx = useMemo(
+    () => ({
+      state: editorState,
+      dispatch: editorDispatch,
+      selectedElement: selectedCanvasElement,
+    }),
+    [editorState, selectedCanvasElement],
+  );
+  const [useCustomCanvas, setUseCustomCanvas] = useState(true);
 
   const supabase = useMemo(
     () =>
@@ -862,6 +933,10 @@ function CraftEditorInner({
           setProjectCategory(parsed.meta.projectCategory);
         if (parsed.meta?.projectStatus)
           setProjectStatus(parsed.meta.projectStatus);
+        if (parsed.meta?.showInLibrary)
+          setShowInLibrary(parsed.meta.showInLibrary);
+        if (parsed.meta?.uploadedImages)
+          setUploadedImages(parsed.meta.uploadedImages);
         // Load saved craft.js node tree into editor
         if (parsed.craftState) {
           const stateStr =
@@ -1001,6 +1076,8 @@ function CraftEditorInner({
         musicWidgetColor,
         projectCategory,
         projectStatus,
+        showInLibrary,
+        uploadedImages,
       },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
@@ -1083,6 +1160,8 @@ function CraftEditorInner({
     curtainEffect,
     projectCategory,
     projectStatus,
+    showInLibrary,
+    uploadedImages,
   ]);
 
   // ── Publish ──
@@ -1102,6 +1181,8 @@ function CraftEditorInner({
         musicWidgetColor,
         projectCategory,
         projectStatus,
+        showInLibrary,
+        uploadedImages,
       },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
@@ -1134,6 +1215,8 @@ function CraftEditorInner({
     publishStatus,
     projectCategory,
     projectStatus,
+    showInLibrary,
+    uploadedImages,
   ]);
 
   // Auto-save on changes (debounced)
@@ -1191,6 +1274,10 @@ function CraftEditorInner({
         });
         const data = await res.json();
         if (data.url) {
+          setUploadedImages((prev) => [
+            ...prev,
+            { url: data.url, name: file.name, size: file.size },
+          ]);
           const tree = query
             .parseReactElement(
               <CraftImage
@@ -1784,19 +1871,133 @@ function CraftEditorInner({
                   >
                     <ImageIcon size={24} color="#9ca3af" />
                     <span style={{ fontSize: 13, color: "#6b7280" }}>
-                      Upload ảnh
+                      Kéo thả hoặc nhấn vào đây để tải lên
                     </span>
                     <span style={{ fontSize: 11, color: "#9ca3af" }}>
-                      PNG, JPG, WebP
+                      PNG, JPG, WebP — tối đa 15 ảnh cùng lúc
                     </span>
                   </button>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     style={{ display: "none" }}
                     onChange={handleImageUpload}
                   />
+
+                  {/* File counter — CineLove parity */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: 8,
+                      fontSize: 11,
+                      color: "#6b7280",
+                      padding: "4px 0",
+                    }}
+                  >
+                    <span>
+                      Đã tải:{" "}
+                      <strong style={{ color: "#3b82f6" }}>
+                        {uploadedImages.length}/10
+                      </strong>
+                    </span>
+                    <span>•</span>
+                    <span>
+                      Còn lại:{" "}
+                      <strong>{Math.max(0, 10 - uploadedImages.length)}</strong>
+                    </span>
+                  </div>
+
+                  {/* Uploaded files section */}
+                  <div>
+                    <p style={panelLabelStyle}>Tệp đã tải lên</p>
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: "#9ca3af",
+                        margin: "-4px 0 8px",
+                      }}
+                    >
+                      Tổng {uploadedImages.length} tệp (
+                      {(
+                        uploadedImages.reduce((a, b) => a + b.size, 0) /
+                        (1024 * 1024 * 1024)
+                      ).toFixed(4)}{" "}
+                      GB / 5GB)
+                    </p>
+                    {uploadedImages.length > 0 && (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr 1fr",
+                          gap: 4,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {uploadedImages.map((img, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              width: "100%",
+                              aspectRatio: "1",
+                              borderRadius: 6,
+                              border: "1px solid #e5e7eb",
+                              overflow: "hidden",
+                              position: "relative",
+                              background: `url(${img.url}) center/cover`,
+                            }}
+                          >
+                            <button
+                              onClick={() => {
+                                setUploadedImages((prev) =>
+                                  prev.filter((_, idx) => idx !== i),
+                                );
+                                triggerAutosave();
+                              }}
+                              style={{
+                                position: "absolute",
+                                top: 2,
+                                right: 2,
+                                width: 16,
+                                height: 16,
+                                borderRadius: "50%",
+                                background: "rgba(0,0,0,0.5)",
+                                border: "none",
+                                color: "#fff",
+                                fontSize: 10,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              ×
+                            </button>
+                            <span
+                              style={{
+                                position: "absolute",
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                background: "rgba(0,0,0,0.5)",
+                                color: "#fff",
+                                fontSize: 7,
+                                textAlign: "center",
+                                padding: "1px 0",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {img.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Stock Image Library */}
                   <p style={panelLabelStyle}>Kho ảnh miễn phí</p>
@@ -2646,130 +2847,184 @@ function CraftEditorInner({
                       marginTop: 4,
                     }}
                   >
-                    {TEMPLATE_STYLES.map((t, idx) => (
-                      <button
-                        key={t.name}
-                        onClick={() => {
-                          setBackground(t.bg);
-                          const rootNodeId = query.node("ROOT").get().data
-                            .nodes?.[0];
-                          if (rootNodeId) {
-                            actions.setProp(
-                              rootNodeId,
-                              (props: { background: string }) => {
-                                props.background = t.bg;
-                              },
-                            );
-                          }
-                          const nodes = query.getSerializedNodes();
-                          Object.keys(nodes).forEach((nodeId) => {
-                            const node = nodes[nodeId];
-                            if (
-                              (node?.type as any)?.resolvedName === "CraftText"
-                            ) {
-                              actions.setProp(
-                                nodeId,
-                                (props: { color: string }) => {
-                                  props.color = t.textColor;
-                                },
-                              );
-                            }
-                          });
-                          triggerAutosave();
-                        }}
-                        style={{
-                          padding: 0,
-                          borderRadius: 10,
-                          border:
-                            background === t.bg
-                              ? "2px solid #ff6b9d"
-                              : "1px solid #e5e7eb",
-                          background: "#fff",
-                          cursor: "pointer",
-                          overflow: "hidden",
-                          textAlign: "left",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        {/* Thumbnail preview */}
+                    {TEMPLATE_STYLES.map((t) => {
+                      const tierColors = {
+                        FREE: { bg: "#6b7280", text: "#fff" },
+                        BASIC: { bg: "#10b981", text: "#fff" },
+                        PREMIUM: { bg: "#8b5cf6", text: "#fff" },
+                      };
+                      const badge = tierColors[t.tier];
+                      return (
                         <div
+                          key={t.name}
                           style={{
-                            height: 100,
-                            background: t.bg,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            position: "relative",
+                            borderRadius: 10,
+                            border:
+                              background === t.bg
+                                ? "2px solid #ff6b9d"
+                                : "1px solid #e5e7eb",
+                            background: "#fff",
                             overflow: "hidden",
+                            transition: "all 0.2s",
                           }}
                         >
-                          {/* Badge */}
-                          <span
+                          {/* Thumbnail preview */}
+                          <button
+                            onClick={() => {
+                              setBackground(t.bg);
+                              const rootNodeId = query.node("ROOT").get().data
+                                .nodes?.[0];
+                              if (rootNodeId) {
+                                actions.setProp(
+                                  rootNodeId,
+                                  (props: { background: string }) => {
+                                    props.background = t.bg;
+                                  },
+                                );
+                              }
+                              const nodes = query.getSerializedNodes();
+                              Object.keys(nodes).forEach((nodeId) => {
+                                const node = nodes[nodeId];
+                                if (
+                                  (node?.type as any)?.resolvedName ===
+                                  "CraftText"
+                                ) {
+                                  actions.setProp(
+                                    nodeId,
+                                    (props: { color: string }) => {
+                                      props.color = t.textColor;
+                                    },
+                                  );
+                                }
+                              });
+                              triggerAutosave();
+                            }}
                             style={{
-                              position: "absolute",
-                              top: 4,
-                              right: 4,
-                              padding: "2px 6px",
-                              borderRadius: 4,
-                              fontSize: 8,
-                              fontWeight: 700,
-                              background: idx < 4 ? "#10b981" : "#8b5cf6",
-                              color: "#fff",
-                              letterSpacing: 0.5,
+                              width: "100%",
+                              padding: 0,
+                              border: "none",
+                              cursor: "pointer",
+                              background: "none",
+                              textAlign: "left",
                             }}
                           >
-                            {idx < 4 ? "BASIC" : "PREMIUM"}
-                          </span>
-                          {/* Preview text */}
-                          <span
-                            style={{
-                              fontSize: 14,
-                              color: t.textColor,
-                              fontFamily: t.font,
-                              fontWeight: 600,
-                              opacity: 0.9,
-                            }}
-                          >
-                            A & B
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 8,
-                              color: t.textColor,
-                              fontFamily: t.font,
-                              opacity: 0.6,
-                              marginTop: 2,
-                            }}
-                          >
-                            28.05.2026
-                          </span>
+                            <div
+                              style={{
+                                height: 100,
+                                background: t.bg,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                position: "relative",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {/* Tier Badge */}
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  top: 4,
+                                  right: 4,
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                  background: badge.bg,
+                                  color: badge.text,
+                                  letterSpacing: 0.5,
+                                }}
+                              >
+                                {t.tier}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 14,
+                                  color: t.textColor,
+                                  fontFamily: t.font,
+                                  fontWeight: 600,
+                                  opacity: 0.9,
+                                }}
+                              >
+                                A & B
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 8,
+                                  color: t.textColor,
+                                  fontFamily: t.font,
+                                  opacity: 0.6,
+                                  marginTop: 2,
+                                }}
+                              >
+                                28.05.2026
+                              </span>
+                            </div>
+                          </button>
+                          {/* Label + Stats + Xem mẫu */}
+                          <div style={{ padding: "6px 8px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <p
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                  color: "#374151",
+                                  margin: 0,
+                                }}
+                              >
+                                {t.name}
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setBackground(t.bg);
+                                  const rootNodeId = query.node("ROOT").get()
+                                    .data.nodes?.[0];
+                                  if (rootNodeId) {
+                                    actions.setProp(
+                                      rootNodeId,
+                                      (props: { background: string }) => {
+                                        props.background = t.bg;
+                                      },
+                                    );
+                                  }
+                                  triggerAutosave();
+                                }}
+                                style={{
+                                  fontSize: 9,
+                                  padding: "2px 8px",
+                                  borderRadius: 4,
+                                  border: "1px solid #3b82f6",
+                                  background: "#eff6ff",
+                                  color: "#3b82f6",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                Xem mẫu
+                              </button>
+                            </div>
+                            {/* View count + usage */}
+                            <div
+                              style={{ display: "flex", gap: 8, marginTop: 3 }}
+                            >
+                              <span style={{ fontSize: 8, color: "#9ca3af" }}>
+                                {t.views.toLocaleString()}
+                              </span>
+                              <span style={{ fontSize: 8, color: "#f9a8d4" }}>
+                                {t.uses.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        {/* Label */}
-                        <div style={{ padding: "6px 8px" }}>
-                          <p
-                            style={{
-                              fontSize: 10,
-                              fontWeight: 600,
-                              color: "#374151",
-                              margin: 0,
-                            }}
-                          >
-                            {t.name}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: 8,
-                              color: "#9ca3af",
-                              margin: 0,
-                              fontFamily: t.font,
-                            }}
-                          >
-                            {t.desc}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -4057,356 +4312,58 @@ function CraftEditorInner({
               </div>
             </div>
           )}
-          <div
-            ref={canvasRef}
-            style={{
-              width: 390,
-              minHeight: 5000,
-              margin: "0 auto",
-              boxShadow:
-                "0 8px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
-              borderRadius: 12,
-              overflow: "hidden",
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: "top center",
-              transition: "transform 0.2s ease",
-              background: "#fff",
-            }}
-          >
-            {(() => {
-              // Extract saved craftState from initialCanvasJson
-              let savedCraftState: string | undefined;
-              if (initialCanvasJson) {
-                try {
-                  const parsed = JSON.parse(initialCanvasJson);
-                  if (parsed.craftState) {
-                    savedCraftState =
-                      typeof parsed.craftState === "string"
-                        ? parsed.craftState
-                        : JSON.stringify(parsed.craftState);
+          {useCustomCanvas ? (
+            <EditorContext.Provider value={editorCtx}>
+              <CanvasRenderer />
+              <CanvasContextMenu />
+            </EditorContext.Provider>
+          ) : (
+            <div
+              ref={canvasRef}
+              style={{
+                width: 390,
+                minHeight: 5000,
+                margin: "0 auto",
+                boxShadow:
+                  "0 8px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
+                borderRadius: 12,
+                overflow: "hidden",
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top center",
+                transition: "transform 0.2s ease",
+                background: "#fff",
+              }}
+            >
+              {(() => {
+                let savedCraftState: string | undefined;
+                if (initialCanvasJson) {
+                  try {
+                    const parsed = JSON.parse(initialCanvasJson);
+                    if (parsed.craftState) {
+                      savedCraftState =
+                        typeof parsed.craftState === "string"
+                          ? parsed.craftState
+                          : JSON.stringify(parsed.craftState);
+                    }
+                  } catch {
+                    /* fallback */
                   }
-                } catch {
-                  /* fallback to default */
                 }
-              }
-
-              if (savedCraftState) {
-                // Load saved craft.js state
-                return <Frame data={savedCraftState} />;
-              }
-
-              // Default state for brand-new editors (no saved state)
-              return (
-                <Frame>
-                  <Element canvas is={RootContainer} background={background}>
-                    {/* Hero Section */}
+                if (savedCraftState) {
+                  return <Frame data={savedCraftState} />;
+                }
+                return (
+                  <Frame>
                     <Element
                       canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={20}
-                      minHeight={400}
-                      gap={12}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text="Lễ Thành Hôn"
-                        fontSize={22}
-                        fontFamily="'Cormorant Garamond', serif"
-                        fontWeight="normal"
-                        fontStyle="italic"
-                        color="#9f1239"
-                        textAlign="center"
-                        lineHeight={1.4}
-                        letterSpacing={2}
-                        opacity={0.9}
-                      />
-                    </Element>
-
-                    {/* Names Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={16}
-                      minHeight={200}
-                      gap={4}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text="Tên Chú Rể"
-                        fontSize={36}
-                        fontFamily="'Dancing Script', cursive"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.2}
-                        letterSpacing={0}
-                        opacity={1}
-                      />
-                      <CraftText
-                        text="&"
-                        fontSize={24}
-                        fontFamily="'Playfair Display', serif"
-                        fontWeight="normal"
-                        fontStyle="italic"
-                        color="#f472b6"
-                        textAlign="center"
-                        lineHeight={1.4}
-                        letterSpacing={0}
-                        opacity={0.8}
-                      />
-                      <CraftText
-                        text="Tên Cô Dâu"
-                        fontSize={36}
-                        fontFamily="'Dancing Script', cursive"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.2}
-                        letterSpacing={0}
-                        opacity={1}
-                      />
-                    </Element>
-
-                    {/* Photo Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={16}
-                      minHeight={280}
-                      gap={12}
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftImage
-                        src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=500&fit=crop"
-                        objectFit="cover"
-                        borderRadius={14}
-                        borderWidth={2}
-                        borderColor="#f9a8d4"
-                        opacity={1}
-                        shadow={false}
-                      />
-                      <CraftImage
-                        src="https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop"
-                        objectFit="cover"
-                        borderRadius={14}
-                        borderWidth={2}
-                        borderColor="#f9a8d4"
-                        opacity={1}
-                        shadow={false}
-                      />
-                    </Element>
-
-                    {/* Date Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={20}
-                      minHeight={150}
-                      gap={8}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text="Chủ Nhật, 28 · 05 · 2026"
-                        fontSize={26}
-                        fontFamily="'Cormorant Garamond', serif"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.3}
-                        letterSpacing={1}
-                        opacity={1}
-                      />
-                      <CraftText
-                        text="Lúc 10:00 sáng"
-                        fontSize={16}
-                        fontFamily="'Lora', serif"
-                        fontWeight="normal"
-                        fontStyle="italic"
-                        color="#9f1239"
-                        textAlign="center"
-                        lineHeight={1.4}
-                        letterSpacing={0}
-                        opacity={0.85}
-                      />
-                    </Element>
-
-                    {/* Family Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="rgba(255,255,255,0.5)"
-                      padding={20}
-                      minHeight={200}
-                      gap={8}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text="Nhà Trai"
-                        fontSize={18}
-                        fontFamily="'Dancing Script', cursive"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.4}
-                        letterSpacing={0}
-                        opacity={1}
-                      />
-                      <CraftText
-                        text="Ông: Nguyễn Văn A & Bà: Trần Thị B"
-                        fontSize={14}
-                        fontFamily="'Inter', sans-serif"
-                        fontWeight="normal"
-                        fontStyle="normal"
-                        color="#6b7280"
-                        textAlign="center"
-                        lineHeight={1.5}
-                        letterSpacing={0}
-                        opacity={0.9}
-                      />
-                      <CraftText
-                        text="Nhà Gái"
-                        fontSize={18}
-                        fontFamily="'Dancing Script', cursive"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.4}
-                        letterSpacing={0}
-                        opacity={1}
-                      />
-                      <CraftText
-                        text="Ông: Lê Văn C & Bà: Phạm Thị D"
-                        fontSize={14}
-                        fontFamily="'Inter', sans-serif"
-                        fontWeight="normal"
-                        fontStyle="normal"
-                        color="#6b7280"
-                        textAlign="center"
-                        lineHeight={1.5}
-                        letterSpacing={0}
-                        opacity={0.9}
-                      />
-                    </Element>
-
-                    {/* Venue Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={20}
-                      minHeight={150}
-                      gap={8}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text="Địa Điểm"
-                        fontSize={20}
-                        fontFamily="'Playfair Display', serif"
-                        fontWeight="bold"
-                        fontStyle="normal"
-                        color="#831843"
-                        textAlign="center"
-                        lineHeight={1.3}
-                        letterSpacing={1}
-                        opacity={1}
-                      />
-                      <CraftText
-                        text="Nhà Hàng ABC, 123 Đường XYZ, TP.HCM"
-                        fontSize={14}
-                        fontFamily="'Inter', sans-serif"
-                        fontWeight="normal"
-                        fontStyle="normal"
-                        color="#6b7280"
-                        textAlign="center"
-                        lineHeight={1.5}
-                        letterSpacing={0}
-                        opacity={0.9}
-                      />
-                    </Element>
-
-                    {/* Gallery Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={16}
-                      minHeight={300}
-                      gap={8}
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftImage
-                        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop"
-                        objectFit="cover"
-                        borderRadius={10}
-                        borderWidth={0}
-                        borderColor="transparent"
-                        opacity={1}
-                        shadow={true}
-                      />
-                      <CraftImage
-                        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop"
-                        objectFit="cover"
-                        borderRadius={10}
-                        borderWidth={0}
-                        borderColor="transparent"
-                        opacity={1}
-                        shadow={true}
-                      />
-                    </Element>
-
-                    {/* Quote Section */}
-                    <Element
-                      canvas
-                      is={CraftContainer}
-                      background="transparent"
-                      padding={24}
-                      minHeight={120}
-                      gap={8}
-                      flexDirection="column"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <CraftText
-                        text={`"Yêu nhau không phải là ngồi nhìn nhau, mà là cùng nhìn về một hướng."`}
-                        fontSize={16}
-                        fontFamily="'Lora', serif"
-                        fontWeight="normal"
-                        fontStyle="italic"
-                        color="#9f1239"
-                        textAlign="center"
-                        lineHeight={1.6}
-                        letterSpacing={0}
-                        opacity={0.85}
-                      />
-                    </Element>
-                  </Element>
-                </Frame>
-              );
-            })()}
-          </div>
+                      is={RootContainer}
+                      background={background}
+                    ></Element>
+                  </Frame>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Zoom Controls Overlay */}
           <div
@@ -5112,6 +5069,108 @@ function CraftEditorInner({
                   >
                     Nâng cấp lên Basic+ để mở khóa tất cả tính năng.
                   </p>
+                </div>
+
+                {/* ── Thư viện thiệp toggle — CineLove parity ── */}
+                <div
+                  style={{
+                    padding: 12,
+                    borderRadius: 10,
+                    background: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    marginTop: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#374151",
+                          margin: "0 0 4px",
+                        }}
+                      >
+                        Thư viện thiệp
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 10,
+                          color: "#9ca3af",
+                          margin: 0,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        Cho phép trang này xuất hiện trong thư viện thiệp mẫu để
+                        người dùng khác có thể xem.
+                      </p>
+                    </div>
+                    <label
+                      style={{
+                        position: "relative",
+                        display: "inline-block",
+                        width: 36,
+                        height: 20,
+                        flexShrink: 0,
+                        marginLeft: 8,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={showInLibrary}
+                        onChange={(e) => {
+                          setShowInLibrary(e.target.checked);
+                          triggerAutosave();
+                        }}
+                        style={{ opacity: 0, width: 0, height: 0 }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          cursor: "pointer",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: showInLibrary ? "#3b82f6" : "#d1d5db",
+                          borderRadius: 10,
+                          transition: "0.2s",
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: "absolute",
+                            height: 16,
+                            width: 16,
+                            left: showInLibrary ? 18 : 2,
+                            bottom: 2,
+                            background: "#fff",
+                            borderRadius: "50%",
+                            transition: "0.2s",
+                          }}
+                        />
+                      </span>
+                    </label>
+                  </div>
+                  {showInLibrary && (
+                    <p
+                      style={{
+                        fontSize: 9,
+                        color: "#6b7280",
+                        margin: "8px 0 0",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      Khi hiển thị trong thư viện, link sẽ được mã hóa và chỉ
+                      cho phép xem, không thể thao tác trực tiếp.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
