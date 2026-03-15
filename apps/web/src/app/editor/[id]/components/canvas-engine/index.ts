@@ -13,3 +13,8 @@ export { useKeyboard } from "./useKeyboard";
 export { useDrag } from "./useDrag";
 export { convertTemplateToCanvas } from "./convertTemplate";
 export * from "./types";
+export {
+  ENTRANCE_KEYFRAMES,
+  getEntranceAnimation,
+  getContinuousAnimation,
+} from "./animations";
