@@ -11,6 +11,18 @@ import { useNode, useEditor, UserComponent } from "@craftjs/core";
  * + Double-click to edit inline
  */
 
+/* ── 8-point resize handles — corners + midpoints ── */
+const HANDLE_POSITIONS = [
+  { top: -4, left: -4, cursor: "nwse-resize" }, // top-left
+  { top: -4, left: "50%", cursor: "ns-resize", ml: -4 }, // top-center
+  { top: -4, right: -4, cursor: "nesw-resize" }, // top-right
+  { top: "50%", right: -4, cursor: "ew-resize", mt: -4 }, // mid-right
+  { bottom: -4, right: -4, cursor: "nwse-resize" }, // bottom-right
+  { bottom: -4, left: "50%", cursor: "ns-resize", ml: -4 }, // bottom-center
+  { bottom: -4, left: -4, cursor: "nesw-resize" }, // bottom-left
+  { top: "50%", left: -4, cursor: "ew-resize", mt: -4 }, // mid-left
+] as const;
+
 interface CraftTextProps {
   text: string;
   fontSize: number;
@@ -127,31 +139,59 @@ export const CraftText: UserComponent<CraftTextProps> = ({
         transform: rotation ? `rotate(${rotation}deg)` : undefined,
       }}
     >
-      {/* ── CineLove-style Floating Toolbar ── */}
+      {/* ── CineLove-style Floating Toolbar + Resize Handles ── */}
       {selected && (
-        <div
-          style={{
-            position: "absolute",
-            top: -36,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 2,
-            background: "#1f2937",
-            borderRadius: 8,
-            padding: "4px 6px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-            zIndex: 100,
-            whiteSpace: "nowrap",
-          }}
-        >
-          <button onClick={handleDuplicate} style={floatBtn} title="Nhân bản">
-            📋
-          </button>
-          <button onClick={handleDelete} style={floatBtn} title="Xóa">
-            🗑️
-          </button>
-        </div>
+        <>
+          <div
+            style={{
+              position: "absolute",
+              top: -36,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              gap: 2,
+              background: "#1f2937",
+              borderRadius: 8,
+              padding: "4px 6px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+              zIndex: 100,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <button onClick={handleDuplicate} style={floatBtn} title="Nhân bản">
+              📋
+            </button>
+            <button onClick={handleDelete} style={floatBtn} title="Xóa">
+              🗑️
+            </button>
+          </div>
+
+          {/* 8-point resize handles */}
+          {HANDLE_POSITIONS.map((pos, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#fff",
+                border: "2px solid #3b82f6",
+                top: "top" in pos ? (pos.top as number | string) : undefined,
+                left: "left" in pos ? (pos.left as number | string) : undefined,
+                right:
+                  "right" in pos ? (pos.right as number | string) : undefined,
+                bottom:
+                  "bottom" in pos ? (pos.bottom as number | string) : undefined,
+                cursor: pos.cursor,
+                marginLeft: "ml" in pos ? pos.ml : undefined,
+                marginTop: "mt" in pos ? pos.mt : undefined,
+                zIndex: 10,
+                pointerEvents: "none",
+              }}
+            />
+          ))}
+        </>
       )}
 
       <div

@@ -8,6 +8,18 @@ import { useNode, Element, UserComponent } from "@craftjs/core";
  * Styled with background, padding, alignment
  */
 
+/* ── 8-point resize handles — corners + midpoints ── */
+const HANDLE_POSITIONS = [
+  { top: -4, left: -4, cursor: "nwse-resize" }, // top-left
+  { top: -4, left: "50%", cursor: "ns-resize", ml: -4 }, // top-center
+  { top: -4, right: -4, cursor: "nesw-resize" }, // top-right
+  { top: "50%", right: -4, cursor: "ew-resize", mt: -4 }, // mid-right
+  { bottom: -4, right: -4, cursor: "nwse-resize" }, // bottom-right
+  { bottom: -4, left: "50%", cursor: "ns-resize", ml: -4 }, // bottom-center
+  { bottom: -4, left: -4, cursor: "nesw-resize" }, // bottom-left
+  { top: "50%", left: -4, cursor: "ew-resize", mt: -4 }, // mid-left
+] as const;
+
 interface CraftContainerProps {
   background: string;
   padding: number;
@@ -99,6 +111,33 @@ export const CraftContainer: UserComponent<CraftContainerProps> = ({
       }}
     >
       {children}
+
+      {/* 8-point resize handles when selected */}
+      {selected &&
+        HANDLE_POSITIONS.map((pos, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#fff",
+              border: "2px solid #3b82f6",
+              top: "top" in pos ? (pos.top as number | string) : undefined,
+              left: "left" in pos ? (pos.left as number | string) : undefined,
+              right:
+                "right" in pos ? (pos.right as number | string) : undefined,
+              bottom:
+                "bottom" in pos ? (pos.bottom as number | string) : undefined,
+              cursor: pos.cursor,
+              marginLeft: "ml" in pos ? pos.ml : undefined,
+              marginTop: "mt" in pos ? pos.mt : undefined,
+              zIndex: 10,
+              pointerEvents: "none",
+            }}
+          />
+        ))}
 
       {/* Always-visible "Change Photo" button when container has bg image */}
       {isImageBg && (

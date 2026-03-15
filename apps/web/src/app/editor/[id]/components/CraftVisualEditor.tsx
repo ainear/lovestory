@@ -53,6 +53,10 @@ import {
   CLIPART_CATEGORIES,
   CLIPART_ITEMS,
 } from "@/server/data/clipart-library";
+import {
+  SECTION_CATEGORIES,
+  SECTION_PRESETS,
+} from "@/server/data/section-library";
 import { createBrowserClient } from "@supabase/ssr";
 
 /* ── Tab config (CineLove parity: 10 tabs) ── */
@@ -66,7 +70,11 @@ const TABS = [
   { key: "plugins", icon: <Grid size={20} />, label: "Tiện ích" },
   { key: "templates", icon: <LayoutTemplate size={20} />, label: "Mẫu" },
   { key: "effects", icon: <Sparkles size={20} />, label: "Hiệu ứng" },
-  { key: "support", icon: <HelpCircle size={20} />, label: "Hỗ trợ" },
+  {
+    key: "components",
+    icon: <LayoutTemplate size={20} />,
+    label: "Thành phần",
+  },
 ];
 
 /* ── Text presets ── */
@@ -722,6 +730,7 @@ function CraftEditorInner({
 
   const [activeTab, setActiveTab] = useState("text");
   const [clipartCat, setClipartCat] = useState("all");
+  const [sectionCat, setSectionCat] = useState("all");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
     "saved",
   );
@@ -756,6 +765,8 @@ function CraftEditorInner({
   const [previewId, setPreviewId] = useState<string | null>(null);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [projectCategory, setProjectCategory] = useState("wedding");
+  const [projectStatus, setProjectStatus] = useState("draft");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -786,6 +797,14 @@ function CraftEditorInner({
           setMusicWidgetColor(parsed.meta.musicWidgetColor);
         if (parsed.effects?.particleEffect)
           setParticleEffect(parsed.effects.particleEffect);
+        if (parsed.effects?.pageAnimation)
+          setPageAnimation(parsed.effects.pageAnimation);
+        if (parsed.effects?.curtainEffect)
+          setCurtainEffect(parsed.effects.curtainEffect);
+        if (parsed.meta?.projectCategory)
+          setProjectCategory(parsed.meta.projectCategory);
+        if (parsed.meta?.projectStatus)
+          setProjectStatus(parsed.meta.projectStatus);
         // Load saved craft.js node tree into editor
         if (parsed.craftState) {
           const stateStr =
@@ -901,35 +920,8 @@ function CraftEditorInner({
         return;
       }
 
-      // Arrow key nudge (1px, Shift=10px)
-      const step = e.shiftKey ? 10 : 1;
-      let dx = 0;
-      let dy = 0;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        dx = -step;
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        dx = step;
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        dy = -step;
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        dy = step;
-      }
-      if (dx !== 0 || dy !== 0) {
-        actions.setProp(
-          selected.id,
-          (props: { x?: number; y?: number; left?: number; top?: number }) => {
-            if (props.x !== undefined) props.x = (props.x || 0) + dx;
-            else if (props.left !== undefined)
-              props.left = (props.left || 0) + dx;
-            if (props.y !== undefined) props.y = (props.y || 0) + dy;
-            else if (props.top !== undefined) props.top = (props.top || 0) + dy;
-          },
-        );
-      }
+      // Arrow key nudge: CraftJS components use internal drag positioning,
+      // not top/left/x/y props, so nudge via arrow keys is not supported.
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -945,7 +937,14 @@ function CraftEditorInner({
       engine: "craftjs",
       canvas: { width: 390, height: 5000, bg: background, bgOpacity },
       craftState: craftJson,
-      meta: { musicUrl, musicName, musicWidgetStyle, musicWidgetColor },
+      meta: {
+        musicUrl,
+        musicName,
+        musicWidgetStyle,
+        musicWidgetColor,
+        projectCategory,
+        projectStatus,
+      },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
     // Save backup to localStorage
@@ -981,6 +980,11 @@ function CraftEditorInner({
     musicName,
     musicWidgetStyle,
     musicWidgetColor,
+    particleEffect,
+    pageAnimation,
+    curtainEffect,
+    projectCategory,
+    projectStatus,
   ]);
 
   // ── Publish ──
@@ -993,7 +997,14 @@ function CraftEditorInner({
       engine: "craftjs",
       canvas: { width: 390, height: 5000, bg: background, bgOpacity },
       craftState: craftJson,
-      meta: { musicUrl, musicName, musicWidgetStyle, musicWidgetColor },
+      meta: {
+        musicUrl,
+        musicName,
+        musicWidgetStyle,
+        musicWidgetColor,
+        projectCategory,
+        projectStatus,
+      },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
     try {
@@ -1023,6 +1034,8 @@ function CraftEditorInner({
     musicName,
     onPublish,
     publishStatus,
+    projectCategory,
+    projectStatus,
   ]);
 
   // Auto-save on changes (debounced)
@@ -2379,31 +2392,37 @@ function CraftEditorInner({
                       {
                         id: "shape-line",
                         name: "Đường thẳng",
+                        shapeType: "line",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                       {
                         id: "shape-rect",
                         name: "Hình chữ nhật",
+                        shapeType: "rectangle",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="160" height="120" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                       {
                         id: "shape-circle",
                         name: "Hình tròn",
+                        shapeType: "circle",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                       {
                         id: "shape-triangle",
                         name: "Tam giác",
+                        shapeType: "triangle",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,20 180,180 20,180" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                       {
                         id: "shape-star",
                         name: "Ngôi sao",
+                        shapeType: "star",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,10 125,75 195,80 140,125 155,195 100,160 45,195 60,125 5,80 75,75" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                       {
                         id: "shape-heart",
                         name: "Trái tim",
+                        shapeType: "heart",
                         svg: '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100,180 C60,140 10,110 10,70 C10,30 50,10 100,50 C150,10 190,30 190,70 C190,110 140,140 100,180Z" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
                       },
                     ].map((shape) => (
@@ -2411,12 +2430,13 @@ function CraftEditorInner({
                         key={shape.id}
                         onClick={() => {
                           const el = (
-                            <CraftSticker
-                              stickerId={shape.id}
-                              color="#374151"
-                              size={120}
+                            <CraftShape
+                              shapeType={shape.shapeType}
+                              fill="#374151"
+                              stroke="#374151"
+                              strokeWidth={2}
                               opacity={1}
-                              customSvg={shape.svg}
+                              rotation={0}
                             />
                           );
                           const tree = query.parseReactElement(el).toNodeTree();
@@ -3218,10 +3238,10 @@ function CraftEditorInner({
                   );
                 })()}
 
-              {/* SUPPORT TAB — CineLove parity: Messenger + Bug report */}
-              {activeTab === "support" && (
+              {/* COMPONENTS TAB — "Thành phần" section library */}
+              {activeTab === "components" && (
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
                 >
                   <p
                     style={{
@@ -3231,173 +3251,214 @@ function CraftEditorInner({
                       margin: 0,
                     }}
                   >
-                    Hỗ trợ & Góp ý
+                    Thư viện thành phần
+                  </p>
+                  <p style={{ fontSize: 10, color: "#9ca3af", margin: 0 }}>
+                    Chèn nhanh các khối nội dung có sẵn
                   </p>
 
-                  {/* Messenger support */}
-                  <a
-                    href="https://m.me/7app.online"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      padding: "14px 16px",
-                      borderRadius: 12,
-                      background: "linear-gradient(135deg, #0084ff, #00c6ff)",
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      textDecoration: "none",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <span style={{ fontSize: 20 }}>💬</span>
-                    <div>
-                      <p style={{ margin: 0 }}>Chat qua Messenger</p>
-                      <p style={{ margin: 0, fontSize: 10, opacity: 0.8 }}>
-                        Phản hồi trong 5 phút
-                      </p>
-                    </div>
-                  </a>
-
-                  {/* Zalo support */}
-                  <a
-                    href="https://zalo.me/7app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      padding: "14px 16px",
-                      borderRadius: 12,
-                      background: "linear-gradient(135deg, #0068ff, #0045e5)",
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      textDecoration: "none",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <span style={{ fontSize: 20 }}>📱</span>
-                    <div>
-                      <p style={{ margin: 0 }}>Chat qua Zalo</p>
-                      <p style={{ margin: 0, fontSize: 10, opacity: 0.8 }}>
-                        Hỗ trợ nhanh nhất
-                      </p>
-                    </div>
-                  </a>
-
-                  {/* Bug report form */}
+                  {/* Category filter chips */}
                   <div
-                    style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10 }}
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 4,
+                      marginTop: 2,
+                    }}
                   >
-                    <p
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#374151",
-                        margin: "0 0 6px",
-                      }}
-                    >
-                      📝 Báo lỗi / Đóng góp
-                    </p>
-                    <textarea
-                      value={bugReportText}
-                      onChange={(e) => setBugReportText(e.target.value)}
-                      placeholder="Mô tả vấn đề bạn gặp phải hoặc tính năng bạn muốn thêm..."
-                      style={{
-                        width: "100%",
-                        minHeight: 80,
-                        borderRadius: 10,
-                        border: "1px solid #e5e7eb",
-                        padding: 10,
-                        fontSize: 11,
-                        resize: "vertical",
-                        boxSizing: "border-box",
-                        fontFamily: "inherit",
-                      }}
-                    />
-                    <button
-                      onClick={async () => {
-                        if (!bugReportText.trim()) return;
-                        try {
-                          await supabase.from("bug_reports").insert({
-                            message: bugReportText.trim(),
-                            project_id: projectId,
-                            page_url: window.location.href,
-                            created_at: new Date().toISOString(),
-                          });
-                          setBugReportText("");
-                          alert("✅ Cảm ơn bạn! Góp ý đã được ghi nhận.");
-                        } catch {
-                          alert("Gửi thất bại. Vui lòng thử lại.");
-                        }
-                      }}
-                      style={{
-                        marginTop: 8,
-                        padding: "8px 16px",
-                        borderRadius: 10,
-                        border: "none",
-                        background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                        color: "#fff",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        width: "100%",
-                      }}
-                    >
-                      Gửi góp ý
-                    </button>
+                    {SECTION_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSectionCat(cat.id)}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: 20,
+                          border: "none",
+                          background:
+                            sectionCat === cat.id ? "#ff6b9d" : "#f3f4f6",
+                          color: sectionCat === cat.id ? "#fff" : "#6b7280",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {cat.icon} {cat.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* FAQ */}
+                  {/* Section preset cards */}
                   <div
-                    style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                      marginTop: 4,
+                    }}
                   >
-                    <p
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#374151",
-                        margin: "0 0 6px",
-                      }}
-                    >
-                      ❓ Câu hỏi thường gặp
-                    </p>
-                    {[
-                      {
-                        q: "Làm sao thêm ảnh?",
-                        a: "Vào tab Hình ảnh → Upload hoặc kéo thả",
-                      },
-                      {
-                        q: "Đổi nhạc nền?",
-                        a: "Vào tab Âm nhạc → Chọn bài → Sử dụng",
-                      },
-                      {
-                        q: "Gói Premium?",
-                        a: "Nâng cấp để mở khóa AI xóa nền, RSVP, và nhiều tính năng",
-                      },
-                    ].map((faq, i) => (
-                      <div key={i} style={{ marginBottom: 8 }}>
-                        <p
+                    {SECTION_PRESETS.filter(
+                      (p) => sectionCat === "all" || p.category === sectionCat,
+                    ).map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => {
+                          const rootNodeId = query
+                            .node("ROOT")
+                            .get().data.nodes?.[0];
+                          if (!rootNodeId) return;
+                          preset.elements.forEach((el) => {
+                            let reactEl: React.ReactElement;
+                            if (el.type === "text") {
+                              const p = el.props as {
+                                fontSize?: number;
+                                fontFamily?: string;
+                                fontWeight?: string;
+                                fontStyle?: string;
+                                color?: string;
+                                textAlign?: string;
+                                letterSpacing?: number;
+                              };
+                              reactEl = (
+                                <CraftText
+                                  text={el.label}
+                                  fontSize={p.fontSize ?? 16}
+                                  fontFamily={
+                                    p.fontFamily ?? "'Inter', sans-serif"
+                                  }
+                                  fontWeight={p.fontWeight ?? "normal"}
+                                  fontStyle={p.fontStyle ?? "normal"}
+                                  color={p.color ?? "#374151"}
+                                  textAlign={
+                                    (p.textAlign as
+                                      | "left"
+                                      | "center"
+                                      | "right") ?? "center"
+                                  }
+                                  lineHeight={1.5}
+                                  letterSpacing={p.letterSpacing ?? 0}
+                                  opacity={1}
+                                />
+                              );
+                            } else if (el.type === "image") {
+                              const p = el.props as {
+                                objectFit?: string;
+                                borderRadius?: number;
+                              };
+                              reactEl = (
+                                <CraftImage
+                                  src=""
+                                  objectFit={
+                                    (p.objectFit as
+                                      | "cover"
+                                      | "contain"
+                                      | "fill") ?? "cover"
+                                  }
+                                  borderRadius={p.borderRadius ?? 8}
+                                  borderWidth={0}
+                                  borderColor="transparent"
+                                  opacity={1}
+                                  shadow={false}
+                                />
+                              );
+                            } else {
+                              const p = el.props as {
+                                background?: string;
+                                padding?: number;
+                              };
+                              reactEl = (
+                                <CraftContainer
+                                  background={p.background ?? "#f9fafb"}
+                                  padding={p.padding ?? 16}
+                                  minHeight={80}
+                                  flexDirection="column"
+                                  alignItems="flex-start"
+                                  justifyContent="flex-start"
+                                  gap={8}
+                                />
+                              );
+                            }
+                            try {
+                              const tree = query
+                                .parseReactElement(reactEl)
+                                .toNodeTree();
+                              actions.addNodeTree(tree, rootNodeId);
+                            } catch {
+                              /* noop */
+                            }
+                          });
+                          triggerAutosave();
+                        }}
+                        style={{
+                          padding: 0,
+                          borderRadius: 10,
+                          border: "1px solid #e5e7eb",
+                          background: "#fff",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          overflow: "hidden",
+                          transition: "all 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = "#ff6b9d";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 8px rgba(255,107,157,0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "#e5e7eb";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
+                        {/* Preview area */}
+                        <div
                           style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: "#374151",
-                            margin: "0 0 2px",
+                            height: Math.round(preset.previewHeight * 0.4),
+                            background: preset.previewBg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {faq.q}
-                        </p>
-                        <p
-                          style={{ fontSize: 10, color: "#6b7280", margin: 0 }}
-                        >
-                          {faq.a}
-                        </p>
-                      </div>
+                          <span style={{ fontSize: 20 }}>
+                            {
+                              SECTION_CATEGORIES.find(
+                                (c) => c.id === preset.category,
+                              )?.icon
+                            }
+                          </span>
+                        </div>
+                        {/* Info */}
+                        <div style={{ padding: "8px 10px" }}>
+                          <p
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: "#374151",
+                              margin: "0 0 2px",
+                            }}
+                          >
+                            {preset.name}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: 9,
+                              color: "#9ca3af",
+                              margin: "0 0 4px",
+                            }}
+                          >
+                            {preset.description}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: 9,
+                              color: "#d1d5db",
+                              margin: 0,
+                            }}
+                          >
+                            {preset.elements.length} thành phần
+                          </p>
+                        </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -4182,6 +4243,8 @@ function CraftEditorInner({
                     Danh mục
                   </p>
                   <select
+                    value={projectCategory}
+                    onChange={(e) => setProjectCategory(e.target.value)}
                     style={{
                       width: "100%",
                       padding: "8px 10px",
@@ -4217,6 +4280,8 @@ function CraftEditorInner({
                     Trạng thái
                   </p>
                   <select
+                    value={projectStatus}
+                    onChange={(e) => setProjectStatus(e.target.value)}
                     style={{
                       width: "100%",
                       padding: "8px 10px",
