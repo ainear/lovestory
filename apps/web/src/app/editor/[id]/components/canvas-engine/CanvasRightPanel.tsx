@@ -54,14 +54,62 @@ const LOOP_ANIMATIONS = [
   { id: "bounce", label: "Bounce (nảy)" },
 ];
 
-export function CanvasRightPanel() {
+interface CanvasRightPanelProps {
+  projectCategory: string;
+  setProjectCategory: (v: string) => void;
+  projectStatus: string;
+  setProjectStatus: (v: string) => void;
+  removeWatermark: boolean;
+  setRemoveWatermark: (v: boolean) => void;
+  autoScroll: boolean;
+  setAutoScroll: (v: boolean) => void;
+  scrollSpeed: number;
+  setScrollSpeed: (v: number) => void;
+  qrBank: string;
+  setQrBank: (v: string) => void;
+  triggerAutosave: () => void;
+}
+
+export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const { state, dispatch, selectedElement: el } = useEditorContext();
 
   if (!el) {
     return (
       <div>
-        <ProjectSettingsSection />
-        <PremiumFeaturesSection />
+        <ProjectSettingsSection
+          category={props.projectCategory}
+          setCategory={(v) => {
+            props.setProjectCategory(v);
+            props.triggerAutosave();
+          }}
+          status={props.projectStatus}
+          setStatus={(v) => {
+            props.setProjectStatus(v);
+            props.triggerAutosave();
+          }}
+        />
+        <PremiumFeaturesSection
+          removeWatermark={props.removeWatermark}
+          setRemoveWatermark={(v) => {
+            props.setRemoveWatermark(v);
+            props.triggerAutosave();
+          }}
+          autoScroll={props.autoScroll}
+          setAutoScroll={(v) => {
+            props.setAutoScroll(v);
+            props.triggerAutosave();
+          }}
+          scrollSpeed={props.scrollSpeed}
+          setScrollSpeed={(v) => {
+            props.setScrollSpeed(v);
+            props.triggerAutosave();
+          }}
+          qrBank={props.qrBank}
+          setQrBank={(v) => {
+            props.setQrBank(v);
+            props.triggerAutosave();
+          }}
+        />
         <LayersPanel />
       </div>
     );
@@ -837,12 +885,25 @@ function PanelSection({
 }
 
 /** Premium features section — matches CineLove "Tính năng nâng cao" */
-function PremiumFeaturesSection() {
-  const [removeWatermark, setRemoveWatermark] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(3);
-  const [qrBank, setQrBank] = useState("");
-
+function PremiumFeaturesSection({
+  removeWatermark,
+  setRemoveWatermark,
+  autoScroll,
+  setAutoScroll,
+  scrollSpeed,
+  setScrollSpeed,
+  qrBank,
+  setQrBank,
+}: {
+  removeWatermark: boolean;
+  setRemoveWatermark: (v: boolean) => void;
+  autoScroll: boolean;
+  setAutoScroll: (v: boolean) => void;
+  scrollSpeed: number;
+  setScrollSpeed: (v: number) => void;
+  qrBank: string;
+  setQrBank: (v: string) => void;
+}) {
   return (
     <div
       style={{
@@ -978,10 +1039,17 @@ function PremiumFeaturesSection() {
 }
 
 /** Project settings shown when no element is selected */
-function ProjectSettingsSection() {
-  const [category, setCategory] = useState("Thiệp cưới");
-  const [status, setStatus] = useState("Nháp");
-
+function ProjectSettingsSection({
+  category,
+  setCategory,
+  status,
+  setStatus,
+}: {
+  category: string;
+  setCategory: (v: string) => void;
+  status: string;
+  setStatus: (v: string) => void;
+}) {
   return (
     <div
       style={{

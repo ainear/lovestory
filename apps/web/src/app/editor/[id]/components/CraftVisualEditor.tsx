@@ -190,6 +190,11 @@ function CraftEditorInner({
     { url: string; name: string; size: number }[]
   >([]);
   const [showInLibrary, setShowInLibrary] = useState(false);
+  // Premium features state (persisted in canvas_json.meta)
+  const [removeWatermark, setRemoveWatermark] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(3);
+  const [qrBank, setQrBank] = useState("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -254,6 +259,13 @@ function CraftEditorInner({
           setShowInLibrary(parsed.meta.showInLibrary);
         if (parsed.meta?.uploadedImages)
           setUploadedImages(parsed.meta.uploadedImages);
+        if (parsed.meta?.removeWatermark !== undefined)
+          setRemoveWatermark(parsed.meta.removeWatermark);
+        if (parsed.meta?.autoScroll !== undefined)
+          setAutoScroll(parsed.meta.autoScroll);
+        if (parsed.meta?.scrollSpeed !== undefined)
+          setScrollSpeed(parsed.meta.scrollSpeed);
+        if (parsed.meta?.qrBank !== undefined) setQrBank(parsed.meta.qrBank);
         // Load custom canvas format
         if (parsed.elements) {
           const validElements = sanitizeElements(parsed.elements);
@@ -330,6 +342,10 @@ function CraftEditorInner({
         projectStatus,
         showInLibrary,
         uploadedImages,
+        removeWatermark,
+        autoScroll,
+        scrollSpeed,
+        qrBank,
       },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
@@ -875,7 +891,21 @@ function CraftEditorInner({
           </div>
           <div style={{ padding: 16 }}>
             <EditorContext.Provider value={editorCtx}>
-              <CanvasRightPanel />
+              <CanvasRightPanel
+                projectCategory={projectCategory}
+                setProjectCategory={setProjectCategory}
+                projectStatus={projectStatus}
+                setProjectStatus={setProjectStatus}
+                removeWatermark={removeWatermark}
+                setRemoveWatermark={setRemoveWatermark}
+                autoScroll={autoScroll}
+                setAutoScroll={setAutoScroll}
+                scrollSpeed={scrollSpeed}
+                setScrollSpeed={setScrollSpeed}
+                qrBank={qrBank}
+                setQrBank={setQrBank}
+                triggerAutosave={triggerAutosave}
+              />
             </EditorContext.Provider>
           </div>
           {/* close content padding wrapper */}
