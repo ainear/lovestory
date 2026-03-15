@@ -20,12 +20,8 @@ import {
   Save,
   LayoutTemplate,
   Grid,
-  Smile,
-  Plus,
-  Download,
   Home,
   Share2,
-  Layers,
   ZoomIn,
   ZoomOut,
   Flower2,
@@ -763,9 +759,13 @@ function CraftEditorInner({
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      ),
+    [],
   );
 
   // Parse initial background + craft.js state from saved canvas_json
