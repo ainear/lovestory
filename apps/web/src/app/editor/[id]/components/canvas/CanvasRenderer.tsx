@@ -1,0 +1,171 @@
+"use client";
+import { useCallback, useRef } from "react";
+import { useEditorContext } from "./useEditorState";
+import type { CanvasElement, TextProps, ImageProps } from "./types";
+
+/** Render a single text element */
+function TextElement({ el }: { el: CanvasElement }) {
+  const p = el.props as TextProps;
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        fontFamily: p.fontFamily,
+        fontSize: p.fontSize,
+        fontWeight: p.fontWeight,
+        fontStyle: p.fontStyle,
+        color: p.color,
+        backgroundColor: p.backgroundColor || "transparent",
+        textAlign: p.textAlign,
+        lineHeight: p.lineHeight,
+        letterSpacing: p.letterSpacing,
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+        userSelect: "none",
+      }}
+    >
+      {p.text}
+    </div>
+  );
+}
+
+/** Render a single image element */
+function ImageElement({ el }: { el: CanvasElement }) {
+  const p = el.props as ImageProps;
+  return (
+    <img
+      src={p.src}
+      alt=""
+      draggable={false}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: p.objectFit,
+        borderRadius: "inherit",
+        display: "block",
+        userSelect: "none",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+/** Render a single canvas element wrapper (absolute positioned) */
+function CanvasElementWrapper({
+  el,
+  isSelected,
+  onSelect,
+}: {
+  el: CanvasElement;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (el.locked) return;
+      e.stopPropagation();
+      onSelect(el.id);
+    },
+    [el.id, el.locked, onSelect],
+  );
+
+  const shadow = el.shadow
+    ? `${el.shadow.offsetX}px ${el.shadow.offsetY}px ${el.shadow.blur}px ${el.shadow.spread}px ${el.shadow.color}`
+    : "none";
+
+  return (
+    <div
+      data-element-id={el.id}
+      onPointerDown={handlePointerDown}
+      style={{
+        position: "absolute",
+        top: el.top,
+        left: el.left,
+        width: el.width,
+        height: el.height === "auto" ? "auto" : el.height,
+        zIndex: el.zIndex,
+        opacity: el.opacity,
+        borderRadius: el.borderRadius,
+        border:
+          el.border.width > 0
+            ? `${el.border.width}px ${el.border.style} ${el.border.color}`
+            : "none",
+        boxShadow: shadow,
+        transform: `rotate(${el.rotation}deg) scale(${el.scaleX}, ${el.scaleY})`,
+        cursor: el.locked ? "default" : "move",
+        outline: isSelected ? "2px dashed #3b82f6" : "none",
+        outlineOffset: 2,
+        boxSizing: "border-box",
+        display: el.visible ? "block" : "none",
+      }}
+    >
+      {el.type === "text" && <TextElement el={el} />}
+      {(el.type === "image" || el.type === "sticker") && <ImageElement el={el} />}
+    </div>
+  );
+}
+
+/** Main canvas renderer */
+export function CanvasRenderer() {
+  const { state, dispatch } = useEditorContext();
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      dispatch({ type: "SNAPSHOT" });
+      dispatch({ type: "SELECT", id });
+    },
+    [dispatch],
+  );
+
+  const handleCanvasClick = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.target === canvasRef.current) {
+        dispatch({ type: "SELECT", id: null });
+      }
+    },
+    [dispatch],
+  );
+
+  const sortedElements = [...state.elements].sort(
+    (a, b) => a.zIndex - b.zIndex,
+  );
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        overflow: "auto",
+        display: "flex",
+        justifyContent: "center",
+        paddingTop: 56,
+        paddingBottom: 200,
+        background: "#e5e7eb",
+      }}
+    >
+      <div
+        ref={canvasRef}
+        onPointerDown={handleCanvasClick}
+        style={{
+          position: "relative",
+          width: state.canvasWidth,
+          minHeight: state.canvasHeight,
+          background: state.canvasBackground,
+          transform: `scale(${state.zoom})`,
+          transformOrigin: "top center",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
+        }}
+      >
+        {sortedElements.map((el) => (
+          <CanvasElementWrapper
+            key={el.id}
+            el={el}
+            isSelected={state.selectedId === el.id}
+            onSelect={handleSelect}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
