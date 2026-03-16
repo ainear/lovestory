@@ -1,124 +1,71 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PLANS, PLAN_IDS, formatPrice, type PlanId } from "@/config/plans";
 
 export const metadata: Metadata = {
   title: "Bảng giá — LoveStory",
-  description: "Chọn gói phù hợp. Miễn phí bắt đầu, nâng cấp khi bạn sẵn sàng.",
+  description:
+    "Chọn gói phù hợp. Miễn phí bắt đầu, nâng cấp khi bạn sẵn sàng.",
 };
 
-const PLANS = [
+/* ─── feature comparison table rows ─── */
+interface FeatureRow {
+  label: string;
+  values: Record<PlanId, string | boolean>;
+}
+
+const FEATURE_ROWS: FeatureRow[] = [
   {
-    name: "Miễn phí",
-    price: 0,
-    priceLabel: "0₫",
-    period: "/mãi mãi",
-    badge: null,
-    color: "#6b7280",
-    gradient: "linear-gradient(135deg, #f9fafb, #f3f4f6)",
-    border: "#e5e7eb",
-    cta: "Bắt đầu miễn phí",
-    ctaHref: "/login",
-    ctaStyle: {
-      background: "#fff",
-      border: "2px solid #e5e7eb",
-      color: "#374151",
-    },
-    features: [
-      { text: "1 thiệp cưới online", included: true },
-      { text: "Tất cả mẫu thiệp", included: true },
-      { text: "RSVP + Lời chúc", included: true },
-      { text: "QR mừng cưới", included: true },
-      { text: "Link cá nhân hóa (?guest=)", included: true },
-      { text: "Photo slideshow", included: true },
-      { text: "Watermark LoveStory", included: false },
-      { text: "Nhạc nền tùy chọn", included: false },
-      { text: "Nhiều thiệp", included: false },
-      { text: "AI Video", included: false },
-    ],
+    label: "Số thiệp",
+    values: { free: "1", basic: "3", premium: "5" },
   },
   {
-    name: "Basic",
-    price: 199000,
-    priceLabel: "199.000₫",
-    period: "/1 lần",
-    badge: null,
-    color: "#3b82f6",
-    gradient: "linear-gradient(135deg, #dbeafe, #eff6ff)",
-    border: "#93c5fd",
-    cta: "Nâng cấp Basic",
-    ctaHref: "/dashboard/my-plan",
-    ctaStyle: {
-      background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-      color: "#fff",
-    },
-    features: [
-      { text: "5 thiệp cưới online", included: true },
-      { text: "Tất cả mẫu thiệp", included: true },
-      { text: "RSVP + Lời chúc + QR", included: true },
-      { text: "Nhạc nền đầy đủ", included: true },
-      { text: "Không watermark", included: true },
-      { text: "YouTube embed", included: true },
-      { text: "Export CSV khách mời", included: true },
-      { text: "Hỗ trợ ưu tiên", included: true },
-      { text: "AI Video", included: false },
-      { text: "Video 4K", included: false },
-    ],
+    label: "Thời gian lưu",
+    values: { free: "6 tháng", basic: "2 năm", premium: "5 năm" },
   },
   {
-    name: "Pro",
-    price: 499000,
-    priceLabel: "499.000₫",
-    period: "/1 lần",
-    badge: "🔥 Phổ biến nhất",
-    color: "#ec4899",
-    gradient: "linear-gradient(135deg, #fce7f3, #fdf2f8)",
-    border: "#f9a8d4",
-    cta: "Nâng cấp Pro",
-    ctaHref: "/dashboard/my-plan",
-    ctaStyle: {
-      background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-      color: "#fff",
-    },
-    features: [
-      { text: "Không giới hạn thiệp", included: true },
-      { text: "Tất cả Basic features", included: true },
-      { text: "AI Video Generator", included: true },
-      { text: "Video 1080p Full HD", included: true },
-      { text: "10 AI video credits/tháng", included: true },
-      { text: "Template độc quyền Pro", included: true },
-      { text: "Domain tùy chỉnh (soon)", included: true },
-      { text: "Analytics nâng cao", included: true },
-      { text: "Video 4K", included: false },
-      { text: "White-label", included: false },
-    ],
+    label: "Ảnh tải lên",
+    values: { free: "10", basic: "50", premium: "100" },
   },
   {
-    name: "Premium",
-    price: 1290000,
-    priceLabel: "1.290.000₫",
-    period: "/1 lần",
-    badge: "💎 Cao cấp",
-    color: "#f59e0b",
-    gradient: "linear-gradient(135deg, #fef3c7, #fffbeb)",
-    border: "#fbbf24",
-    cta: "Liên hệ tư vấn",
-    ctaHref: "mailto:hello@7app.online",
-    ctaStyle: {
-      background: "linear-gradient(135deg, #f59e0b, #d97706)",
-      color: "#fff",
-    },
-    features: [
-      { text: "Tất cả Pro features", included: true },
-      { text: "Video 4K Ultra HD", included: true },
-      { text: "Credits AI không giới hạn", included: true },
-      { text: "White-label (tên studio)", included: true },
-      { text: "API riêng", included: true },
-      { text: "Dedicated support", included: true },
-      { text: "Custom domain / subdomain", included: true },
-      { text: "Training & onboarding", included: true },
-      { text: "SLA 99.9% uptime", included: true },
-      { text: "Ưu đãi event volume", included: true },
-    ],
+    label: "Lượt xem/tháng",
+    values: { free: "300", basic: "10,000", premium: "50,000" },
+  },
+  {
+    label: "Album ảnh",
+    values: { free: false, basic: true, premium: true },
+  },
+  {
+    label: "YouTube embed",
+    values: { free: false, basic: true, premium: true },
+  },
+  {
+    label: "Font tùy chỉnh",
+    values: { free: false, basic: false, premium: true },
+  },
+  {
+    label: "Form tùy chỉnh",
+    values: { free: false, basic: false, premium: true },
+  },
+  {
+    label: "Mẫu Premium",
+    values: { free: false, basic: false, premium: true },
+  },
+  {
+    label: "Nhạc nền",
+    values: { free: true, basic: true, premium: true },
+  },
+  {
+    label: "RSVP",
+    values: { free: true, basic: true, premium: true },
+  },
+  {
+    label: "QR Bank",
+    values: { free: true, basic: true, premium: true },
+  },
+  {
+    label: "Hiệu ứng",
+    values: { free: true, basic: true, premium: true },
   },
 ];
 
@@ -136,358 +83,273 @@ const FAQ = [
     a: "Chúng tôi hỗ trợ chuyển khoản ngân hàng, MoMo, VNPay, ZaloPay thông qua SePay.",
   },
   {
-    q: "AI Video là gì?",
-    a: "AI Video tự động tạo video slideshow từ ảnh của bạn với hiệu ứng Ken Burns, transitions đẹp và nhạc nền. Chỉ cần upload ảnh và AI làm phần còn lại.",
-  },
-  {
     q: "Thiệp có hoạt động trên mobile không?",
     a: "Hoàn toàn! Tất cả thiệp được tối ưu cho mobile-first. Khách mời chỉ cần click link là xem được ngay.",
   },
 ];
 
+function CellValue({ value }: { value: string | boolean }) {
+  if (typeof value === "string") {
+    return <span className="text-sm font-semibold text-gray-800">{value}</span>;
+  }
+  return value ? (
+    <span className="text-green-500 text-lg">&#10003;</span>
+  ) : (
+    <span className="text-gray-300 text-lg">&#10005;</span>
+  );
+}
+
 export default function PricingPage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f9fafb",
-        fontFamily: "'Inter', -apple-system, sans-serif",
-      }}
-    >
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div
-        style={{
-          background: "#fff",
-          borderBottom: "1px solid #e5e7eb",
-          padding: "0 24px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            height: 60,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              textDecoration: "none",
-            }}
-          >
-            <span style={{ fontSize: 22 }}>💕</span>
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+      <header className="bg-white border-b border-gray-200 px-6">
+        <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 no-underline">
+            <span className="text-[22px]">&#x1F495;</span>
+            <span className="text-lg font-bold bg-gradient-to-br from-pink-400 to-purple-400 bg-clip-text text-transparent">
               LoveStory
             </span>
           </Link>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div className="flex gap-3">
             <Link
               href="/templates"
-              style={{
-                padding: "8px 16px",
-                borderRadius: 8,
-                border: "1px solid #e5e7eb",
-                background: "#fff",
-                color: "#374151",
-                fontSize: 13,
-                fontWeight: 500,
-                textDecoration: "none",
-              }}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 no-underline"
             >
               Mẫu thiệp
             </Link>
             <Link
               href="/login"
-              style={{
-                padding: "8px 20px",
-                borderRadius: 8,
-                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
+              className="rounded-lg bg-gradient-to-br from-pink-400 to-purple-400 px-5 py-2 text-[13px] font-semibold text-white no-underline"
             >
               Bắt đầu miễn phí
             </Link>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "60px 24px" }}>
+      <div className="mx-auto max-w-[1200px] px-6 py-16">
         {/* Headline */}
-        <div style={{ textAlign: "center", marginBottom: 60 }}>
-          <p
-            style={{
-              fontSize: 12,
-              color: "#ec4899",
-              fontWeight: 700,
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              margin: "0 0 12px",
-            }}
-          >
-            💳 Bảng giá
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[3px] text-pink-500">
+            Bảng giá
           </p>
-          <h1
-            style={{
-              fontSize: 40,
-              fontWeight: 800,
-              color: "#1f2937",
-              margin: "0 0 12px",
-              lineHeight: 1.2,
-            }}
-          >
+          <h1 className="mb-3 text-4xl font-extrabold leading-tight text-gray-900">
             Chọn gói phù hợp
             <br />
-            <span
-              style={{
-                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+            <span className="bg-gradient-to-br from-pink-400 to-purple-400 bg-clip-text text-transparent">
               bắt đầu miễn phí
             </span>
           </h1>
-          <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>
+          <p className="text-base text-gray-500">
             Không cần thẻ tín dụng. Nâng cấp khi bạn cần thêm tính năng.
           </p>
         </div>
 
-        {/* Pricing Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 20,
-            marginBottom: 80,
-          }}
-        >
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              style={{
-                background: "#fff",
-                borderRadius: 20,
-                border: `2px solid ${plan.border}`,
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: plan.badge
-                  ? "0 8px 32px rgba(255,107,157,0.12)"
-                  : "0 2px 8px rgba(0,0,0,0.06)",
-                position: "relative",
-              }}
-            >
-              {plan.badge && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 16,
-                    right: 16,
-                    padding: "4px 10px",
-                    borderRadius: 20,
-                    background: plan.color,
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 700,
-                  }}
-                >
-                  {plan.badge}
-                </div>
-              )}
-              {/* Plan header */}
+        {/* ─── Pricing Cards ─── */}
+        <div className="mb-20 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {PLAN_IDS.map((planId) => {
+            const plan = PLANS[planId];
+            const isPopular = planId === "basic";
+            const isFree = planId === "free";
+
+            return (
               <div
-                style={{ padding: "28px 24px 20px", background: plan.gradient }}
+                key={planId}
+                className={`relative flex flex-col overflow-hidden rounded-2xl border-2 bg-white ${
+                  isPopular
+                    ? "border-blue-400 shadow-lg shadow-blue-100"
+                    : "border-gray-200 shadow-sm"
+                }`}
               >
-                <p
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: plan.color,
-                    margin: "0 0 8px",
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                  }}
-                >
-                  {plan.name}
-                </p>
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 4 }}
-                >
-                  <span
-                    style={{ fontSize: 36, fontWeight: 800, color: "#1f2937" }}
+                {/* Badge */}
+                {plan.badge && (
+                  <div
+                    className={`absolute right-4 top-4 rounded-full px-3 py-1 text-[10px] font-bold text-white ${
+                      isPopular ? "bg-blue-500" : "bg-amber-500"
+                    }`}
                   >
-                    {plan.priceLabel}
-                  </span>
-                  <span style={{ fontSize: 13, color: "#9ca3af" }}>
-                    {plan.period}
-                  </span>
+                    {isPopular ? "&#x1F525; " : ""}
+                    {plan.badge}
+                  </div>
+                )}
+
+                {/* Plan header */}
+                <div
+                  className={`px-6 pb-5 pt-7 ${
+                    isPopular
+                      ? "bg-gradient-to-br from-blue-50 to-blue-100/50"
+                      : isFree
+                        ? "bg-gradient-to-br from-gray-50 to-gray-100/50"
+                        : "bg-gradient-to-br from-amber-50 to-amber-100/50"
+                  }`}
+                >
+                  <p
+                    className={`mb-2 text-[13px] font-bold uppercase tracking-wide ${
+                      isPopular
+                        ? "text-blue-500"
+                        : isFree
+                          ? "text-gray-500"
+                          : "text-amber-600"
+                    }`}
+                  >
+                    {plan.name}
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-gray-900">
+                      {formatPrice(plan.price)}
+                    </span>
+                    {!isFree && (
+                      <span className="text-[13px] text-gray-400">/1 lần</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick features */}
+                <div className="flex flex-1 flex-col gap-2.5 px-6 py-5">
+                  <QuickFeature text={`${plan.maxCards} thiệp cưới`} />
+                  <QuickFeature text={`Lưu ${plan.storageDuration}`} />
+                  <QuickFeature text={`${plan.maxImages} ảnh tải lên`} />
+                  <QuickFeature
+                    text={`${plan.maxViewsPerMonth.toLocaleString("vi-VN")} lượt xem/tháng`}
+                  />
+                  {plan.features.albumWidget && (
+                    <QuickFeature text="Album ảnh" />
+                  )}
+                  {plan.features.youtubeEmbed && (
+                    <QuickFeature text="YouTube embed" />
+                  )}
+                  {plan.features.customFonts && (
+                    <QuickFeature text="Font tùy chỉnh" />
+                  )}
+                  {plan.features.customForms && (
+                    <QuickFeature text="Form tùy chỉnh" />
+                  )}
+                  {plan.features.premiumTemplates && (
+                    <QuickFeature text="Mẫu Premium" />
+                  )}
+                  <QuickFeature text="Nhạc nền + RSVP + QR + Hiệu ứng" />
+                </div>
+
+                {/* CTA */}
+                <div className="px-6 pb-6">
+                  <Link
+                    href={
+                      isFree
+                        ? "/editor/new"
+                        : `/checkout?plan=${planId}`
+                    }
+                    className={`block rounded-xl py-3 text-center text-sm font-bold no-underline transition-opacity hover:opacity-90 ${
+                      isFree
+                        ? "border-2 border-gray-200 bg-white text-gray-700"
+                        : isPopular
+                          ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+                          : "bg-gradient-to-br from-amber-500 to-amber-600 text-white"
+                    }`}
+                  >
+                    {isFree ? "Bắt đầu miễn phí" : "Chọn gói"}
+                  </Link>
                 </div>
               </div>
-              {/* Features */}
-              <div style={{ padding: "20px 24px", flex: 1 }}>
-                <ul
-                  style={
-                    {
-                      list: "none",
-                      margin: 0,
-                      padding: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 10,
-                    } as React.CSSProperties
-                  }
-                >
-                  {plan.features.map((f, i) => (
-                    <li
-                      key={i}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        fontSize: 13,
-                        color: f.included ? "#1f2937" : "#9ca3af",
-                      }}
-                    >
-                      <span style={{ fontSize: 14, flexShrink: 0 }}>
-                        {f.included ? "✅" : "✕"}
-                      </span>
-                      {f.text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {/* CTA */}
-              <div style={{ padding: "0 24px 24px" }}>
-                <Link
-                  href={plan.ctaHref}
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    padding: "12px",
-                    borderRadius: 12,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    transition: "opacity 0.15s",
-                    ...plan.ctaStyle,
-                  }}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Value props */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 24,
-            marginBottom: 80,
-          }}
-        >
+        {/* ─── Feature Comparison Table ─── */}
+        <div className="mb-20 overflow-x-auto">
+          <h2 className="mb-8 text-center text-2xl font-bold text-gray-900">
+            So sánh chi tiết
+          </h2>
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="py-3 pr-4 text-left font-semibold text-gray-500">
+                  Tính năng
+                </th>
+                {PLAN_IDS.map((id) => (
+                  <th
+                    key={id}
+                    className={`px-4 py-3 text-center font-bold ${
+                      id === "basic" ? "text-blue-600" : "text-gray-800"
+                    }`}
+                  >
+                    {PLANS[id].name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {FEATURE_ROWS.map((row, i) => (
+                <tr
+                  key={row.label}
+                  className={i % 2 === 0 ? "bg-gray-50/50" : ""}
+                >
+                  <td className="py-3 pr-4 font-medium text-gray-700">
+                    {row.label}
+                  </td>
+                  {PLAN_IDS.map((id) => (
+                    <td key={id} className="px-4 py-3 text-center">
+                      <CellValue value={row.values[id]} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ─── Value Props ─── */}
+        <div className="mb-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              icon: "🔒",
+              icon: "&#x1F512;",
               title: "Bảo mật tuyệt đối",
               desc: "Dữ liệu mã hóa, không chia sẻ thông tin khách",
             },
             {
-              icon: "⚡",
+              icon: "&#x26A1;",
               title: "Xuất bản ngay",
               desc: "Thiệp online trong vài phút, không cần kỹ thuật",
             },
             {
-              icon: "📱",
+              icon: "&#x1F4F1;",
               title: "Mobile-first",
               desc: "Khách xem đẹp trên mọi thiết bị",
             },
             {
-              icon: "🇻🇳",
+              icon: "&#x1F1FB;&#x1F1F3;",
               title: "Thanh toán VN",
               desc: "SePay, MoMo, VNPay, chuyển khoản",
             },
           ].map((v, i) => (
-            <div key={i} style={{ textAlign: "center", padding: 24 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>{v.icon}</div>
-              <p
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "#1f2937",
-                  margin: "0 0 6px",
-                }}
-              >
+            <div key={i} className="p-6 text-center">
+              <div
+                className="mb-3 text-4xl"
+                dangerouslySetInnerHTML={{ __html: v.icon }}
+              />
+              <p className="mb-1.5 text-[15px] font-bold text-gray-900">
                 {v.title}
               </p>
-              <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
-                {v.desc}
-              </p>
+              <p className="text-[13px] text-gray-500">{v.desc}</p>
             </div>
           ))}
         </div>
 
-        {/* FAQ */}
-        <div style={{ maxWidth: 720, margin: "0 auto", marginBottom: 60 }}>
-          <h2
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#1f2937",
-              textAlign: "center",
-              margin: "0 0 32px",
-            }}
-          >
+        {/* ─── FAQ ─── */}
+        <div className="mx-auto mb-16 max-w-[720px]">
+          <h2 className="mb-8 text-center text-[28px] font-bold text-gray-900">
             Câu hỏi thường gặp
           </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="flex flex-col gap-4">
             {FAQ.map((item, i) => (
               <div
                 key={i}
-                style={{
-                  background: "#fff",
-                  borderRadius: 16,
-                  padding: "20px 24px",
-                  border: "1px solid #e5e7eb",
-                }}
+                className="rounded-2xl border border-gray-200 bg-white px-6 py-5"
               >
-                <p
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: "#1f2937",
-                    margin: "0 0 8px",
-                  }}
-                >
-                  ❓ {item.q}
+                <p className="mb-2 text-[15px] font-semibold text-gray-900">
+                  {item.q}
                 </p>
-                <p
-                  style={{
-                    fontSize: 14,
-                    color: "#6b7280",
-                    margin: 0,
-                    lineHeight: 1.6,
-                  }}
-                >
+                <p className="text-sm leading-relaxed text-gray-500">
                   {item.a}
                 </p>
               </div>
@@ -495,50 +357,32 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Final CTA */}
-        <div
-          style={{
-            textAlign: "center",
-            padding: "48px 24px",
-            borderRadius: 24,
-            background:
-              "linear-gradient(135deg, rgba(255,107,157,0.06), rgba(192,132,252,0.06))",
-            border: "1px solid rgba(192,132,252,0.15)",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              color: "#1f2937",
-              margin: "0 0 8px",
-            }}
-          >
+        {/* ─── Final CTA ─── */}
+        <div className="rounded-3xl border border-purple-200/40 bg-gradient-to-br from-pink-50/60 to-purple-50/60 px-6 py-12 text-center">
+          <h2 className="mb-2 text-[26px] font-bold text-gray-900">
             Sẵn sàng tạo thiệp cưới đẹp?
           </h2>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>
-            Miễn phí · Không thẻ tín dụng · Xuất bản ngay
+          <p className="mb-6 text-sm text-gray-500">
+            Miễn phí &middot; Không thẻ tín dụng &middot; Xuất bản ngay
           </p>
           <Link
-            href="/login"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "14px 36px",
-              borderRadius: 14,
-              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: 700,
-              textDecoration: "none",
-              boxShadow: "0 8px 32px rgba(255,107,157,0.35)",
-            }}
+            href="/editor/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-pink-400 to-purple-400 px-9 py-3.5 text-base font-bold text-white no-underline shadow-lg shadow-pink-200/50 transition-opacity hover:opacity-90"
           >
-            💌 Bắt đầu miễn phí ngay
+            Bắt đầu miễn phí ngay
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── tiny helper ─── */
+function QuickFeature({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-2 text-[13px] text-gray-700">
+      <span className="text-green-500 text-sm">&#10003;</span>
+      {text}
     </div>
   );
 }
