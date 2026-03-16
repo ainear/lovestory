@@ -2,12 +2,16 @@ import { createClient as createServerClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-if (!ADMIN_EMAIL) {
-  throw new Error("ADMIN_EMAIL environment variable is required");
-}
-
 export async function POST(req: NextRequest) {
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  if (!ADMIN_EMAIL) {
+    console.error("ADMIN_EMAIL environment variable is not set");
+    return NextResponse.json(
+      { error: "Server misconfigured" },
+      { status: 500 },
+    );
+  }
+
   // Auth check — must be admin
   const supabase = await createClient();
   const {
