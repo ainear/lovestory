@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
+import { PLAN_PRICES } from "@/config/plans";
 
 const SEPAY_MERCHANT_ID = process.env.SEPAY_MERCHANT_ID!;
 const SEPAY_SECRET_KEY = process.env.SEPAY_SECRET_KEY!;
@@ -10,12 +11,6 @@ const SEPAY_CHECKOUT_URL = SEPAY_SANDBOX
   : "https://pay.sepay.vn/v1/checkout/init";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://7app.online";
-
-// SEC-04: Authoritative server-side price list — never trust client-sent amount
-const PLAN_PRICES: Record<string, number> = {
-  basic: 199000,
-  premium: 299000,
-};
 
 interface CreateOrderBody {
   plan: "basic" | "premium";
