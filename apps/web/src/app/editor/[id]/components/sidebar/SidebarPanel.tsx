@@ -56,8 +56,17 @@ interface SidebarPanelProps {
   setMusicUrl: (val: string) => void;
   musicName: string;
   setMusicName: (val: string) => void;
-  musicFilter: "all" | "intl" | "vpop";
-  setMusicFilter: (val: "all" | "intl" | "vpop") => void;
+  musicFilter:
+    | "all"
+    | "intl"
+    | "vpop"
+    | "acoustic"
+    | "piano"
+    | "kpop"
+    | "classical";
+  setMusicFilter: (
+    val: "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical",
+  ) => void;
   musicSearch: string;
   setMusicSearch: (val: string) => void;
   previewId: string | null;

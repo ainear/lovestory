@@ -118,9 +118,9 @@ function CraftEditorInner({
   /* Phase 4: Support + Backup */
   const [showBackupRecovery, setShowBackupRecovery] = useState(false);
   const [bugReportText, setBugReportText] = useState("");
-  const [musicFilter, setMusicFilter] = useState<"all" | "intl" | "vpop">(
-    "all",
-  );
+  const [musicFilter, setMusicFilter] = useState<
+    "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical"
+  >("all");
   const [musicSearch, setMusicSearch] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);

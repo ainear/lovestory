@@ -15,6 +15,26 @@ import {
   Allura,
   Pinyon_Script,
   Cinzel_Decorative,
+  Parisienne,
+  Tangerine,
+  Petit_Formal_Script,
+  Italianno,
+  Lovers_Quarrel,
+  Rouge_Script,
+  Carattere,
+  Cormorant_Infant,
+  Libre_Baskerville,
+  EB_Garamond,
+  Crimson_Text,
+  Spectral,
+  Raleway,
+  Josefin_Sans,
+  Poppins,
+  Cinzel,
+  Playfair_Display_SC,
+  Bodoni_Moda,
+  Tenor_Sans,
+  Antic_Didone,
 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -128,6 +148,146 @@ const cinzelDecorative = Cinzel_Decorative({
   display: "swap",
 });
 
+const parisienne = Parisienne({
+  variable: "--font-parisienne",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const tangerine = Tangerine({
+  variable: "--font-tangerine",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const petitFormalScript = Petit_Formal_Script({
+  variable: "--font-petit-formal-script",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const italianno = Italianno({
+  variable: "--font-italianno",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const loversQuarrel = Lovers_Quarrel({
+  variable: "--font-lovers-quarrel",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const rougeScript = Rouge_Script({
+  variable: "--font-rouge-script",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const carattere = Carattere({
+  variable: "--font-carattere",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const cormorantInfant = Cormorant_Infant({
+  variable: "--font-cormorant-infant",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const libreBaskerville = Libre_Baskerville({
+  variable: "--font-libre-baskerville",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const crimsonText = Crimson_Text({
+  variable: "--font-crimson-text",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const spectral = Spectral({
+  variable: "--font-spectral",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const josefinSans = Josefin_Sans({
+  variable: "--font-josefin-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const playfairDisplaySC = Playfair_Display_SC({
+  variable: "--font-playfair-display-sc",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const bodoniModa = Bodoni_Moda({
+  variable: "--font-bodoni-moda",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const tenorSans = Tenor_Sans({
+  variable: "--font-tenor-sans",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const anticDidone = Antic_Didone({
+  variable: "--font-antic-didone",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
 /*
  * CineLove custom fonts → free Google Font equivalents:
  * - BucThu (Vietnamese decorative/brush) → Dancing Script / Pacifico
@@ -195,7 +355,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} ${sacramento.variable} ${alexBrush.variable} ${satisfy.variable} ${allura.variable} ${pinyonScript.variable} ${cinzelDecorative.variable} antialiased`}
+        className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} ${sacramento.variable} ${alexBrush.variable} ${satisfy.variable} ${allura.variable} ${pinyonScript.variable} ${cinzelDecorative.variable} ${parisienne.variable} ${tangerine.variable} ${petitFormalScript.variable} ${italianno.variable} ${loversQuarrel.variable} ${rougeScript.variable} ${carattere.variable} ${cormorantInfant.variable} ${libreBaskerville.variable} ${ebGaramond.variable} ${crimsonText.variable} ${spectral.variable} ${raleway.variable} ${josefinSans.variable} ${poppins.variable} ${cinzel.variable} ${playfairDisplaySC.variable} ${bodoniModa.variable} ${tenorSans.variable} ${anticDidone.variable} antialiased`}
         style={{ margin: 0 }}
       >
         <TRPCProvider>{children}</TRPCProvider>

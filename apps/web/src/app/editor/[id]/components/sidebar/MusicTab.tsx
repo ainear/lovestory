@@ -9,8 +9,17 @@ interface MusicTabProps {
   setMusicUrl: (val: string) => void;
   musicName: string;
   setMusicName: (val: string) => void;
-  musicFilter: "all" | "intl" | "vpop";
-  setMusicFilter: (val: "all" | "intl" | "vpop") => void;
+  musicFilter:
+    | "all"
+    | "intl"
+    | "vpop"
+    | "acoustic"
+    | "piano"
+    | "kpop"
+    | "classical";
+  setMusicFilter: (
+    val: "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical",
+  ) => void;
   musicSearch: string;
   setMusicSearch: (val: string) => void;
   previewId: string | null;
@@ -42,8 +51,7 @@ export function MusicTab({
   triggerAutosave,
 }: MusicTabProps) {
   const filtered = MUSIC_PRESETS.filter((m) => {
-    if (musicFilter === "vpop" && m.cat !== "vpop") return false;
-    if (musicFilter === "intl" && m.cat !== "intl") return false;
+    if (musicFilter !== "all" && m.cat !== musicFilter) return false;
     if (
       musicSearch &&
       !m.label.toLowerCase().includes(musicSearch.toLowerCase())
@@ -169,8 +177,12 @@ export function MusicTab({
       <div style={{ display: "flex", gap: 6 }}>
         {[
           { id: "all" as const, label: "Tất cả" },
-          { id: "intl" as const, label: "Nhạc ngoại" },
           { id: "vpop" as const, label: "V-POP" },
+          { id: "intl" as const, label: "Nhạc ngoại" },
+          { id: "acoustic" as const, label: "🎸 Guitar" },
+          { id: "piano" as const, label: "🎹 Piano" },
+          { id: "kpop" as const, label: "🇰🇷 K-Pop" },
+          { id: "classical" as const, label: "🎻 Cổ điển" },
         ].map((cat) => (
           <button
             key={cat.id}
