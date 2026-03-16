@@ -2,10 +2,13 @@
 import { TEMPLATE_UNIQUE_PRESETS } from "@/server/data/template-presets";
 import { convertTemplateToCanvas } from "../[id]/components/canvas-engine/convertTemplate";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import UpgradeCTA from "@/components/UpgradeCTA";
+import Link from "next/link";
 
 // ════════════════════════════════════════════════
 // Sprint 55: Self-hosted — no more CDN proxy
@@ -2571,9 +2574,12 @@ function NewEditorInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const creatingRef = useRef(false);
+  const { config, canCreateProject, loading: subLoading } = useSubscription();
+  const [limitReached, setLimitReached] = useState(false);
+  const [projectCount, setProjectCount] = useState(0);
 
   useEffect(() => {
-    if (creatingRef.current) return;
+    if (creatingRef.current || subLoading) return;
     creatingRef.current = true;
 
     async function createProject() {
@@ -2593,6 +2599,21 @@ function NewEditorInner() {
         router.push("/login?redirect=/editor/new?template=" + templateSlug);
         return;
       }
+
+      // ── Plan limit check ──────────────────────────────────
+      const { count } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      const currentCount = count ?? 0;
+      if (!canCreateProject(currentCount)) {
+        setProjectCount(currentCount);
+        setLimitReached(true);
+        creatingRef.current = false;
+        return;
+      }
+      // ──────────────────────────────────────────────────────
 
       // Build initial canvas_json from template preset
       const canvasJson = buildTemplateCanvasJson(templateSlug);
@@ -2631,7 +2652,72 @@ function NewEditorInner() {
     }
 
     createProject();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [subLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Limit reached: show upgrade prompt ──
+  if (limitReached) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #fdf2f8, #faf5ff)",
+          gap: 24,
+          padding: 24,
+        }}
+      >
+        <div style={{ maxWidth: 480, width: "100%" }}>
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: 24,
+            }}
+          >
+            <p style={{ fontSize: 48, margin: "0 0 12px" }}>📋</p>
+            <h2
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: "#1f2937",
+                margin: "0 0 8px",
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Đã đạt giới hạn thiệp
+            </h2>
+            <p
+              style={{
+                fontSize: 14,
+                color: "#6b7280",
+                margin: 0,
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Bạn đang có {projectCount}/{config.maxCards} thiệp. Nâng cấp gói
+              để tạo thêm thiệp mới.
+            </p>
+          </div>
+          <UpgradeCTA feature="Tạo thêm thiệp" requiredPlan="basic" />
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Link
+              href="/dashboard/projects"
+              style={{
+                fontSize: 14,
+                color: "#6b7280",
+                textDecoration: "underline",
+                textUnderlineOffset: 2,
+              }}
+            >
+              Quay lại danh sách thiệp
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -2663,7 +2749,7 @@ function NewEditorInner() {
           fontFamily: "'Inter', sans-serif",
         }}
       >
-        💌 Đang tạo thiệp mới...
+        {subLoading ? "Đang kiểm tra gói..." : "Đang tạo thiệp mới..."}
       </p>
       <p
         style={{
