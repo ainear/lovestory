@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
       // Sprint 55: cinelove.me removed — templates are now self-hosted
     ],
   },
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+        ],
+      },
+    ];
+  },
   // Sprint 55: CDN proxy removed — all 75 thumbnails self-hosted in public/templates/
   // Backward-compatible redirect for old canvas_json data referencing /cinelove-cdn/
   async redirects() {

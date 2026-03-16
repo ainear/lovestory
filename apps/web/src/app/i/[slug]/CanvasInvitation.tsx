@@ -8,6 +8,31 @@
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
+import DOMPurify from "isomorphic-dompurify";
+
+/* ═══════ Security helpers ═══════ */
+
+function safeColor(val: string | undefined, fallback: string): string {
+  if (!val) return fallback;
+  if (
+    /^(#[0-9a-fA-F]{3,8}|rgba?\([\d\s,./%]+\)|hsla?\([\d\s,./%]+\)|[a-z]+|transparent|none)$/i.test(
+      val.trim(),
+    )
+  )
+    return val.trim();
+  return fallback;
+}
+
+function safeSrc(src: string | undefined): string {
+  if (!src) return "";
+  if (
+    src.startsWith("https://") ||
+    src.startsWith("/") ||
+    src.startsWith("data:image/")
+  )
+    return src;
+  return "";
+}
 
 /* ═══════ Types ═══════ */
 
@@ -748,7 +773,7 @@ function RenderElement({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={p.src}
+          src={safeSrc(p.src)}
           alt=""
           style={{
             width: "100%",
@@ -1240,7 +1265,7 @@ function RenderElement({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={src}
+                    src={safeSrc(src)}
                     alt={`Photo ${i + 1}`}
                     style={{
                       width: "100%",
@@ -1736,7 +1761,7 @@ function CraftV2Renderer({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={p.src || "/placeholder-couple.png"}
+            src={safeSrc(p.src) || "/placeholder-couple.png"}
             alt="Wedding"
             style={{
               width: "100%",
@@ -2055,7 +2080,7 @@ function CraftV2Renderer({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={src}
+                  src={safeSrc(src)}
                   alt={`Photo ${i + 1}`}
                   style={{
                     width: "100%",
@@ -2553,6 +2578,11 @@ function CraftV2Renderer({
           /currentColor/g,
           sColor,
         );
+        const cleanSvg = DOMPurify.sanitize(coloredSvg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+          FORBID_TAGS: ["script", "foreignObject"],
+          FORBID_ATTR: ["onclick", "onload", "onerror", "onmouseover"],
+        });
         return (
           <div
             key={nodeId}
@@ -2564,7 +2594,7 @@ function CraftV2Renderer({
               opacity: sOpacity,
             }}
             dangerouslySetInnerHTML={{
-              __html: coloredSvg.replace(
+              __html: cleanSvg.replace(
                 "<svg ",
                 `<svg width="${sSize}" height="${sSize}" `,
               ),
@@ -2624,8 +2654,8 @@ function CraftV2Renderer({
       };
       const svgStr = renderShapeSvg(
         p.shapeType || "rectangle",
-        p.fill || "#f9a8d4",
-        p.stroke || "#ec4899",
+        safeColor(p.fill, "#f9a8d4"),
+        safeColor(p.stroke, "#ec4899"),
         p.strokeWidth ?? 2,
       );
       return (
@@ -2806,9 +2836,10 @@ export function CanvasInvitation({
   // Detect v2 craft.js format
   const isCraftV2 = data?.engine === "craftjs" && data?.craftState;
 
-  const musicUrl = isCraftV2
+  const rawMusicUrl = isCraftV2
     ? data?.meta?.musicUrl || ""
     : data?.meta?.musicUrl || "";
+  const musicUrl = rawMusicUrl.startsWith("https://") ? rawMusicUrl : "";
   const musicName = isCraftV2
     ? data?.meta?.musicName || ""
     : data?.meta?.musicName || "";
