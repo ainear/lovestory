@@ -1188,6 +1188,250 @@ function RenderElement({
       );
     }
 
+    if (wt === "album") {
+      const images = ((p.albumImages as string) || "")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      return (
+        <div
+          style={{
+            ...wrapStyle,
+            background: "#fff",
+            borderRadius: 16,
+            padding: 14,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+            overflow: "hidden",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#374151",
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            {(p.label as string) || "Album ảnh cưới"}
+          </p>
+          {images.length > 0 ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 4,
+                flex: 1,
+                overflow: "hidden",
+              }}
+            >
+              {images.map((src: string, i: number) => (
+                <div
+                  key={i}
+                  style={{
+                    aspectRatio: "1",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    background: "#f3f4f6",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`Photo ${i + 1}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#9ca3af",
+                fontSize: 11,
+              }}
+            >
+              Chưa có ảnh
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (wt === "formbuilder") {
+      const fields = Array.isArray(p.fields)
+        ? (p.fields as Array<{
+            id?: string;
+            label?: string;
+            type?: string;
+            placeholder?: string;
+            options?: string[];
+            required?: boolean;
+          }>)
+        : [];
+      return (
+        <div
+          style={{
+            ...wrapStyle,
+            background: "rgba(255,255,255,0.9)",
+            borderRadius: 16,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#374151",
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            {(p.title as string) || "Biểu mẫu"}
+          </p>
+          {Boolean(p.subtitle) && (
+            <p
+              style={{
+                fontSize: 11,
+                color: "#6b7280",
+                margin: 0,
+                textAlign: "center",
+              }}
+            >
+              {p.subtitle as string}
+            </p>
+          )}
+          {fields.map(
+            (
+              field: {
+                id?: string;
+                label?: string;
+                type?: string;
+                placeholder?: string;
+                options?: string[];
+                required?: boolean;
+              },
+              idx: number,
+            ) => (
+              <div
+                key={field.id || idx}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 3,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#374151",
+                  }}
+                >
+                  {field.label || `Trường ${idx + 1}`}
+                  {field.required && (
+                    <span style={{ color: "#e11d48", marginLeft: 2 }}>*</span>
+                  )}
+                </label>
+                {field.type === "textarea" ? (
+                  <textarea
+                    placeholder={field.placeholder || ""}
+                    rows={3}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                      width: "100%",
+                      boxSizing: "border-box" as const,
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                ) : field.type === "select" ? (
+                  <select
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                      width: "100%",
+                      boxSizing: "border-box" as const,
+                      background: "#fff",
+                    }}
+                  >
+                    <option value="">{field.placeholder || "Chọn..."}</option>
+                    {(field.options || []).map((opt: string) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : field.type === "checkbox" ? (
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 12,
+                      color: "#374151",
+                    }}
+                  >
+                    <input type="checkbox" />
+                    {field.placeholder || field.label || ""}
+                  </label>
+                ) : (
+                  <input
+                    type={field.type === "tel" ? "tel" : "text"}
+                    placeholder={field.placeholder || ""}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                      width: "100%",
+                      boxSizing: "border-box" as const,
+                    }}
+                  />
+                )}
+              </div>
+            ),
+          )}
+          <button
+            style={{
+              padding: "10px 20px",
+              borderRadius: 99,
+              border: "none",
+              background: (p.buttonColor as string) || "#e11d48",
+              color: "#fff",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              marginTop: 4,
+            }}
+          >
+            {(p.buttonText as string) || "Gửi"}
+          </button>
+        </div>
+      );
+    }
+
     // Fallback for unknown widget types
     return <div style={wrapStyle} />;
   }
@@ -2419,10 +2663,125 @@ interface CanvasInvitationProps {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseCanvasJson(raw: string): any | null {
   try {
-    return JSON.parse(raw);
+    const data = JSON.parse(raw);
+    if (!data) return null;
+
+    // Normalize editor format → viewer format
+    // Editor uses: canvasWidth, canvasHeight, canvasBackground, top, left
+    // Viewer uses: canvas.width, canvas.height, canvas.bg, x, y
+    if (data.canvasWidth && !data.canvas) {
+      data.canvas = {
+        width: data.canvasWidth,
+        height: data.canvasHeight || 5000,
+        bg:
+          data.canvasBackground ||
+          "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 30%, #fff 100%)",
+      };
+    }
+
+    if (Array.isArray(data.elements)) {
+      data.elements = data.elements.map(
+        (el: Record<string, unknown>): CanvasElementData => {
+          const props = (el.props || {}) as Record<string, unknown>;
+          const border = el.border as {
+            width?: number;
+            color?: string;
+            style?: string;
+          } | null;
+          const shadow = el.shadow as {
+            offsetX?: number;
+            offsetY?: number;
+            blur?: number;
+            spread?: number;
+            color?: string;
+          } | null;
+          const entrance = el.entrance as { type?: string } | null;
+          const continuous = el.continuous as { type?: string } | null;
+
+          // Build boxShadow string from shadow object
+          let boxShadow: string | undefined;
+          if (shadow) {
+            boxShadow = `${shadow.offsetX || 0}px ${shadow.offsetY || 0}px ${shadow.blur || 0}px ${shadow.spread || 0}px ${shadow.color || "rgba(0,0,0,0.1)"}`;
+          }
+
+          return {
+            id:
+              (el.id as string) || `el-${Math.random().toString(36).slice(2)}`,
+            type: (el.type as CanvasElementData["type"]) || "text",
+            x: (el.x as number) ?? (el.left as number) ?? 0,
+            y: (el.y as number) ?? (el.top as number) ?? 0,
+            width: (el.width as number) || 200,
+            height:
+              typeof el.height === "number"
+                ? el.height
+                : el.type === "text"
+                  ? 40
+                  : 200,
+            rotation: (el.rotation as number) || 0,
+            opacity: (el.opacity as number) ?? 1,
+            zIndex: (el.zIndex as number) || 0,
+            locked: (el.locked as boolean) || false,
+            animation: {
+              entrance:
+                entrance?.type && entrance.type !== "none"
+                  ? (entrance.type as CanvasElementData["animation"] extends
+                      | undefined
+                      | { entrance?: infer E }
+                      ? E
+                      : never)
+                  : undefined,
+              loop:
+                continuous?.type && continuous.type !== "none"
+                  ? (continuous.type as CanvasElementData["animation"] extends
+                      | undefined
+                      | { loop?: infer L }
+                      ? L
+                      : never)
+                  : undefined,
+            } as ElementAnimationData,
+            props: {
+              ...props,
+              borderRadius:
+                props.borderRadius ?? (el.borderRadius as number) ?? undefined,
+              borderWidth: props.borderWidth ?? border?.width ?? undefined,
+              borderColor: props.borderColor ?? border?.color ?? undefined,
+              borderStyle: props.borderStyle ?? border?.style ?? undefined,
+              boxShadow: (props.boxShadow as string) ?? boxShadow ?? undefined,
+            },
+          } as CanvasElementData;
+        },
+      );
+    }
+
+    return data;
   } catch {
     return null;
   }
+}
+
+const CANVAS_DESIGN_WIDTH = 420;
+
+/** Hook: responsive scale factor for screens narrower than the design width */
+function useResponsiveScale(designWidth: number = CANVAS_DESIGN_WIDTH) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const w = el.clientWidth;
+      setScale(w < designWidth ? w / designWidth : 1);
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [designWidth]);
+
+  return { containerRef, scale };
 }
 
 export function CanvasInvitation({
@@ -2433,6 +2792,8 @@ export function CanvasInvitation({
 }: CanvasInvitationProps) {
   const data = useMemo(() => parseCanvasJson(canvasJson), [canvasJson]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { containerRef: scaleRef, scale } =
+    useResponsiveScale(CANVAS_DESIGN_WIDTH);
   const [copied, setCopied] = useState(false);
   const [rsvpName, setRsvpName] = useState(guestName || "");
   const [rsvpAttend, setRsvpAttend] = useState<"yes" | "no" | null>(null);
@@ -2571,8 +2932,12 @@ export function CanvasInvitation({
 
   return (
     <div
+      ref={scaleRef}
       style={{
         minHeight: "100vh",
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
         background: "#000",
         fontFamily: "'Inter', sans-serif",
       }}
@@ -2612,16 +2977,11 @@ export function CanvasInvitation({
                 @keyframes slideInUp { from { opacity: 0; transform: translateY(100%) } to { opacity: 1; transform: translateY(0) } }
                 html { scroll-behavior: smooth; }
                 body { overscroll-behavior-y: none; }
-                .canvas-section-v1 { width: 100%; max-width: 420px; box-sizing: border-box; }
-                @media (max-width: 420px) {
-                  .canvas-section-v1 { max-width: 100vw; }
-                  .canvas-section-v1-inner {
-                    transform-origin: top left;
-                    transform: scale(calc(100vw / 420));
-                    width: 420px !important;
-                  }
-                }
+                .canvas-section-v1 { width: 100%; max-width: ${CANVAS_DESIGN_WIDTH}px; box-sizing: border-box; overflow: hidden; }
                 button, a { min-height: 44px; min-width: 44px; }
+                @media (max-width: ${CANVAS_DESIGN_WIDTH}px) {
+                  .canvas-section-v1 { max-width: 100vw; }
+                }
             `}</style>
 
       {/* Particle effects — fixed full-screen */}
@@ -2666,12 +3026,12 @@ export function CanvasInvitation({
 
       {/* ═══ Multi-section scrollable invitation ═══ */}
       {isCraftV2 ? (
-        /* V2: craft.js static renderer */
+        /* V2: craft.js flow-layout renderer — naturally responsive */
         <ScrollSection delay={0.15} pageAnimation={pageAnimation}>
           <div
             style={{
               width: "100%",
-              maxWidth: 420,
+              maxWidth: CANVAS_DESIGN_WIDTH,
               margin: "0 auto",
               borderRadius: 16,
               overflow: "hidden",
@@ -2688,6 +3048,7 @@ export function CanvasInvitation({
         /* V1: old absolute positioning sections */
         sections.map((section, sIdx) => {
           const sectionHeight = section.yEnd - section.yStart;
+          const scaledHeight = Math.max(sectionHeight, 200) * scale;
           return (
             <ScrollSection
               key={sIdx}
@@ -2696,17 +3057,23 @@ export function CanvasInvitation({
             >
               <div
                 className="canvas-section-v1"
-                style={{ margin: "0 auto", overflow: "hidden" }}
+                style={{
+                  margin: "0 auto",
+                  overflow: "hidden",
+                  /* Collapse container height to match the scaled inner content */
+                  height: scale < 1 ? scaledHeight : undefined,
+                }}
               >
                 <div
                   className="canvas-section-v1-inner"
                   style={{
                     position: "relative",
-                    width: "100%",
-                    maxWidth: 420,
+                    width: CANVAS_DESIGN_WIDTH,
                     minHeight: Math.max(sectionHeight, 200),
                     background: canvas.bg,
                     overflow: "hidden",
+                    transformOrigin: "top left",
+                    transform: scale < 1 ? `scale(${scale})` : undefined,
                     ...(sIdx === 0
                       ? {
                           borderRadius: "16px 16px 0 0",
@@ -2739,7 +3106,7 @@ export function CanvasInvitation({
       <ScrollSection delay={0.2} pageAnimation={pageAnimation}>
         <div
           style={{
-            maxWidth: 420,
+            maxWidth: CANVAS_DESIGN_WIDTH,
             margin: "32px auto 0",
             padding: "0 16px",
             display: "flex",
@@ -2795,7 +3162,7 @@ export function CanvasInvitation({
         <div
           data-rsvp-section
           style={{
-            maxWidth: 420,
+            maxWidth: CANVAS_DESIGN_WIDTH,
             margin: "32px auto 0",
             padding: "0 16px 80px",
           }}

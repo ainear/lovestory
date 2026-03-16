@@ -29,6 +29,8 @@ import { SidebarPanel } from "./sidebar/SidebarPanel";
 import { EditorTopBar } from "./sidebar/EditorTopBar";
 import { BackupRecoveryBanner } from "./sidebar/BackupRecoveryBanner";
 import { LeftIconColumn } from "./sidebar/LeftIconColumn";
+import { QuickImageBar } from "./sidebar/QuickImageBar";
+import { SEOPreviewCard } from "./sidebar/SEOPreviewCard";
 
 /* ═══════════════════════════════════════════════
    CraftVisualEditor — Main Editor Component
@@ -129,6 +131,9 @@ function CraftEditorInner({
     { url: string; name: string; size: number }[]
   >([]);
   const [showInLibrary, setShowInLibrary] = useState(false);
+  // SEO / OG meta (persisted in canvas_json.meta)
+  const [ogTitle, setOgTitle] = useState("");
+  const [ogDescription, setOgDescription] = useState("");
   // Premium features state (persisted in canvas_json.meta)
   const [removeWatermark, setRemoveWatermark] = useState(false);
   const [autoScroll, setAutoScroll] = useState(false);
@@ -205,6 +210,9 @@ function CraftEditorInner({
           setShowInLibrary(parsed.meta.showInLibrary);
         if (parsed.meta?.uploadedImages)
           setUploadedImages(parsed.meta.uploadedImages);
+        if (parsed.meta?.ogTitle) setOgTitle(parsed.meta.ogTitle);
+        if (parsed.meta?.ogDescription)
+          setOgDescription(parsed.meta.ogDescription);
         if (parsed.meta?.removeWatermark !== undefined)
           setRemoveWatermark(parsed.meta.removeWatermark);
         if (parsed.meta?.autoScroll !== undefined)
@@ -289,6 +297,8 @@ function CraftEditorInner({
         projectStatus,
         showInLibrary,
         uploadedImages,
+        ogTitle,
+        ogDescription,
         removeWatermark,
         autoScroll,
         scrollSpeed,
@@ -304,6 +314,11 @@ function CraftEditorInner({
       );
     } catch {
       /* quota exceeded */
+    }
+    // Demo mode: skip Supabase save
+    if (projectId === "demo") {
+      setSaveStatus("saved");
+      return;
     }
     try {
       await supabase
@@ -376,6 +391,8 @@ function CraftEditorInner({
     projectStatus,
     showInLibrary,
     uploadedImages,
+    ogTitle,
+    ogDescription,
     removeWatermark,
     autoScroll,
     scrollSpeed,
@@ -407,6 +424,8 @@ function CraftEditorInner({
         projectStatus,
         showInLibrary,
         uploadedImages,
+        ogTitle,
+        ogDescription,
         removeWatermark,
         autoScroll,
         scrollSpeed,
@@ -414,6 +433,13 @@ function CraftEditorInner({
       },
       effects: { particleEffect, pageAnimation, curtainEffect },
     });
+    // Demo mode: skip Supabase publish
+    if (projectId === "demo") {
+      setSaveStatus("saved");
+      setPublishStatus("done");
+      onPublish?.();
+      return;
+    }
     try {
       await supabase
         .from("projects")
@@ -573,6 +599,21 @@ function CraftEditorInner({
       e.target.value = "";
     },
     [projectId, triggerAutosave, editorState.elements.length, editorDispatch],
+  );
+
+  // ── Quick Image Replace handler ──
+  const handleReplaceImage = useCallback(
+    (elementId: string, newSrc: string) => {
+      editorDispatch({
+        type: "UPDATE_ELEMENT",
+        id: elementId,
+        patch: {
+          props: { src: newSrc, objectFit: "cover" as const, crop: null },
+        },
+      });
+      triggerAutosave();
+    },
+    [editorDispatch, triggerAutosave],
   );
 
   return (
@@ -833,12 +874,26 @@ function CraftEditorInner({
                 triggerAutosave={triggerAutosave}
               />
             </EditorContext.Provider>
+
+            {/* ── SEO / OG Preview ── */}
+            <SEOPreviewCard
+              thumbnailUrl={thumbnailUrl}
+              ogTitle={ogTitle}
+              ogDescription={ogDescription}
+              onOgTitleChange={setOgTitle}
+              onOgDescriptionChange={setOgDescription}
+              triggerAutosave={triggerAutosave}
+            />
           </div>
           {/* close content padding wrapper */}
         </div>
       </div>
 
-      {/* Quick Image Replace Bar removed (was CraftJS-dependent) */}
+      {/* ── Quick Image Replace Bar ── */}
+      <QuickImageBar
+        elements={editorState.elements}
+        onReplaceImage={handleReplaceImage}
+      />
     </div>
   );
 }
