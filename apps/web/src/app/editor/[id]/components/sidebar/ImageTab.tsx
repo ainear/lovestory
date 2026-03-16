@@ -9,6 +9,8 @@ import {
 } from "../editor-constants";
 import type { StockCategory } from "../editor-constants";
 import type { EditorAction } from "../canvas-engine/types";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import UpgradeCTA from "@/components/UpgradeCTA";
 
 interface UploadedImage {
   url: string;
@@ -33,6 +35,9 @@ export function ImageTab({
   triggerAutosave,
   editorDispatch,
 }: ImageTabProps) {
+  const { config, canUploadImages } = useSubscription();
+  const limitReached = !canUploadImages(uploadedImages.length);
+
   function addStockImage(url: string) {
     if (!editorDispatch) return;
     editorDispatch({ type: "SNAPSHOT" });
@@ -114,15 +119,22 @@ export function ImageTab({
       >
         <span>
           Đã tải:{" "}
-          <strong style={{ color: "#3b82f6" }}>
-            {uploadedImages.length}/10
+          <strong style={{ color: limitReached ? "#ef4444" : "#3b82f6" }}>
+            {uploadedImages.length}/{config.maxImages}
           </strong>
         </span>
         <span>•</span>
         <span>
-          Còn lại: <strong>{Math.max(0, 10 - uploadedImages.length)}</strong>
+          Còn lại:{" "}
+          <strong>
+            {Math.max(0, config.maxImages - uploadedImages.length)}
+          </strong>
         </span>
       </div>
+
+      {limitReached && (
+        <UpgradeCTA feature="Thêm ảnh" requiredPlan="basic" compact />
+      )}
 
       {/* Uploaded files section */}
       <div>
