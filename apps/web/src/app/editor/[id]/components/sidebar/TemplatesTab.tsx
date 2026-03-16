@@ -2,20 +2,21 @@
 
 import React from "react";
 import { TEMPLATE_STYLES } from "../editor-constants";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 interface TemplatesTabProps {
   background: string;
   setBackground: (val: string) => void;
   triggerAutosave: () => void;
-  userTier?: string;
 }
 
 export function TemplatesTab({
   background,
   setBackground,
   triggerAutosave,
-  userTier,
 }: TemplatesTabProps) {
+  const { hasFeature } = useSubscription();
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p
@@ -47,7 +48,7 @@ export function TemplatesTab({
           };
           const badge = tierColors[t.tier];
           const isPremiumLocked =
-            t.tier === "PREMIUM" && userTier !== "premium";
+            t.tier === "PREMIUM" && !hasFeature("premiumTemplates");
           return (
             <div
               key={t.name}
@@ -66,7 +67,10 @@ export function TemplatesTab({
               {/* Thumbnail preview */}
               <button
                 onClick={() => {
-                  if (isPremiumLocked) return;
+                  if (isPremiumLocked) {
+                    alert("Nâng cấp lên Premium để dùng mẫu này");
+                    return;
+                  }
                   setBackground(t.bg);
                   triggerAutosave();
                 }}
@@ -179,7 +183,10 @@ export function TemplatesTab({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (isPremiumLocked) return;
+                      if (isPremiumLocked) {
+                        alert("Nâng cấp lên Premium để dùng mẫu này");
+                        return;
+                      }
                       setBackground(t.bg);
                       triggerAutosave();
                     }}
