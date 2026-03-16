@@ -2955,23 +2955,25 @@ export function CanvasInvitation({
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
-  if (!data) return null;
-
-  /* ── V1 branch: old format with flat elements array ── */
-  const elements: CanvasElementData[] | undefined = !isCraftV2
-    ? data.elements
-    : undefined;
-  const canvas = data.canvas || { width: 390, height: 5000, bg: canvasBg };
+  const v1Elements: CanvasElementData[] | undefined =
+    data && !isCraftV2 ? data.elements : undefined;
+  const v1Canvas = data?.canvas || { width: 390, height: 5000, bg: canvasBg };
   const sections = useMemo(
     () =>
-      elements
-        ? splitIntoSections(elements, canvas.height).map((s) => ({
+      v1Elements
+        ? splitIntoSections(v1Elements, v1Canvas.height).map((s) => ({
             ...s,
             elements: [...s.elements].sort((a, b) => a.zIndex - b.zIndex),
           }))
         : [],
-    [elements, canvas.height],
+    [v1Elements, v1Canvas.height],
   );
+
+  if (!data) return null;
+
+  /* ── V1 branch: old format with flat elements array ── */
+  const elements = v1Elements;
+  const canvas = v1Canvas;
 
   /* ── Page animation preset ── */
   const pageAnimation = (data?.effects?.pageAnimation ||
