@@ -21,7 +21,7 @@ export interface TabConfig {
 export const TABS: TabConfig[] = [
   { key: "text", icon: <Type size={20} />, label: "Văn bản" },
   { key: "image", icon: <ImageIcon size={20} />, label: "Hình ảnh" },
-  { key: "stock", icon: <Flower2 size={20} />, label: "Stock" },
+  { key: "stock", icon: <Flower2 size={20} />, label: "Clipart" },
   { key: "shapes", icon: <Pentagon size={20} />, label: "Hình dạng" },
   { key: "bg", icon: <Palette size={20} />, label: "Nền" },
   { key: "music", icon: <Music size={20} />, label: "Âm nhạc" },

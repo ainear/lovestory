@@ -73,7 +73,22 @@ function CraftEditorInner({
   projectSlug,
   onPublish,
 }: CraftVisualEditorProps) {
+  // ── Responsive state ──
+  const [isMobile, setIsMobile] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true);
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) setShowRightPanel(false);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const [activeTab, setActiveTab] = useState("text");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [clipartCat, setClipartCat] = useState("all");
   const [sectionCat, setSectionCat] = useState("all");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
@@ -258,6 +273,18 @@ function CraftEditorInner({
       /* ignore */
     }
   }, [projectId]);
+
+  // ── First-time onboarding check ──
+  useEffect(() => {
+    if (!localStorage.getItem("editor_onboarded")) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  function dismissOnboarding() {
+    localStorage.setItem("editor_onboarded", "1");
+    setShowOnboarding(false);
+  }
 
   // ── Cleanup on unmount: stop audio, clear timers ──
   useEffect(() => {
@@ -671,10 +698,11 @@ function CraftEditorInner({
         {/* ── Left Icon Column ── */}
         <LeftIconColumn activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* ── Overlay Left Panel (floats over canvas) ── */}
+        {/* ── Overlay Left Panel (floats over canvas, full-screen on mobile) ── */}
         <SidebarPanel
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          isMobile={isMobile}
           addCraftText={addCraftText}
           fileInputRef={fileInputRef}
           handleImageUpload={handleImageUpload}
@@ -824,69 +852,132 @@ function CraftEditorInner({
         </div>
 
         {/* ══ Right Settings Panel — CineLove accordion style ══ */}
-        <div
-          style={{
-            width: 350,
-            background: "#fafafa",
-            borderLeft: "1px solid #e5e7eb",
-            overflowY: "auto",
-            flexShrink: 0,
-            boxShadow: "-2px 0 12px rgba(0,0,0,0.04)",
-          }}
-        >
+        {showRightPanel && (
           <div
             style={{
-              padding: "14px 16px",
-              borderBottom: "1px solid #f0f0f0",
-              background: "linear-gradient(180deg, #fff 0%, #fafafa 100%)",
+              width: isMobile ? "100%" : 350,
+              maxWidth: isMobile ? 400 : 350,
+              background: "#fafafa",
+              borderLeft: isMobile ? "none" : "1px solid #e5e7eb",
+              overflowY: "auto",
+              flexShrink: 0,
+              boxShadow: isMobile
+                ? "-4px 0 24px rgba(0,0,0,0.15)"
+                : "-2px 0 12px rgba(0,0,0,0.04)",
+              position: isMobile ? "fixed" : "relative",
+              right: 0,
+              top: 0,
+              bottom: 0,
+              zIndex: isMobile ? 50 : "auto",
             }}
           >
-            <h3
+            <div
               style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#374151",
-                margin: 0,
-                letterSpacing: 0.5,
+                padding: "14px 16px",
+                borderBottom: "1px solid #f0f0f0",
+                background: "linear-gradient(180deg, #fff 0%, #fafafa 100%)",
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
+                justifyContent: "space-between",
               }}
             >
-              ✏️ Tuỳ chỉnh
-            </h3>
-          </div>
-          <div style={{ padding: 16 }}>
-            <EditorContext.Provider value={editorCtx}>
-              <CanvasRightPanel
-                projectCategory={projectCategory}
-                setProjectCategory={setProjectCategory}
-                projectStatus={projectStatus}
-                setProjectStatus={setProjectStatus}
-                removeWatermark={removeWatermark}
-                setRemoveWatermark={setRemoveWatermark}
-                autoScroll={autoScroll}
-                setAutoScroll={setAutoScroll}
-                scrollSpeed={scrollSpeed}
-                setScrollSpeed={setScrollSpeed}
-                qrBank={qrBank}
-                setQrBank={setQrBank}
+              <h3
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#374151",
+                  margin: 0,
+                  letterSpacing: 0.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                ✏️ Tuỳ chỉnh
+              </h3>
+              {isMobile && (
+                <button
+                  onClick={() => setShowRightPanel(false)}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    border: "none",
+                    borderRadius: 6,
+                    background: "#f3f4f6",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    color: "#6b7280",
+                  }}
+                  title="Đóng"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div style={{ padding: 16 }}>
+              <EditorContext.Provider value={editorCtx}>
+                <CanvasRightPanel
+                  projectCategory={projectCategory}
+                  setProjectCategory={setProjectCategory}
+                  projectStatus={projectStatus}
+                  setProjectStatus={setProjectStatus}
+                  removeWatermark={removeWatermark}
+                  setRemoveWatermark={setRemoveWatermark}
+                  autoScroll={autoScroll}
+                  setAutoScroll={setAutoScroll}
+                  scrollSpeed={scrollSpeed}
+                  setScrollSpeed={setScrollSpeed}
+                  qrBank={qrBank}
+                  setQrBank={setQrBank}
+                  triggerAutosave={triggerAutosave}
+                />
+              </EditorContext.Provider>
+
+              {/* ── SEO / OG Preview ── */}
+              <SEOPreviewCard
+                thumbnailUrl={thumbnailUrl}
+                ogTitle={ogTitle}
+                ogDescription={ogDescription}
+                onOgTitleChange={setOgTitle}
+                onOgDescriptionChange={setOgDescription}
                 triggerAutosave={triggerAutosave}
               />
-            </EditorContext.Provider>
-
-            {/* ── SEO / OG Preview ── */}
-            <SEOPreviewCard
-              thumbnailUrl={thumbnailUrl}
-              ogTitle={ogTitle}
-              ogDescription={ogDescription}
-              onOgTitleChange={setOgTitle}
-              onOgDescriptionChange={setOgDescription}
-              triggerAutosave={triggerAutosave}
-            />
+            </div>
+            {/* close content padding wrapper */}
           </div>
-          {/* close content padding wrapper */}
-        </div>
+        )}
+
+        {/* ── Floating settings toggle when right panel hidden ── */}
+        {!showRightPanel && (
+          <button
+            onClick={() => setShowRightPanel(true)}
+            title="Tuỳ chỉnh"
+            style={{
+              position: "fixed",
+              right: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 40,
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#3b82f6",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
+          >
+            ⚙️
+          </button>
+        )}
       </div>
 
       {/* ── Quick Image Replace Bar ── */}
@@ -894,6 +985,110 @@ function CraftEditorInner({
         elements={editorState.elements}
         onReplaceImage={handleReplaceImage}
       />
+
+      {/* ── Onboarding Overlay ── */}
+      {showOnboarding && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={dismissOnboarding}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 20,
+              padding: "36px 32px",
+              maxWidth: 400,
+              width: "90%",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.2)",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: "#1f2937",
+                margin: "0 0 20px",
+              }}
+            >
+              {
+                "Ch\u00e0o m\u1eebng \u0111\u1ebfn LoveStory Editor! \uD83C\uDF89"
+              }
+            </h2>
+            <div
+              style={{
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                marginBottom: 28,
+              }}
+            >
+              {[
+                {
+                  emoji: "\uD83D\uDCDD",
+                  text: "Click v\u00e0o tab b\u00ean tr\u00e1i \u0111\u1ec3 th\u00eam v\u0103n b\u1ea3n, \u1ea3nh, nh\u1ea1c",
+                },
+                {
+                  emoji: "\uD83D\uDDB1\uFE0F",
+                  text: "K\u00e9o th\u1ea3 \u0111\u1ec3 di chuy\u1ec3n, k\u00e9o g\u00f3c \u0111\u1ec3 resize",
+                },
+                {
+                  emoji: "\uD83D\uDCBE",
+                  text: "T\u1ef1 \u0111\u1ed9ng l\u01b0u khi b\u1ea1n thay \u0111\u1ed5i",
+                },
+                {
+                  emoji: "\uD83D\uDE80",
+                  text: 'Nh\u1ea5n "Xu\u1ea5t b\u1ea3n" khi ho\u00e0n th\u00e0nh',
+                },
+              ].map((tip, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    fontSize: 14,
+                    color: "#374151",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>
+                    {tip.emoji}
+                  </span>
+                  <span>{tip.text}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={dismissOnboarding}
+              style={{
+                width: "100%",
+                padding: "14px 24px",
+                borderRadius: 12,
+                border: "none",
+                background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(255,107,157,0.3)",
+              }}
+            >
+              {"B\u1eaft \u0111\u1ea7u t\u1ea1o thi\u1ec7p!"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

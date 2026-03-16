@@ -1,5 +1,11 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useEditorContext } from "./useEditorState";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { ElementToolbar } from "./ElementToolbar";
@@ -713,7 +719,7 @@ function WidgetRendererInline({
 }
 
 /** Render a single canvas element wrapper (absolute positioned) */
-function CanvasElementWrapper({
+const CanvasElementWrapper = React.memo(function CanvasElementWrapper({
   el,
   isSelected,
 }: {
@@ -798,7 +804,7 @@ function CanvasElementWrapper({
       {el.type === "widget" && <WidgetElement el={el} />}
     </div>
   );
-}
+});
 
 /** Main canvas renderer */
 export function CanvasRenderer() {

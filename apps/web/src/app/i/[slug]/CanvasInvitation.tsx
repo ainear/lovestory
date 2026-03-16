@@ -115,11 +115,28 @@ const PARTICLE_CHARS: Record<string, string[]> = {
 };
 
 function ParticleOverlay({ effect }: { effect: ParticleType }) {
+  const [visible, setVisible] = useState(true);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   if (effect === "none" || !PARTICLE_CHARS[effect]) return null;
   const chars = PARTICLE_CHARS[effect];
-  const count = 28;
+  const count =
+    typeof window !== "undefined" && window.innerWidth < 768 ? 15 : 28;
+
   return (
     <div
+      ref={ref}
       style={{
         position: "fixed",
         inset: 0,
@@ -149,6 +166,9 @@ function ParticleOverlay({ effect }: { effect: ParticleType }) {
             top: -30,
             fontSize: 10 + (i % 5) * 4,
             animation: `particleFall ${5 + (i % 4) * 2.5}s linear ${(i * 0.5) % 6}s infinite, particleSway ${3 + (i % 3)}s ease-in-out ${(i * 0.3) % 4}s infinite`,
+            animationPlayState: visible ? "running" : "paused",
+            willChange: "transform",
+            transform: "translateZ(0)",
             opacity: 0,
             filter: i % 3 === 0 ? "blur(0.5px)" : "none",
           }}
@@ -2942,7 +2962,16 @@ export function CanvasInvitation({
     ? data.elements
     : undefined;
   const canvas = data.canvas || { width: 390, height: 5000, bg: canvasBg };
-  const sections = elements ? splitIntoSections(elements, canvas.height) : [];
+  const sections = useMemo(
+    () =>
+      elements
+        ? splitIntoSections(elements, canvas.height).map((s) => ({
+            ...s,
+            elements: [...s.elements].sort((a, b) => a.zIndex - b.zIndex),
+          }))
+        : [],
+    [elements, canvas.height],
+  );
 
   /* ── Page animation preset ── */
   const pageAnimation = (data?.effects?.pageAnimation ||
@@ -3116,16 +3145,14 @@ export function CanvasInvitation({
                       : {}),
                   }}
                 >
-                  {section.elements
-                    .sort((a, b) => a.zIndex - b.zIndex)
-                    .map((el, eIdx) => (
-                      <RenderElement
-                        key={el.id}
-                        el={el}
-                        sectionYStart={section.yStart}
-                        idx={eIdx}
-                      />
-                    ))}
+                  {section.elements.map((el, eIdx) => (
+                    <RenderElement
+                      key={el.id}
+                      el={el}
+                      sectionYStart={section.yStart}
+                      idx={eIdx}
+                    />
+                  ))}
                 </div>
               </div>
             </ScrollSection>

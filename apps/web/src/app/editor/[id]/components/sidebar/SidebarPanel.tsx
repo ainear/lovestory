@@ -75,29 +75,35 @@ interface SidebarPanelProps {
   editorState?: EditorState;
   /* Common */
   triggerAutosave: () => void;
+  /* Responsive */
+  isMobile?: boolean;
 }
 
 export function SidebarPanel(props: SidebarPanelProps) {
-  const { activeTab, setActiveTab } = props;
+  const { activeTab, setActiveTab, isMobile } = props;
+  const isSmallScreen = isMobile !== undefined ? isMobile : false;
 
   if (activeTab === "") return null;
 
   return (
     <div
       style={{
-        position: "absolute",
+        position: isSmallScreen ? "fixed" : "absolute",
         top: 0,
-        left: 85,
+        left: isSmallScreen ? 0 : 85,
         bottom: 0,
-        width: 220,
+        right: isSmallScreen ? 0 : "auto",
+        width: isSmallScreen ? "100%" : 220,
         background: "#fff",
-        borderRight: "1px solid #e5e7eb",
+        borderRight: isSmallScreen ? "none" : "1px solid #e5e7eb",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        zIndex: 20,
+        zIndex: isSmallScreen ? 50 : 20,
         animation: "slideIn 0.2s ease",
-        boxShadow: "4px 0 24px rgba(0,0,0,0.08)",
+        boxShadow: isSmallScreen
+          ? "0 0 40px rgba(0,0,0,0.15)"
+          : "4px 0 24px rgba(0,0,0,0.08)",
       }}
     >
       <style>{`@keyframes slideIn { from { transform: translateX(-10px); opacity:0 } to { transform: translateX(0); opacity:1 } }`}</style>

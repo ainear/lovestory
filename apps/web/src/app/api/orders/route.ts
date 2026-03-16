@@ -67,7 +67,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (dbError) {
-      return NextResponse.json({ error: dbError.message }, { status: 500 });
+      console.error("Order DB error:", dbError.message);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
 
     // 2. Create SePay Payment Gateway checkout
