@@ -1,10 +1,19 @@
+export type MusicCategory =
+  | "intl"
+  | "vpop"
+  | "acoustic"
+  | "piano"
+  | "kpop"
+  | "classical";
+export type MusicFilterCategory = MusicCategory | "all";
+
 export interface MusicPreset {
   id: string;
   label: string;
   emoji: string;
   url: string;
   duration: string;
-  cat: string;
+  cat: MusicCategory;
 }
 
 /* ── Music presets ── */

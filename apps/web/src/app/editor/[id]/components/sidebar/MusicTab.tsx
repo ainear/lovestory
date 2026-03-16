@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MUSIC_PRESETS, MUSIC_WIDGET_STYLES } from "../editor-constants";
+import type { MusicFilterCategory } from "../editor-constants";
 import { ColorPicker } from "../canvas-engine/ColorPicker";
 
 interface MusicTabProps {
@@ -9,17 +10,8 @@ interface MusicTabProps {
   setMusicUrl: (val: string) => void;
   musicName: string;
   setMusicName: (val: string) => void;
-  musicFilter:
-    | "all"
-    | "intl"
-    | "vpop"
-    | "acoustic"
-    | "piano"
-    | "kpop"
-    | "classical";
-  setMusicFilter: (
-    val: "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical",
-  ) => void;
+  musicFilter: MusicFilterCategory;
+  setMusicFilter: (val: MusicFilterCategory) => void;
   musicSearch: string;
   setMusicSearch: (val: string) => void;
   previewId: string | null;

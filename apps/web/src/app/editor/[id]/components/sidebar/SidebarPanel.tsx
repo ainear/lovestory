@@ -13,6 +13,7 @@ import { EffectsTab } from "./EffectsTab";
 import { MusicTab } from "./MusicTab";
 import { ComponentsTab } from "./ComponentsTab";
 import type { TEXT_PRESETS } from "../editor-constants";
+import type { MusicFilterCategory } from "../editor-constants";
 import type { EditorAction, EditorState } from "../canvas-engine/types";
 
 interface UploadedImage {
@@ -56,17 +57,8 @@ interface SidebarPanelProps {
   setMusicUrl: (val: string) => void;
   musicName: string;
   setMusicName: (val: string) => void;
-  musicFilter:
-    | "all"
-    | "intl"
-    | "vpop"
-    | "acoustic"
-    | "piano"
-    | "kpop"
-    | "classical";
-  setMusicFilter: (
-    val: "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical",
-  ) => void;
+  musicFilter: MusicFilterCategory;
+  setMusicFilter: (val: MusicFilterCategory) => void;
   musicSearch: string;
   setMusicSearch: (val: string) => void;
   previewId: string | null;

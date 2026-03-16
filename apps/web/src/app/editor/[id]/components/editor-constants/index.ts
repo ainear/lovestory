@@ -14,7 +14,11 @@ export { MUSIC_WIDGET_STYLES } from "./music-widget-styles";
 export type { MusicWidgetStyle } from "./music-widget-styles";
 
 export { MUSIC_PRESETS } from "./music-presets";
-export type { MusicPreset } from "./music-presets";
+export type {
+  MusicPreset,
+  MusicCategory,
+  MusicFilterCategory,
+} from "./music-presets";
 
 export { PARTICLE_PRESETS } from "./particle-presets";
 export type { ParticlePreset } from "./particle-presets";

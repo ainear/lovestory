@@ -25,6 +25,7 @@ import {
 import { sanitizeElements } from "./canvas-engine/types";
 import type { CanvasElement } from "./canvas-engine/types";
 import { TEXT_PRESETS } from "./editor-constants";
+import type { MusicFilterCategory } from "./editor-constants";
 import { SidebarPanel } from "./sidebar/SidebarPanel";
 import { EditorTopBar } from "./sidebar/EditorTopBar";
 import { BackupRecoveryBanner } from "./sidebar/BackupRecoveryBanner";
@@ -118,9 +119,7 @@ function CraftEditorInner({
   /* Phase 4: Support + Backup */
   const [showBackupRecovery, setShowBackupRecovery] = useState(false);
   const [bugReportText, setBugReportText] = useState("");
-  const [musicFilter, setMusicFilter] = useState<
-    "all" | "intl" | "vpop" | "acoustic" | "piano" | "kpop" | "classical"
-  >("all");
+  const [musicFilter, setMusicFilter] = useState<MusicFilterCategory>("all");
   const [musicSearch, setMusicSearch] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
