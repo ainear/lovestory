@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       if (createBucketError) {
         console.error("Bucket creation error:", createBucketError);
         return NextResponse.json(
-          { error: `Storage setup failed: ${createBucketError.message}` },
+          { error: "Storage setup failed" },
           { status: 500 },
         );
       }
@@ -90,10 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: `Upload failed: ${uploadError.message}` },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
     // Get public URL
