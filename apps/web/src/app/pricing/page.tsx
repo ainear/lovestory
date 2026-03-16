@@ -294,31 +294,30 @@ export default function PricingPage() {
         <div className="mb-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              icon: "&#x1F512;",
+              icon: "\u{1F512}",
               title: "Bảo mật tuyệt đối",
               desc: "Dữ liệu mã hóa, không chia sẻ thông tin khách",
             },
             {
-              icon: "&#x26A1;",
+              icon: "\u26A1",
               title: "Xuất bản ngay",
               desc: "Thiệp online trong vài phút, không cần kỹ thuật",
             },
             {
-              icon: "&#x1F4F1;",
+              icon: "\u{1F4F1}",
               title: "Mobile-first",
               desc: "Khách xem đẹp trên mọi thiết bị",
             },
             {
-              icon: "&#x1F1FB;&#x1F1F3;",
+              icon: "\u{1F1FB}\u{1F1F3}",
               title: "Thanh toán VN",
               desc: "SePay, MoMo, VNPay, chuyển khoản",
             },
-          ].map((v, i) => (
-            <div key={i} className="p-6 text-center">
-              <div
-                className="mb-3 text-4xl"
-                dangerouslySetInnerHTML={{ __html: v.icon }}
-              />
+          ].map((v) => (
+            <div key={v.title} className="p-6 text-center">
+              <div className="mb-3 text-4xl" aria-hidden="true">
+                {v.icon}
+              </div>
               <p className="mb-1.5 text-[15px] font-bold text-gray-900">
                 {v.title}
               </p>
@@ -333,9 +332,9 @@ export default function PricingPage() {
             Câu hỏi thường gặp
           </h2>
           <div className="flex flex-col gap-4">
-            {FAQ.map((item, i) => (
+            {FAQ.map((item) => (
               <div
-                key={i}
+                key={item.q}
                 className="rounded-2xl border border-gray-200 bg-white px-6 py-5"
               >
                 <p className="mb-2 text-[15px] font-semibold text-gray-900">

@@ -45,6 +45,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
+    // Validate orderCode format to prevent injection in URLs and descriptions
+    const ORDER_CODE_RE = /^[A-Z0-9]{6,32}$/i;
+    if (!ORDER_CODE_RE.test(orderCode)) {
+      return NextResponse.json(
+        { error: "Invalid order code" },
+        { status: 400 },
+      );
+    }
+
     // SEC-04: Look up authoritative price server-side; ignore any client-sent amount
     const amount = PLAN_PRICES[plan];
     if (!amount) {
@@ -106,12 +115,15 @@ export async function POST(req: NextRequest) {
       sepayRes.url ||
       `${SEPAY_CHECKOUT_URL}?${new URLSearchParams(checkoutParams).toString()}`;
 
+    // Strip signature from client-facing response to prevent crypto material leak
+    const { signature: _sig, ...safeFormData } = checkoutParams;
+
     return NextResponse.json({
       success: true,
       checkoutUrl: responseUrl,
       // Fallback: provide form data for client-side form submit
       formAction: SEPAY_CHECKOUT_URL,
-      formData: checkoutParams,
+      formData: safeFormData,
     });
   } catch (err) {
     console.error("Order creation error:", err);

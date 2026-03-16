@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { PLANS, PlanId } from "@/config/plans";
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
 function getSupabase() {
   return createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,57 +61,29 @@ export async function POST(request: NextRequest) {
     const planConfig = PLANS[planId] ?? PLANS.free;
     const maxViews = planConfig.maxViewsPerMonth;
 
-    // 3. Atomic increment with reset check and limit enforcement
-    // Single SQL statement prevents race conditions
-    const resetAt = project.view_count_reset_at
-      ? new Date(project.view_count_reset_at).getTime()
-      : 0;
-    const needsReset = Date.now() - resetAt > THIRTY_DAYS_MS;
+    // 3. Atomic increment via SQL function (handles reset + limit check)
+    // The SQL function computes reset eligibility internally — no app-side flag
+    const { data: updated, error: rpcError } = await supabase.rpc(
+      "increment_view_count",
+      {
+        p_project_id: project.id,
+        p_max_views: maxViews,
+      },
+    );
 
-    const currentCount: number = needsReset ? 0 : (project.view_count ?? 0);
-
-    // 4. If at or over limit, return not allowed
-    if (currentCount >= maxViews) {
-      return NextResponse.json({
-        allowed: false,
-        limit: maxViews,
-        current: currentCount,
-        plan: planId,
-      });
+    if (rpcError) {
+      console.error("[Views API] RPC error:", rpcError.message);
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
     }
 
-    // 5. Atomic increment via SQL to prevent race conditions
-    const { data: updated } = await supabase.rpc("increment_view_count", {
-      p_project_id: project.id,
-      p_max_views: maxViews,
-      p_needs_reset: needsReset,
-    });
+    // RPC returns new count (>= 1), or -1 if limit exceeded
+    const allowed =
+      typeof updated === "number" && updated >= 0 && updated <= maxViews;
+    const currentCount = project.view_count ?? 0;
 
-    // Fallback: if RPC doesn't exist, use regular update
-    if (updated === null || updated === undefined) {
-      const newCount = currentCount + 1;
-      const updatePayload: Record<string, unknown> = {
-        view_count: newCount,
-      };
-      if (needsReset) {
-        updatePayload.view_count_reset_at = new Date().toISOString();
-      }
-      await supabase
-        .from("projects")
-        .update(updatePayload)
-        .eq("id", project.id);
-
-      return NextResponse.json({
-        success: true,
-        allowed: true,
-        views: newCount,
-        limit: maxViews,
-        plan: planId,
-      });
-    }
-
-    // RPC returns new count, or -1 if limit exceeded
-    const allowed = updated >= 0 && updated <= maxViews;
     return NextResponse.json({
       success: allowed,
       allowed,
