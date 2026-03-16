@@ -4,8 +4,7 @@ import { PLANS, PLAN_IDS, formatPrice, type PlanId } from "@/config/plans";
 
 export const metadata: Metadata = {
   title: "Bảng giá — LoveStory",
-  description:
-    "Chọn gói phù hợp. Miễn phí bắt đầu, nâng cấp khi bạn sẵn sàng.",
+  description: "Chọn gói phù hợp. Miễn phí bắt đầu, nâng cấp khi bạn sẵn sàng.",
 };
 
 /* ─── feature comparison table rows ─── */
@@ -14,59 +13,56 @@ interface FeatureRow {
   values: Record<PlanId, string | boolean>;
 }
 
+/** Helper to derive a row from PLANS config — single source of truth */
+function planValues(
+  fn: (id: PlanId) => string | boolean,
+): Record<PlanId, string | boolean> {
+  return Object.fromEntries(PLAN_IDS.map((id) => [id, fn(id)])) as Record<
+    PlanId,
+    string | boolean
+  >;
+}
+
 const FEATURE_ROWS: FeatureRow[] = [
-  {
-    label: "Số thiệp",
-    values: { free: "1", basic: "3", premium: "5" },
-  },
+  { label: "Số thiệp", values: planValues((id) => String(PLANS[id].maxCards)) },
   {
     label: "Thời gian lưu",
-    values: { free: "6 tháng", basic: "2 năm", premium: "5 năm" },
+    values: planValues((id) => PLANS[id].storageDuration),
   },
   {
     label: "Ảnh tải lên",
-    values: { free: "10", basic: "50", premium: "100" },
+    values: planValues((id) => String(PLANS[id].maxImages)),
   },
   {
     label: "Lượt xem/tháng",
-    values: { free: "300", basic: "10,000", premium: "50,000" },
+    values: planValues((id) =>
+      PLANS[id].maxViewsPerMonth.toLocaleString("vi-VN"),
+    ),
   },
   {
     label: "Album ảnh",
-    values: { free: false, basic: true, premium: true },
+    values: planValues((id) => PLANS[id].features.albumWidget),
   },
   {
     label: "YouTube embed",
-    values: { free: false, basic: true, premium: true },
+    values: planValues((id) => PLANS[id].features.youtubeEmbed),
   },
   {
     label: "Font tùy chỉnh",
-    values: { free: false, basic: false, premium: true },
+    values: planValues((id) => PLANS[id].features.customFonts),
   },
   {
     label: "Form tùy chỉnh",
-    values: { free: false, basic: false, premium: true },
+    values: planValues((id) => PLANS[id].features.customForms),
   },
   {
     label: "Mẫu Premium",
-    values: { free: false, basic: false, premium: true },
+    values: planValues((id) => PLANS[id].features.premiumTemplates),
   },
-  {
-    label: "Nhạc nền",
-    values: { free: true, basic: true, premium: true },
-  },
-  {
-    label: "RSVP",
-    values: { free: true, basic: true, premium: true },
-  },
-  {
-    label: "QR Bank",
-    values: { free: true, basic: true, premium: true },
-  },
-  {
-    label: "Hiệu ứng",
-    values: { free: true, basic: true, premium: true },
-  },
+  { label: "Nhạc nền", values: planValues(() => true) },
+  { label: "RSVP", values: planValues(() => true) },
+  { label: "QR Bank", values: planValues(() => true) },
+  { label: "Hiệu ứng", values: planValues(() => true) },
 ];
 
 const FAQ = [
@@ -234,11 +230,7 @@ export default function PricingPage() {
                 {/* CTA */}
                 <div className="px-6 pb-6">
                   <Link
-                    href={
-                      isFree
-                        ? "/editor/new"
-                        : `/checkout?plan=${planId}`
-                    }
+                    href={isFree ? "/editor/new" : `/checkout?plan=${planId}`}
                     className={`block rounded-xl py-3 text-center text-sm font-bold no-underline transition-opacity hover:opacity-90 ${
                       isFree
                         ? "border-2 border-gray-200 bg-white text-gray-700"

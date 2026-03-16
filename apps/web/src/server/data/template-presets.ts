@@ -2544,28 +2544,3 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     }),
   ],
 };
-
-/**
- * Template tier mapping.
- * Templates not listed here are accessible to all users (free tier).
- * ~20% of templates are marked as "premium".
- */
-export const TEMPLATE_PRESET_TIERS: Record<string, TemplateTier> = {
-  // Luxury Dark templates — premium
-  "thiep-cuoi-36": "premium",
-  "thiep-cuoi-53": "premium",
-  "thiep-cuoi-56": "premium",
-  "thiep-cuoi-52": "premium",
-  "thiep-cuoi-49": "premium",
-  "thiep-cuoi-57": "premium",
-  "thiep-cuoi-54": "premium",
-  "thiep-cuoi-60": "premium",
-  "thiep-cuoi-34": "premium",
-  "thiep-cuoi-33": "premium",
-  // Special event templates — premium
-  "thiep-valentine-1": "premium",
-  "tiec-tat-nien-3": "premium",
-  "thiep-tat-nien-4": "premium",
-  "tiec-tat-nien-1": "premium",
-  "demo-elegant": "premium",
-};

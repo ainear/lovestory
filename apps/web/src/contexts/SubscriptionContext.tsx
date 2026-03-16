@@ -48,7 +48,9 @@ const defaultState: SubscriptionState = {
 // Context
 // ---------------------------------------------------------------------------
 
-const SubscriptionContext = createContext<SubscriptionState>(defaultState);
+const SubscriptionContext = createContext<SubscriptionState | undefined>(
+  undefined,
+);
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -75,12 +77,17 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
         const { data } = await supabase
           .from("subscriptions")
-          .select("plan")
+          .select("plan, expires_at")
           .eq("user_id", user.id)
           .single();
 
         if (!cancelled && data?.plan && data.plan in PLANS) {
-          setPlan(data.plan as PlanId);
+          // Check if subscription has expired
+          const isExpired =
+            data.expires_at && new Date(data.expires_at) < new Date();
+          if (!isExpired) {
+            setPlan(data.plan as PlanId);
+          }
         }
       } catch {
         // Default to free plan on any error
@@ -131,7 +138,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
 export function useSubscription(): SubscriptionState {
   const context = useContext(SubscriptionContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error(
       "useSubscription must be used within a SubscriptionProvider",
     );

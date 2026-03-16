@@ -6,7 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { useSubscription } from "@/contexts/SubscriptionContext";
+import {
+  SubscriptionProvider,
+  useSubscription,
+} from "@/contexts/SubscriptionContext";
 import UpgradeCTA from "@/components/UpgradeCTA";
 import Link from "next/link";
 
@@ -2784,7 +2787,9 @@ export default function NewEditorPage() {
         </div>
       }
     >
-      <NewEditorInner />
+      <SubscriptionProvider>
+        <NewEditorInner />
+      </SubscriptionProvider>
     </Suspense>
   );
 }

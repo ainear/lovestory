@@ -63,14 +63,14 @@ export async function POST(request: NextRequest) {
     const planConfig = PLANS[planId] ?? PLANS.free;
     const maxViews = planConfig.maxViewsPerMonth;
 
-    // 3. Check if view_count_reset_at is older than 30 days — reset counter
+    // 3. Atomic increment with reset check and limit enforcement
+    // Single SQL statement prevents race conditions
     const resetAt = project.view_count_reset_at
       ? new Date(project.view_count_reset_at).getTime()
       : 0;
-    const now = Date.now();
-    const needsReset = now - resetAt > THIRTY_DAYS_MS;
+    const needsReset = Date.now() - resetAt > THIRTY_DAYS_MS;
 
-    let currentCount: number = needsReset ? 0 : (project.view_count ?? 0);
+    const currentCount: number = needsReset ? 0 : (project.view_count ?? 0);
 
     // 4. If at or over limit, return not allowed
     if (currentCount >= maxViews) {
@@ -82,24 +82,42 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 5. Increment view count (reset if needed)
-    const newCount = currentCount + 1;
-    const updatePayload: Record<string, unknown> = {
-      view_count: newCount,
-    };
-    if (needsReset) {
-      updatePayload.view_count_reset_at = new Date().toISOString();
+    // 5. Atomic increment via SQL to prevent race conditions
+    const { data: updated } = await supabase.rpc("increment_view_count", {
+      p_project_id: project.id,
+      p_max_views: maxViews,
+      p_needs_reset: needsReset,
+    });
+
+    // Fallback: if RPC doesn't exist, use regular update
+    if (updated === null || updated === undefined) {
+      const newCount = currentCount + 1;
+      const updatePayload: Record<string, unknown> = {
+        view_count: newCount,
+      };
+      if (needsReset) {
+        updatePayload.view_count_reset_at = new Date().toISOString();
+      }
+      await supabase
+        .from("projects")
+        .update(updatePayload)
+        .eq("id", project.id);
+
+      return NextResponse.json({
+        success: true,
+        allowed: true,
+        views: newCount,
+        limit: maxViews,
+        plan: planId,
+      });
     }
 
-    await supabase
-      .from("projects")
-      .update(updatePayload)
-      .eq("id", project.id);
-
+    // RPC returns new count, or -1 if limit exceeded
+    const allowed = updated >= 0 && updated <= maxViews;
     return NextResponse.json({
-      success: true,
-      allowed: true,
-      views: newCount,
+      success: allowed,
+      allowed,
+      views: allowed ? updated : currentCount,
       limit: maxViews,
       plan: planId,
     });

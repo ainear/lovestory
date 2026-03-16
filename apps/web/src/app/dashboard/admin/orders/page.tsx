@@ -22,9 +22,9 @@ interface Order {
 }
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Cho xu xac nhan",
-  paid: "Da thanh toan",
-  cancelled: "Da huy",
+  pending: "Chờ xác nhận",
+  paid: "Đã thanh toán",
+  cancelled: "Đã hủy",
 };
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
@@ -34,10 +34,10 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 };
 
 const TABS: { label: string; value: OrderStatus | "all" }[] = [
-  { label: "Tat ca", value: "all" },
-  { label: "Cho xac nhan", value: "pending" },
-  { label: "Da thanh toan", value: "paid" },
-  { label: "Da huy", value: "cancelled" },
+  { label: "Tất cả", value: "all" },
+  { label: "Chờ xác nhận", value: "pending" },
+  { label: "Đã thanh toán", value: "paid" },
+  { label: "Đã hủy", value: "cancelled" },
 ];
 
 function formatDate(dateStr: string): string {
@@ -93,8 +93,8 @@ export default function AdminOrdersPage() {
   async function handleAction(orderId: string, action: "confirm" | "cancel") {
     const confirmMsg =
       action === "confirm"
-        ? "Xac nhan thanh toan don hang nay?"
-        : "Huy don hang nay?";
+        ? "Xác nhận thanh toán đơn hàng này?"
+        : "Hủy đơn hàng này?";
 
     if (!window.confirm(confirmMsg)) return;
 
@@ -113,7 +113,7 @@ export default function AdminOrdersPage() {
 
       setToast({
         message:
-          action === "confirm" ? "Da xac nhan thanh toan!" : "Da huy don hang!",
+          action === "confirm" ? "Đã xác nhận thanh toán!" : "Đã hủy đơn hàng!",
         type: "success",
       });
 
@@ -130,7 +130,7 @@ export default function AdminOrdersPage() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">
-          Quan ly don hang
+          Quản lý đơn hàng
         </h1>
 
         {/* Filter Tabs */}
@@ -170,20 +170,20 @@ export default function AdminOrdersPage() {
           </div>
         ) : orders.length === 0 ? (
           <div className="rounded-xl bg-white p-12 text-center text-gray-500 shadow-sm">
-            Khong co don hang nao.
+            Không có đơn hàng nào.
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  <th className="px-4 py-3">Ma don</th>
+                  <th className="px-4 py-3">Mã đơn</th>
                   <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Goi</th>
-                  <th className="px-4 py-3">So tien</th>
-                  <th className="px-4 py-3">Trang thai</th>
-                  <th className="px-4 py-3">Ngay tao</th>
-                  <th className="px-4 py-3">Thao tac</th>
+                  <th className="px-4 py-3">Gói</th>
+                  <th className="px-4 py-3">Số tiền</th>
+                  <th className="px-4 py-3">Trạng thái</th>
+                  <th className="px-4 py-3">Ngày tạo</th>
+                  <th className="px-4 py-3">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -233,14 +233,14 @@ export default function AdminOrdersPage() {
                             disabled={actionLoading === order.id}
                             className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                           >
-                            {actionLoading === order.id ? "..." : "Xac nhan"}
+                            {actionLoading === order.id ? "..." : "Xác nhận"}
                           </button>
                           <button
                             onClick={() => handleAction(order.id, "cancel")}
                             disabled={actionLoading === order.id}
                             className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                           >
-                            Huy
+                            Hủy
                           </button>
                         </div>
                       ) : (
@@ -257,7 +257,7 @@ export default function AdminOrdersPage() {
         {/* Summary */}
         {!loading && orders.length > 0 && (
           <div className="mt-4 text-sm text-gray-500">
-            Hien thi {orders.length} don hang
+            Hiển thị {orders.length} đơn hàng
           </div>
         )}
       </div>
