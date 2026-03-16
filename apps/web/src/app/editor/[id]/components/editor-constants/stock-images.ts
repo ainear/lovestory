@@ -43,6 +43,9 @@ function img(id: string, label: string, category: StockCategory): StockImage {
   };
 }
 
+// TODO: Replace duplicated Unsplash photo IDs with unique ones.
+// Some IDs appear in multiple categories. Browse https://unsplash.com/s/photos/wedding
+// and replace duplicates with unique photo IDs.
 /* ── Stock image library — 120+ curated wedding photos ── */
 export const STOCK_IMAGES: StockImage[] = [
   // Couple (6)

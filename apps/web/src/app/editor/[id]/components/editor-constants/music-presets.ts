@@ -1,3 +1,6 @@
+// TODO: Replace placeholder audio URLs with unique Pixabay tracks.
+// Current URLs are recycled across entries. Browse https://pixabay.com/music/search/wedding/
+// and replace each entry's `url` with a distinct CDN link.
 export type MusicCategory =
   | "intl"
   | "vpop"
