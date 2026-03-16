@@ -1,23 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { panelLabelStyle } from "../editor-constants";
 import type {
   EditorAction,
   CanvasElement,
   WidgetProps,
 } from "../canvas-engine/types";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import UpgradeCTA from "@/components/UpgradeCTA";
+import type { PlanFeatures, PlanId } from "@/config/plans";
 
 interface PluginsTabProps {
   triggerAutosave: () => void;
   editorDispatch?: React.Dispatch<EditorAction>;
 }
 
-const WIDGETS: {
+interface WidgetDef {
   label: string;
   desc: string;
   widgetType: WidgetProps["widgetType"];
-}[] = [
+  requiredFeature?: keyof PlanFeatures;
+  requiredPlan?: PlanId;
+}
+
+const WIDGETS: WidgetDef[] = [
   {
     label: "⏱️ Đếm ngược",
     desc: "Live countdown đến ngày cưới",
@@ -39,11 +46,19 @@ const WIDGETS: {
     desc: "Gọi điện / Zalo / SMS",
     widgetType: "callbutton",
   },
-  { label: "📸 Album ảnh", desc: "Gallery ảnh cưới", widgetType: "album" },
+  {
+    label: "📸 Album ảnh",
+    desc: "Gallery ảnh cưới",
+    widgetType: "album",
+    requiredFeature: "albumWidget",
+    requiredPlan: "basic",
+  },
   {
     label: "🎥 Video YouTube",
     desc: "Nhúng video cưới",
     widgetType: "youtube",
+    requiredFeature: "youtubeEmbed",
+    requiredPlan: "basic",
   },
   {
     label: "🎁 QR Box",
@@ -59,6 +74,8 @@ const WIDGETS: {
     label: "📋 Form tuỳ chỉnh",
     desc: "Tạo form thông tin khách mời",
     widgetType: "formbuilder",
+    requiredFeature: "customForms",
+    requiredPlan: "premium",
   },
   {
     label: "💌 Phong bì thư",
@@ -71,6 +88,9 @@ export function PluginsTab({
   triggerAutosave,
   editorDispatch,
 }: PluginsTabProps) {
+  const { hasFeature } = useSubscription();
+  const [lockedWidget, setLockedWidget] = useState<WidgetDef | null>(null);
+
   function addWidget(widgetType: WidgetProps["widgetType"]) {
     if (!editorDispatch) return;
     const element: CanvasElement = {
@@ -99,38 +119,93 @@ export function PluginsTab({
     triggerAutosave();
   }
 
+  function handleWidgetClick(widget: WidgetDef) {
+    if (widget.requiredFeature && !hasFeature(widget.requiredFeature)) {
+      setLockedWidget(widget);
+      return;
+    }
+    addWidget(widget.widgetType);
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p style={panelLabelStyle}>Thêm tiện ích</p>
-      {WIDGETS.map((widget) => (
-        <button
-          key={widget.label}
-          onClick={() => addWidget(widget.widgetType)}
-          style={{
-            padding: "12px 14px",
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            background: "#fff",
-            cursor: "pointer",
-            textAlign: "left",
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            transition: "all 0.15s",
-          }}
-        >
-          <span
+
+      {lockedWidget && lockedWidget.requiredPlan && (
+        <div style={{ marginBottom: 4 }}>
+          <UpgradeCTA
+            feature={lockedWidget.label}
+            requiredPlan={lockedWidget.requiredPlan}
+            compact
+          />
+          <button
+            onClick={() => setLockedWidget(null)}
             style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "#374151",
+              marginTop: 4,
+              fontSize: 11,
+              color: "#9ca3af",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
             }}
           >
-            {widget.label}
-          </span>
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>{widget.desc}</span>
-        </button>
-      ))}
+            Ẩn
+          </button>
+        </div>
+      )}
+
+      {WIDGETS.map((widget) => {
+        const isLocked =
+          !!widget.requiredFeature && !hasFeature(widget.requiredFeature);
+
+        return (
+          <button
+            key={widget.label}
+            onClick={() => handleWidgetClick(widget)}
+            style={{
+              position: "relative",
+              padding: "12px 14px",
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              background: "#fff",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              transition: "all 0.15s",
+              opacity: isLocked ? 0.5 : 1,
+            }}
+          >
+            {isLocked && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 10,
+                  fontSize: 14,
+                }}
+                aria-hidden="true"
+              >
+                🔒
+              </span>
+            )}
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#374151",
+              }}
+            >
+              {widget.label}
+            </span>
+            <span style={{ fontSize: 11, color: "#9ca3af" }}>
+              {widget.desc}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
