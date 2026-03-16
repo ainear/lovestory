@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import DOMPurify from "isomorphic-dompurify";
 import type {
   EditorAction,
   CanvasElement,
@@ -141,7 +142,9 @@ export function ShapesTab({ triggerAutosave, editorDispatch }: ShapesTabProps) {
           >
             <div
               style={{ width: 40, height: 40, color: "#6b7280" }}
-              dangerouslySetInnerHTML={{ __html: shape.svg }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(shape.svg),
+              }}
             />
             <span
               style={{

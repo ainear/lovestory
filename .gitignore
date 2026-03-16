@@ -31,6 +31,13 @@ yarn-error.log*
 
 # Testing
 coverage
+test-results/
+playwright-report/
+.playwright-mcp/
+
+# Debug screenshots
+/*.png
+apps/web/tests/e2e/screenshots/
 
 # Drizzle
 drizzle/meta

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import DOMPurify from "isomorphic-dompurify";
 import {
   CLIPART_CATEGORIES,
   CLIPART_ITEMS,
@@ -122,7 +123,9 @@ export function StockTab({
           >
             <div
               style={{ width: "100%", height: "100%" }}
-              dangerouslySetInnerHTML={{ __html: item.svgContent }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(item.svgContent),
+              }}
             />
           </button>
         ))}
