@@ -2625,7 +2625,12 @@ function CraftV2Renderer({
 
       const stickerFn = STICKER_SVGS_VIEWER[p.stickerId || "heart-divider"];
       if (!stickerFn) return <div key={nodeId} />;
-      const svgStr = stickerFn(sColor);
+      const rawSvg = stickerFn(sColor);
+      const cleanStickerSvg = DOMPurify.sanitize(rawSvg, {
+        USE_PROFILES: { svg: true, svgFilters: true },
+        FORBID_TAGS: ["script", "foreignObject"],
+        FORBID_ATTR: ["onclick", "onload", "onerror", "onmouseover"],
+      });
       return (
         <div
           key={nodeId}
@@ -2637,7 +2642,7 @@ function CraftV2Renderer({
             opacity: sOpacity,
           }}
           dangerouslySetInnerHTML={{
-            __html: svgStr.replace(
+            __html: cleanStickerSvg.replace(
               "<svg ",
               `<svg width="${sSize}" height="${sSize * 0.25}" `,
             ),

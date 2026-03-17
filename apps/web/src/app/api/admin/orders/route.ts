@@ -1,31 +1,5 @@
-import { createClient as createServerClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-
-async function verifyAdmin() {
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-  if (!ADMIN_EMAIL) {
-    return { error: "Server misconfigured", status: 500 };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || user.email !== ADMIN_EMAIL) {
-    return { error: "Unauthorized", status: 403 };
-  }
-
-  return { user };
-}
-
-function getAdminClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
+import { verifyAdmin, getAdminClient } from "@/lib/admin";
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAdmin();

@@ -1,24 +1,13 @@
-import { createClient as createServerClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdmin, getAdminClient } from "@/lib/admin";
 
 export async function POST(req: NextRequest) {
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-  if (!ADMIN_EMAIL) {
-    console.error("ADMIN_EMAIL environment variable is not set");
+  const result = await verifyAdmin();
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Server misconfigured" },
-      { status: 500 },
+      { error: result.error },
+      { status: result.status },
     );
-  }
-
-  // Auth check — must be admin
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || user.email !== ADMIN_EMAIL) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   const { userId, plan } = await req.json();
@@ -27,10 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Use service role to manage subscriptions
-  const adminClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  const adminClient = getAdminClient();
 
   if (plan === "free") {
     // Delete subscription row (= free plan)
