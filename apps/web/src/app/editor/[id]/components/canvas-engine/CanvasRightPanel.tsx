@@ -77,6 +77,8 @@ interface CanvasRightPanelProps {
 
 export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const { state, dispatch, selectedElement: el } = useEditorContext();
+  // Preserve ref before the early-return guard so closures can see it
+  const selectedEl = el ?? null;
   const params = useParams<{ id: string }>();
   const imageUploadRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -116,6 +118,14 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
           setQrBank={(v) => {
             props.setQrBank(v);
             props.triggerAutosave();
+          }}
+          selectedElementId={selectedEl?.id}
+          selectedElementType={selectedEl?.type}
+          onApplySuggestion={(suggestionText) => {
+            if (selectedEl && selectedEl.type === "text") {
+              dispatch({ type: "UPDATE_PROPS", id: selectedEl.id, props: { text: suggestionText } });
+              props.triggerAutosave();
+            }
           }}
         />
         <LayersPanel />
