@@ -3,6 +3,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useEditorContext } from "./useEditorState";
 import { LayersPanel } from "./LayersPanel";
+import { HistoryPanel } from "./HistoryPanel";
 import { PremiumFeaturesPanel } from "./PremiumFeaturesPanel";
 import { ProjectSettingsPanel } from "./ProjectSettingsPanel";
 import type { TextProps, ImageProps, WidgetProps } from "./types";
@@ -129,6 +130,7 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
           }}
         />
         <LayersPanel />
+        <HistoryPanel />
       </div>
     );
   }
