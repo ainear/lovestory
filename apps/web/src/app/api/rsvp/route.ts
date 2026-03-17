@@ -24,12 +24,29 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { projectId, guestName, status, guestCount, phone } = body;
+    const { projectId, guestName, status, guestCount, phone, website } = body;
+
+    // Honeypot: bots fill hidden "website" field
+    if (website) {
+      return NextResponse.json({ success: true, data: {} });
+    }
 
     if (!projectId || !guestName) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
+      );
+    }
+
+    // Per-project rate limit: 50 RSVPs/hour per project (prevents mass spam)
+    const prl = checkRateLimit(`rsvp-proj:${projectId}`, {
+      limit: 50,
+      windowSec: 3600,
+    });
+    if (!prl.allowed) {
+      return NextResponse.json(
+        { error: "Quá nhiều RSVP, vui lòng thử lại sau" },
+        { status: 429, headers: { "Retry-After": String(prl.resetIn) } },
       );
     }
 

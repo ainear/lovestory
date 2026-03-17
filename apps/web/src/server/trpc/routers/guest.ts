@@ -4,202 +4,221 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 /** Strip HTML tags & trim to prevent XSS */
 function sanitize(str: string, maxLen = 500): string {
-    return str.replace(/<[^>]*>/g, "").trim().slice(0, maxLen);
+  return str
+    .replace(/<[^>]*>/g, "")
+    .trim()
+    .slice(0, maxLen);
 }
 
 export const guestRouter = router({
-    // Public — guests can submit wishes without auth
-    submitWish: publicProcedure
-        .input(
-            z.object({
-                projectId: z.string().uuid(),
-                guestName: z.string().min(1).max(100),
-                message: z.string().min(1).max(500),
-                emoji: z.string().max(10).optional(),
-            }),
-        )
-        .mutation(async ({ ctx, input }) => {
-            const rl = checkRateLimit(`trpc-wish:${input.projectId}`, { limit: 10, windowSec: 60 });
-            if (!rl.allowed) throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
+  // Public — guests can submit wishes without auth
+  submitWish: publicProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        guestName: z.string().min(1).max(100),
+        message: z.string().min(1).max(500),
+        emoji: z.string().max(10).optional(),
+        website: z.string().optional(), // honeypot
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Honeypot: bots fill hidden "website" field
+      if (input.website) return { success: true, data: {} };
 
-            const { data, error } = await ctx.supabase
-                .from("wishes")
-                .insert({
-                    project_id: input.projectId,
-                    guest_name: sanitize(input.guestName, 100),
-                    message: sanitize(input.message, 500),
-                    emoji: sanitize(input.emoji || "❤️", 10),
-                })
-                .select()
-                .single();
+      const rl = checkRateLimit(`trpc-wish:${input.projectId}`, {
+        limit: 10,
+        windowSec: 60,
+      });
+      if (!rl.allowed)
+        throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
 
-            if (error) throw new Error(error.message);
-            return { success: true, data };
-        }),
+      const { data, error } = await ctx.supabase
+        .from("wishes")
+        .insert({
+          project_id: input.projectId,
+          guest_name: sanitize(input.guestName, 100),
+          message: sanitize(input.message, 500),
+          emoji: sanitize(input.emoji || "❤️", 10),
+        })
+        .select()
+        .single();
 
-    getWishes: publicProcedure
-        .input(z.object({ projectId: z.string().uuid() }))
-        .query(async ({ ctx, input }) => {
-            const { data } = await ctx.supabase
-                .from("wishes")
-                .select("id, guest_name, message, emoji, created_at")
-                .eq("project_id", input.projectId)
-                .order("created_at", { ascending: false })
-                .limit(50);
+      if (error) throw new Error(error.message);
+      return { success: true, data };
+    }),
 
-            return data || [];
-        }),
+  getWishes: publicProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const { data } = await ctx.supabase
+        .from("wishes")
+        .select("id, guest_name, message, emoji, created_at")
+        .eq("project_id", input.projectId)
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-    // Public — RSVP without auth
-    submitRsvp: publicProcedure
-        .input(
-            z.object({
-                projectId: z.string().uuid(),
-                guestName: z.string().min(1).max(100),
-                status: z.enum(["confirmed", "declined", "maybe"]),
-                guestCount: z.number().min(1).max(50).default(1),
-                phone: z.string().max(20).optional(),
-            }),
-        )
-        .mutation(async ({ ctx, input }) => {
-            const rl = checkRateLimit(`trpc-rsvp:${input.projectId}`, { limit: 10, windowSec: 60 });
-            if (!rl.allowed) throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
+      return data || [];
+    }),
 
-            const { data, error } = await ctx.supabase
-                .from("rsvp_responses")
-                .insert({
-                    project_id: input.projectId,
-                    guest_name: sanitize(input.guestName, 100),
-                    status: input.status,
-                    guest_count: input.guestCount,
-                    phone: sanitize(input.phone || "", 20),
-                })
-                .select()
-                .single();
+  // Public — RSVP without auth
+  submitRsvp: publicProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        guestName: z.string().min(1).max(100),
+        status: z.enum(["confirmed", "declined", "maybe"]),
+        guestCount: z.number().min(1).max(50).default(1),
+        phone: z.string().max(20).optional(),
+        website: z.string().optional(), // honeypot
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Honeypot: bots fill hidden "website" field
+      if (input.website) return { success: true, data: {} };
 
-            if (error) throw new Error(error.message);
-            return { success: true, data };
-        }),
+      const rl = checkRateLimit(`trpc-rsvp:${input.projectId}`, {
+        limit: 10,
+        windowSec: 60,
+      });
+      if (!rl.allowed)
+        throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
 
-    // Protected — owner views RSVPs
-    listRsvps: protectedProcedure
-        .input(z.object({ projectId: z.string().uuid() }))
-        .query(async ({ ctx, input }) => {
-            // Verify ownership
-            const { data: project } = await ctx.supabase
-                .from("projects")
-                .select("id")
-                .eq("id", input.projectId)
-                .eq("user_id", ctx.user.id)
-                .single();
+      const { data, error } = await ctx.supabase
+        .from("rsvp_responses")
+        .insert({
+          project_id: input.projectId,
+          guest_name: sanitize(input.guestName, 100),
+          status: input.status,
+          guest_count: input.guestCount,
+          phone: sanitize(input.phone || "", 20),
+        })
+        .select()
+        .single();
 
-            if (!project) throw new Error("Project not found");
+      if (error) throw new Error(error.message);
+      return { success: true, data };
+    }),
 
-            const { data } = await ctx.supabase
-                .from("rsvp_responses")
-                .select("*")
-                .eq("project_id", input.projectId)
-                .order("created_at", { ascending: false });
+  // Protected — owner views RSVPs
+  listRsvps: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify ownership
+      const { data: project } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
 
-            return data || [];
-        }),
+      if (!project) throw new Error("Project not found");
 
-    // Protected — owner views gifts
-    listGifts: protectedProcedure
-        .input(z.object({ projectId: z.string().uuid() }))
-        .query(async ({ ctx, input }) => {
-            // Verify ownership
-            const { data: project } = await ctx.supabase
-                .from("projects")
-                .select("id")
-                .eq("id", input.projectId)
-                .eq("user_id", ctx.user.id)
-                .single();
+      const { data } = await ctx.supabase
+        .from("rsvp_responses")
+        .select("*")
+        .eq("project_id", input.projectId)
+        .order("created_at", { ascending: false });
 
-            if (!project) throw new Error("Project not found");
+      return data || [];
+    }),
 
-            const { data } = await ctx.supabase
-                .from("gifts")
-                .select("*")
-                .eq("project_id", input.projectId)
-                .order("created_at", { ascending: false });
+  // Protected — owner views gifts
+  listGifts: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify ownership
+      const { data: project } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
 
-            return data || [];
-        }),
+      if (!project) throw new Error("Project not found");
 
-    // Protected — add a guest to a project
-    addGuest: protectedProcedure
-        .input(
-            z.object({
-                projectId: z.string().uuid(),
-                name: z.string().min(1).max(100),
-                email: z.string().email().optional().or(z.literal("")),
-                phone: z.string().max(20).optional(),
-            }),
-        )
-        .mutation(async ({ ctx, input }) => {
-            // Verify ownership
-            const { data: project } = await ctx.supabase
-                .from("projects")
-                .select("id, slug")
-                .eq("id", input.projectId)
-                .eq("user_id", ctx.user.id)
-                .single();
+      const { data } = await ctx.supabase
+        .from("gifts")
+        .select("*")
+        .eq("project_id", input.projectId)
+        .order("created_at", { ascending: false });
 
-            if (!project) throw new Error("Project not found");
+      return data || [];
+    }),
 
-            const { data, error } = await ctx.supabase
-                .from("guests")
-                .insert({
-                    project_id: input.projectId,
-                    user_id: ctx.user.id,
-                    name: sanitize(input.name, 100),
-                    email: input.email || null,
-                    phone: sanitize(input.phone || "", 20) || null,
-                    status: "pending",
-                })
-                .select()
-                .single();
+  // Protected — add a guest to a project
+  addGuest: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().uuid(),
+        name: z.string().min(1).max(100),
+        email: z.string().email().optional().or(z.literal("")),
+        phone: z.string().max(20).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify ownership
+      const { data: project } = await ctx.supabase
+        .from("projects")
+        .select("id, slug")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
 
-            if (error) throw new Error(error.message);
-            return { success: true, data };
-        }),
+      if (!project) throw new Error("Project not found");
 
-    // Protected — list guests for a project
-    listGuests: protectedProcedure
-        .input(z.object({ projectId: z.string().uuid() }))
-        .query(async ({ ctx, input }) => {
-            // Verify ownership
-            const { data: project } = await ctx.supabase
-                .from("projects")
-                .select("id")
-                .eq("id", input.projectId)
-                .eq("user_id", ctx.user.id)
-                .single();
+      const { data, error } = await ctx.supabase
+        .from("guests")
+        .insert({
+          project_id: input.projectId,
+          user_id: ctx.user.id,
+          name: sanitize(input.name, 100),
+          email: input.email || null,
+          phone: sanitize(input.phone || "", 20) || null,
+          status: "pending",
+        })
+        .select()
+        .single();
 
-            if (!project) throw new Error("Project not found");
+      if (error) throw new Error(error.message);
+      return { success: true, data };
+    }),
 
-            const { data } = await ctx.supabase
-                .from("guests")
-                .select("id, name, email, phone, status, created_at")
-                .eq("project_id", input.projectId)
-                .order("created_at", { ascending: false });
+  // Protected — list guests for a project
+  listGuests: protectedProcedure
+    .input(z.object({ projectId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Verify ownership
+      const { data: project } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
 
-            return data || [];
-        }),
+      if (!project) throw new Error("Project not found");
 
-    // Protected — delete a guest
-    deleteGuest: protectedProcedure
-        .input(z.object({ guestId: z.string().uuid() }))
-        .mutation(async ({ ctx, input }) => {
-            // Verify ownership via user_id on guest row
-            const { error } = await ctx.supabase
-                .from("guests")
-                .delete()
-                .eq("id", input.guestId)
-                .eq("user_id", ctx.user.id);
+      const { data } = await ctx.supabase
+        .from("guests")
+        .select("id, name, email, phone, status, created_at")
+        .eq("project_id", input.projectId)
+        .order("created_at", { ascending: false });
 
-            if (error) throw new Error(error.message);
-            return { success: true };
-        }),
+      return data || [];
+    }),
+
+  // Protected — delete a guest
+  deleteGuest: protectedProcedure
+    .input(z.object({ guestId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify ownership via user_id on guest row
+      const { error } = await ctx.supabase
+        .from("guests")
+        .delete()
+        .eq("id", input.guestId)
+        .eq("user_id", ctx.user.id);
+
+      if (error) throw new Error(error.message);
+      return { success: true };
+    }),
 });

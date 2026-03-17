@@ -24,12 +24,29 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { projectId, guestName, message, emoji } = body;
+    const { projectId, guestName, message, emoji, website } = body;
+
+    // Honeypot: bots fill hidden "website" field
+    if (website) {
+      return NextResponse.json({ success: true, data: {} });
+    }
 
     if (!projectId || !guestName || !message) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
+      );
+    }
+
+    // Per-project rate limit: 100 wishes/hour per project
+    const prl = checkRateLimit(`wish-proj:${projectId}`, {
+      limit: 100,
+      windowSec: 3600,
+    });
+    if (!prl.allowed) {
+      return NextResponse.json(
+        { error: "Quá nhiều lời chúc, vui lòng thử lại sau" },
+        { status: 429, headers: { "Retry-After": String(prl.resetIn) } },
       );
     }
 
