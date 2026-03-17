@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PLANS, PLAN_IDS, formatPrice, type PlanId } from "@/config/plans";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Bảng giá — LoveStory",
@@ -95,9 +96,25 @@ function CellValue({ value }: { value: string | boolean }) {
   );
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  // ── A/B test: basic tier pricing (cookie-based, 50/50) ──
+  const cookieStore = await cookies();
+  const abCookie = cookieStore.get("ab_pricing")?.value;
+  const abVariant: "control" | "variant" = (abCookie as "control" | "variant") ??
+    (Math.random() < 0.5 ? "control" : "variant");
+  // Variant: 49K basic (lower friction). Control: 199K (original).
+  const basicPrice = abVariant === "variant" ? 49_000 : PLANS.basic.price;
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {isDev && (
+        <div style={{ position: "fixed", bottom: 8, right: 8, zIndex: 9999,
+          background: abVariant === "variant" ? "#10b981" : "#3b82f6",
+          color: "#fff", padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+          A/B: [{abVariant === "variant" ? "B" : "A"}] {abVariant === "variant" ? "49K" : "199K"}
+        </div>
+      )}
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6">
         <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between">
@@ -193,8 +210,11 @@ export default function PricingPage() {
                   </p>
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-extrabold text-gray-900">
-                      {formatPrice(plan.price)}
+                      {formatPrice(plan.id === "basic" ? basicPrice : plan.price)}
                     </span>
+                    {plan.id === "basic" && abVariant === "variant" && (
+                      <span className="text-sm line-through text-gray-400 ml-1">{formatPrice(PLANS.basic.price)}</span>
+                    )}
                     {!isFree && (
                       <span className="text-[13px] text-gray-400">/1 lần</span>
                     )}

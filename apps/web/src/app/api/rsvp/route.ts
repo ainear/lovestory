@@ -89,6 +89,10 @@ export async function POST(req: NextRequest) {
         const { data: { user } } = await supabase.auth.admin.getUserById(project.user_id);
         if (!user?.email) return;
 
+        // ── Opt-in check: skip email if owner unsubscribed for this project ──
+        const rsvpUnsub: string[] = user.user_metadata?.rsvp_unsub ?? [];
+        if (rsvpUnsub.includes(projectId)) return;
+
         // 3. Map request status to email status type
         const emailStatus =
           status === "declined" ? "declined"

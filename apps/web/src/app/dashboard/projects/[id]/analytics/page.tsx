@@ -12,6 +12,8 @@ export default function ProjectAnalyticsPage() {
     const [project, setProject] = useState<any>(null);
     const [rsvps, setRsvps] = useState<any[]>([]);
     const [wishes, setWishes] = useState<any[]>([]);
+    const [viewCount, setViewCount] = useState<number>(0);
+    const [liveViews, setLiveViews] = useState(false);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,9 +34,34 @@ export default function ProjectAnalyticsPage() {
             setProject(projectRes.data);
             setRsvps(rsvpRes.data || []);
             setWishes(wishRes.data || []);
+            setViewCount(projectRes.data?.view_count || 0);
             setLoading(false);
         }
         load();
+
+        // ── Supabase Realtime: watch view_count updates for this project ──
+        const channel = supabase
+            .channel(`analytics:${projectId}`)
+            .on(
+                "postgres_changes",
+                {
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "projects",
+                    filter: `id=eq.${projectId}`,
+                },
+                (payload) => {
+                    const newCount = payload.new?.view_count;
+                    if (typeof newCount === "number") {
+                        setViewCount(newCount);
+                        setLiveViews(true);
+                        setTimeout(() => setLiveViews(false), 2000);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, [projectId]);
 
     if (loading) {
@@ -58,7 +85,7 @@ export default function ProjectAnalyticsPage() {
     const declinedPct = Math.round((declinedCount / totalRsvps) * 100);
 
     const stats = [
-        { label: "Lượt xem", value: project.view_count || 0, icon: "👁️", color: "#3b82f6", bg: "#eff6ff" },
+        { label: liveViews ? "👁️ Lượt xem 🔴 Live" : "Lượt xem", value: viewCount, icon: "👁️", color: liveViews ? "#ef4444" : "#3b82f6", bg: liveViews ? "#fef2f2" : "#eff6ff" },
         { label: "Tham dự", value: attendingCount, icon: "✅", color: "#10b981", bg: "#ecfdf5" },
         { label: "Có thể", value: maybeCount, icon: "🤔", color: "#f59e0b", bg: "#fffbeb" },
         { label: "Không đến", value: declinedCount, icon: "❌", color: "#ef4444", bg: "#fef2f2" },

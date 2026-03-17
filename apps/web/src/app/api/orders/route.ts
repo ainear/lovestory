@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
 import { PLAN_PRICES } from "@/config/plans";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const SEPAY_MERCHANT_ID = process.env.SEPAY_MERCHANT_ID!;
 const SEPAY_SECRET_KEY = process.env.SEPAY_SECRET_KEY!;
@@ -36,6 +37,15 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 5 orders/min per user (prevent spam orders)
+    const rl = checkRateLimit(`order:${user.id}`, { limit: 5, windowSec: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" },
+        { status: 429, headers: { "Retry-After": String(rl.resetIn) } },
+      );
     }
 
     const body: CreateOrderBody = await req.json();
