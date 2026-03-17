@@ -179,7 +179,51 @@ function TemplateCard({
                     {template.tier === "premium" ? "PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
                 </span>
 
-                {/* Hover Overlay — cinelove style */}
+                {/* Premium lock overlay — always visible on premium cards */}
+                {template.tier === "premium" && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 4,
+                            background: "linear-gradient(0deg, rgba(109,40,217,0.92) 0%, transparent 100%)",
+                            padding: "40px 12px 12px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 4,
+                        }}
+                    >
+                        <span style={{ fontSize: 20 }}>🔒</span>
+                        <span
+                            style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: "#fff",
+                                letterSpacing: 1,
+                                textTransform: "uppercase",
+                            }}
+                        >
+                            ⭐ Gói Premium
+                        </span>
+                        <a
+                            href={`/pricing?from=template&id=${template.slug}`}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                fontSize: 10,
+                                color: "#e9d5ff",
+                                fontWeight: 600,
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Nâng cấp →
+                        </a>
+                    </div>
+                )}
+
                 {hovered && (
                     <div style={{
                         position: "absolute", inset: 0, zIndex: 3,

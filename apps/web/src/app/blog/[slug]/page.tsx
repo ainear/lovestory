@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import DOMPurify from "isomorphic-dompurify";
@@ -56,10 +57,18 @@ export async function generateMetadata({
     title: `${post.title} | Blog LoveStory`,
     description: post.excerpt,
     openGraph: {
+      type: "article",
+      locale: "vi_VN",
+      siteName: "LoveStory",
       title: post.title,
       description: post.excerpt,
       url: `https://7app.online/blog/${slug}`,
-      images: post.cover_url ? [{ url: post.cover_url }] : [],
+      images: post.cover_url ? [{ url: post.cover_url, width: 1200, height: 630, alt: post.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
     },
     alternates: { canonical: `https://7app.online/blog/${slug}` },
   };
@@ -211,17 +220,16 @@ export default async function BlogPostPage({
 
         {/* Cover */}
         {post.cover_url && (
-          <img
-            src={post.cover_url}
-            alt={post.title}
-            style={{
-              width: "100%",
-              borderRadius: 16,
-              marginBottom: 32,
-              objectFit: "cover",
-              maxHeight: 400,
-            }}
-          />
+          <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 32 }}>
+            <Image
+              src={post.cover_url}
+              alt={post.title}
+              width={760}
+              height={400}
+              style={{ width: "100%", height: "auto", maxHeight: 400, objectFit: "cover", display: "block" }}
+              priority
+            />
+          </div>
         )}
 
         {/* Content */}
@@ -250,7 +258,7 @@ export default async function BlogPostPage({
             Miễn phí · Đẹp · Chia sẻ được trong 5 phút
           </p>
           <Link
-            href="/login"
+            href={`/login?ref=blog-post&from=${post.slug}`}
             style={{
               display: "inline-block",
               padding: "12px 28px",

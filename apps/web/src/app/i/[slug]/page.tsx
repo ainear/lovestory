@@ -3733,6 +3733,91 @@ export default function PublicInvitationPage({
         />
       )}
 
+      {/* ── Viral Growth CTA — "Tạo thiệp của bạn" ── */}
+      <div
+        style={{
+          maxWidth: 480,
+          margin: "32px auto 80px",
+          padding: "0 16px",
+        }}
+      >
+        <div
+          style={{
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(16px)",
+            borderRadius: 20,
+            border: "1px solid rgba(255,107,157,0.15)",
+            boxShadow: "0 4px 24px rgba(255,107,157,0.1)",
+            padding: "20px 24px",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              letterSpacing: 3,
+              color: "#9ca3af",
+              margin: "0 0 8px",
+              textTransform: "uppercase",
+              fontWeight: 600,
+            }}
+          >
+            Được tạo bởi
+          </p>
+          <p
+            style={{
+              fontSize: 20,
+              fontWeight: 800,
+              margin: "0 0 4px",
+              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            ❤️ LoveStory
+          </p>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#6b7280",
+              margin: "0 0 16px",
+              lineHeight: 1.5,
+            }}
+          >
+            Tạo thiệp cưới online đẹp, miễn phí trong 5 phút
+          </p>
+          <a
+            href={`/login?ref=invitation&from=${pageSlug || "unknown"}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 24px",
+              borderRadius: 50,
+              background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow: "0 6px 20px rgba(255,107,157,0.4)",
+              transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 10px 28px rgba(255,107,157,0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(255,107,157,0.4)";
+            }}
+          >
+            💌 Tạo thiệp cưới miễn phí →
+          </a>
+        </div>
+      </div>
+
       {/* Floating Heart button (bottom-right) */}
       {pageSlug && <HeartButton slug={pageSlug} />}
 
