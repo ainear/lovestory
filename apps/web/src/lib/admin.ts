@@ -57,8 +57,10 @@ export async function isAdminUser(userId: string): Promise<boolean> {
 
 /** Service-role client for admin operations */
 export function getAdminClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("Missing SUPABASE_URL or SERVICE_ROLE_KEY env vars");
+  }
+  return createServerClient(url, key);
 }
