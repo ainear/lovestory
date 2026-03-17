@@ -354,6 +354,9 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        {/* DNS preconnect for faster asset loading */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project.supabase.co"} crossOrigin="anonymous" />
       </head>
       <body
         suppressHydrationWarning
