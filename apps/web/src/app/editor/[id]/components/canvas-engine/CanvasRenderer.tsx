@@ -142,10 +142,16 @@ function ShapeElement({ el }: { el: CanvasElement }) {
   );
 }
 
-/** Validate image URL — only allow https and data URIs */
+/** Validate image URL — allow https, data URIs, blob, and relative paths */
 function isValidImageSrc(src: string): boolean {
   if (!src || typeof src !== "string") return false;
-  return src.startsWith("https://") || src.startsWith("data:image/");
+  return (
+    src.startsWith("https://") ||
+    src.startsWith("http://") ||
+    src.startsWith("/") ||
+    src.startsWith("blob:") ||
+    src.startsWith("data:image/")
+  );
 }
 
 /** Render a single image element */

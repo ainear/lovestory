@@ -1,5 +1,6 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
 import { useEditorContext } from "./useEditorState";
 import { LayersPanel } from "./LayersPanel";
 import { PremiumFeaturesPanel } from "./PremiumFeaturesPanel";
@@ -76,6 +77,9 @@ interface CanvasRightPanelProps {
 
 export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const { state, dispatch, selectedElement: el } = useEditorContext();
+  const params = useParams<{ id: string }>();
+  const imageUploadRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   if (!el) {
     return (
@@ -133,6 +137,40 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
 
   const updateElement = (patch: Record<string, unknown>) => {
     dispatch({ type: "UPDATE_ELEMENT", id: el.id, patch });
+  };
+
+  const handleImageReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ALLOWED = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!ALLOWED.includes(file.type)) {
+      alert("Chỉ hỗ trợ JPEG, PNG, GIF, WebP.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File quá lớn. Giới hạn 10MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("projectId", params.id);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        updateProp({ src: data.url });
+        props.triggerAutosave();
+      }
+    } catch {
+      alert("Upload thất bại. Vui lòng thử lại.");
+    } finally {
+      setUploading(false);
+      if (e.target) e.target.value = "";
+    }
   };
 
   return (
@@ -329,6 +367,34 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
       {/* ── Image Properties ── */}
       {isImage && imageProps && (
         <PanelSection title="Hình ảnh" icon="🖼️">
+          {/* Upload button */}
+          <input
+            ref={imageUploadRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleImageReplace}
+            style={{ display: "none" }}
+          />
+          <button
+            onClick={() => imageUploadRef.current?.click()}
+            disabled={uploading}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              marginBottom: 10,
+              border: "2px dashed #d1d5db",
+              borderRadius: 8,
+              background: uploading ? "#f3f4f6" : "#fafafa",
+              color: uploading ? "#9ca3af" : "#6b7280",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: uploading ? "wait" : "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            {uploading ? "Đang tải lên..." : "Tải ảnh lên"}
+          </button>
+
           <label style={labelStyle}>URL hình ảnh</label>
           <input
             type="text"
