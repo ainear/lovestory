@@ -38,13 +38,9 @@ export async function POST(req: NextRequest) {
     try {
       await assertCanGenerateVideo(supabase, user.id, limits);
     } catch (err) {
-      console.error(
-        "[Video API] Error:",
-        err instanceof Error ? err.message : err,
-      );
       return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
+        { error: err instanceof Error ? err.message : "Plan limit reached" },
+        { status: 403 },
       );
     }
 
