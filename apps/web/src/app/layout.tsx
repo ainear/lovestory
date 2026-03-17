@@ -333,6 +333,12 @@ export const metadata: Metadata = {
     title: "LoveStory — Thiệp cưới online & AI Video",
     description: "Tạo thiệp cưới online đẹp trong 5 phút. Miễn phí!",
   },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

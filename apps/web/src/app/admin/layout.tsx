@@ -72,6 +72,7 @@ export default async function AdminLayout({
           <AdminNavItem href="/admin" icon="📊" label="Dashboard" />
           <AdminNavItem href="/admin/users" icon="👥" label="Users" />
           <AdminNavItem href="/admin/orders" icon="💳" label="Đơn hàng" />
+          <AdminNavItem href="/admin/commissions" icon="💸" label="Hoa hồng" />
           <AdminNavItem href="/admin/projects" icon="💌" label="Thiệp" />
           <AdminNavItem href="/admin/blog" icon="📝" label="Blog Posts" />
           <AdminNavItem href="/admin/logs" icon="📋" label="Activity Logs" />
