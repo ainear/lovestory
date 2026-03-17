@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 
 // Force dynamic rendering — blog posts change over time
@@ -87,7 +88,14 @@ export default async function BlogPage() {
                                     cursor: "pointer",
                                 }}>
                                     {post.cover_url ? (
-                                        <img src={post.cover_url} alt={post.title} style={{ width: "100%", height: 180, objectFit: "cover" }} />
+                                        <Image
+                                            src={post.cover_url}
+                                            alt={post.title}
+                                            width={400}
+                                            height={180}
+                                            style={{ width: "100%", height: 180, objectFit: "cover" }}
+                                            unoptimized={!post.cover_url.startsWith("https://")}
+                                        />
                                     ) : (
                                         <div style={{
                                             height: 180, display: "flex", alignItems: "center", justifyContent: "center",
