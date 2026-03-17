@@ -22,10 +22,12 @@ ALTER TABLE projects
 ALTER TABLE referral_codes ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own referral code
+DROP POLICY IF EXISTS "User reads own referral code" ON referral_codes;
 CREATE POLICY "User reads own referral code" ON referral_codes
     FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can insert their own referral code
+DROP POLICY IF EXISTS "User inserts own referral code" ON referral_codes;
 CREATE POLICY "User inserts own referral code" ON referral_codes
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 

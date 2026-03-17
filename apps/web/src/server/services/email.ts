@@ -4,6 +4,14 @@
  */
 
 import { Resend } from "resend";
+import crypto from "crypto";
+
+const UNSUB_SECRET = process.env.UNSUBSCRIBE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "lovestory-unsub";
+
+function buildUnsubscribeToken(email: string, projectId: string): string {
+  const sig = crypto.createHmac("sha256", UNSUB_SECRET).update(`${email}:${projectId}`).digest("hex");
+  return Buffer.from(`${email}:${projectId}:${sig}`).toString("base64url");
+}
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -187,7 +195,10 @@ export async function sendRsvpAlertEmail(
   guestName: string,
   status: "confirmed" | "declined" | "maybe",
   projectTitle: string,
+  projectId?: string,
 ) {
+  const unsubToken = projectId ? buildUnsubscribeToken(to, projectId) : null;
+  const unsubUrl = unsubToken ? `${process.env.NEXT_PUBLIC_APP_URL}/api/rsvp/unsubscribe?token=${unsubToken}` : null;
   const statusMap = {
     confirmed: { icon: "✅", text: "đã xác nhận tham dự", color: "#10b981" },
     declined: { icon: "❌", text: "không thể tham dự", color: "#ef4444" },
@@ -221,6 +232,7 @@ export async function sendRsvpAlertEmail(
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #f3f4f6;text-align:center;">
           <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 LoveStory · <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#c084fc;">lovestory.app</a></p>
+          ${unsubUrl ? `<p style="color:#d1d5db;font-size:11px;margin:8px 0 0;"><a href="${unsubUrl}" style="color:#d1d5db;text-decoration:underline;">Hủy đăng ký nhận thông báo RSVP</a></p>` : ""}
         </td></tr>
       </table>
     </td></tr>

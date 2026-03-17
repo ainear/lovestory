@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
           sanitize(guestName, 100),
           emailStatus as "confirmed" | "declined" | "maybe",
           project.title || "thiệp cưới của bạn",
+          projectId,
         );
       } catch (emailErr) {
         // Non-fatal: log but don't surface to guest

@@ -43,6 +43,7 @@ ALTER TABLE rsvps ENABLE ROW LEVEL SECURITY;
 -- Anyone can insert RSVP (public invitation page)
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Anyone can insert rsvp') THEN
+    DROP POLICY IF EXISTS "Anyone can insert rsvp" ON rsvps;
     CREATE POLICY "Anyone can insert rsvp" ON rsvps FOR INSERT WITH CHECK (true);
   END IF;
 END $$;
@@ -50,6 +51,7 @@ END $$;
 -- Anyone can read rsvps (for display on invitation page)
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Anyone can read rsvps') THEN
+    DROP POLICY IF EXISTS "Anyone can read rsvps" ON rsvps;
     CREATE POLICY "Anyone can read rsvps" ON rsvps FOR SELECT USING (true);
   END IF;
 END $$;
@@ -57,6 +59,7 @@ END $$;
 -- Service role full access
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service role full access rsvps') THEN
+    DROP POLICY IF EXISTS "Service role full access rsvps" ON rsvps;
     CREATE POLICY "Service role full access rsvps" ON rsvps FOR ALL USING (auth.role() = 'service_role');
   END IF;
 END $$;
@@ -78,18 +81,21 @@ ALTER TABLE wishes ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Anyone can insert wish') THEN
+    DROP POLICY IF EXISTS "Anyone can insert wish" ON wishes;
     CREATE POLICY "Anyone can insert wish" ON wishes FOR INSERT WITH CHECK (true);
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Anyone can read wishes') THEN
+    DROP POLICY IF EXISTS "Anyone can read wishes" ON wishes;
     CREATE POLICY "Anyone can read wishes" ON wishes FOR SELECT USING (true);
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service role full access wishes') THEN
+    DROP POLICY IF EXISTS "Service role full access wishes" ON wishes;
     CREATE POLICY "Service role full access wishes" ON wishes FOR ALL USING (auth.role() = 'service_role');
   END IF;
 END $$;
@@ -116,18 +122,21 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view own orders') THEN
+    DROP POLICY IF EXISTS "Users can view own orders" ON orders;
     CREATE POLICY "Users can view own orders" ON orders FOR SELECT USING (user_id = auth.uid());
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can create own orders') THEN
+    DROP POLICY IF EXISTS "Users can create own orders" ON orders;
     CREATE POLICY "Users can create own orders" ON orders FOR INSERT WITH CHECK (user_id = auth.uid());
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service role full access orders') THEN
+    DROP POLICY IF EXISTS "Service role full access orders" ON orders;
     CREATE POLICY "Service role full access orders" ON orders FOR ALL USING (auth.role() = 'service_role');
   END IF;
 END $$;
