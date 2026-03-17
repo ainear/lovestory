@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useEditorContext } from "./useEditorState";
 import { LayersPanel } from "./LayersPanel";
@@ -1342,6 +1342,17 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
         </PanelSection>
       )}
 
+      {/* ── AI Text Suggestions (text elements only) ── */}
+      {isText && (
+        <AiSuggestSection
+          elementId={el.id}
+          onApply={(text) => {
+            updateProp({ text });
+            props.triggerAutosave();
+          }}
+        />
+      )}
+
       {/* ── Lock ── */}
       <PanelSection title="Khóa" icon="🔒">
         <label
@@ -1363,6 +1374,119 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
         </label>
       </PanelSection>
     </div>
+  );
+}
+
+/** AI Text Suggestion section (renders inside text element panel) */
+function AiSuggestSection({
+  elementId,
+  onApply,
+}: {
+  elementId: string;
+  onApply: (text: string) => void;
+}) {
+  const [suggestType, setSuggestType] = useState<"invitation" | "vow" | "description">("invitation");
+  const [groomName, setGroomName] = useState("");
+  const [brideName, setBrideName] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appliedIdx, setAppliedIdx] = useState<number | null>(null);
+
+  // Reset when element changes
+  useEffect(() => {
+    setSuggestions([]);
+    setError(null);
+  }, [elementId]);
+
+  async function generate() {
+    if (!groomName.trim() || !brideName.trim()) {
+      setError("Nhập tên cô dâu & chú rể.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuggestions([]);
+    setAppliedIdx(null);
+    try {
+      const res = await fetch("/api/ai/text-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: suggestType, groomName: groomName.trim(), brideName: brideName.trim() }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Lỗi. Thử lại."); return; }
+      setSuggestions(data.suggestions || []);
+    } catch { setError("Không kết nối được."); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <PanelSection title="Gợi ý AI" icon="✨">
+      {/* Type select */}
+      <label style={labelStyle}>Loại nội dung</label>
+      <select
+        value={suggestType}
+        onChange={(e) => { setSuggestType(e.target.value as "invitation" | "vow" | "description"); setSuggestions([]); }}
+        style={selectStyle}
+      >
+        <option value="invitation">💌 Lời mời</option>
+        <option value="vow">💍 Lời thề</option>
+        <option value="description">📖 Mô tả</option>
+      </select>
+
+      {/* Names */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8 }}>
+        <div>
+          <label style={labelStyle}>Chú rể</label>
+          <input type="text" value={groomName} onChange={(e) => setGroomName(e.target.value)}
+            placeholder="Minh" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
+        </div>
+        <div>
+          <label style={labelStyle}>Cô dâu</label>
+          <input type="text" value={brideName} onChange={(e) => setBrideName(e.target.value)}
+            placeholder="Lan" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
+        </div>
+      </div>
+
+      {/* Generate button */}
+      <button
+        onClick={generate} disabled={loading}
+        style={{
+          width: "100%", marginTop: 10, padding: "8px 0",
+          borderRadius: 8, border: "none",
+          background: loading ? "#f3f4f6" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+          color: loading ? "#9ca3af" : "#fff",
+          fontSize: 12, fontWeight: 700,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "🤖 Đang tạo..." : "🪄 Tạo gợi ý"}
+      </button>
+
+      {error && <p style={{ fontSize: 11, color: "#ef4444", margin: "6px 0 0" }}>⚠️ {error}</p>}
+
+      {/* Suggestion cards */}
+      {suggestions.map((s, i) => (
+        <div key={i} style={{
+          marginTop: 8, background: "#fafafa", border: "1px solid #e5e7eb",
+          borderRadius: 8, padding: "8px 10px",
+        }}>
+          <p style={{ fontSize: 11, color: "#374151", margin: "0 0 6px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{s}</p>
+          <button
+            onClick={() => { onApply(s); setAppliedIdx(i); setTimeout(() => setAppliedIdx(null), 2000); }}
+            style={{
+              padding: "3px 10px", borderRadius: 6, border: "none",
+              background: appliedIdx === i ? "#10b981" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer",
+            }}
+          >
+            {appliedIdx === i ? "✓ Đã dùng" : "Dùng"}
+          </button>
+        </div>
+      ))}
+    </PanelSection>
   );
 }
 

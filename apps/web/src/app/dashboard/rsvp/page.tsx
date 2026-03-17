@@ -42,6 +42,7 @@ export default async function RsvpPage() {
 
     const attending = rsvps.filter((r) => r.attending === true);
     const notAttending = rsvps.filter((r) => r.attending === false);
+    const pending = rsvps.filter((r) => r.attending === null || r.attending === undefined);
     const totalGuests = attending.reduce((sum, r) => sum + (r.guest_count || 1), 0);
 
     // Group by project for the export link
@@ -73,12 +74,13 @@ export default async function RsvpPage() {
                 )}
             </div>
 
-            {/* Stats cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12, marginBottom: 24 }}>
+            {/* Stats cards — 4 cards: total / attending / not / pending */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 12, marginBottom: 24 }}>
                 {[
                     { icon: "📊", label: "Tổng phản hồi", value: rsvps.length, color: "#3b82f6" },
                     { icon: "💕", label: "Sẽ tham dự", value: attending.length, color: "#059669" },
                     { icon: "😔", label: "Không đến", value: notAttending.length, color: "#dc2626" },
+                    { icon: "⏳", label: "Chờ xác nhận", value: pending.length, color: "#f59e0b" },
                     { icon: "👥", label: "Tổng khách đến", value: totalGuests, color: "#8b5cf6" },
                 ].map((s, i) => (
                     <div key={i} style={{ background: "var(--dash-card)", borderRadius: 12, padding: 16, border: "1px solid var(--dash-border)", textAlign: "center" }}>

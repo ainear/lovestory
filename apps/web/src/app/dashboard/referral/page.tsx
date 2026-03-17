@@ -73,7 +73,7 @@ export default function ReferralPage() {
         loadReferralCode();
     }, [loadReferralCode]);
 
-    const refLink = refData ? `${BASE_URL}/?ref=${refData.code}` : "";
+    const refLink = refData ? `${BASE_URL}/r/${refData.code}` : "";
 
     const copyLink = useCallback(() => {
         navigator.clipboard.writeText(refLink);
