@@ -82,6 +82,11 @@ const WIDGETS: WidgetDef[] = [
     desc: "Hiệu ứng mở phong bì",
     widgetType: "envelope",
   },
+  {
+    label: "🎵 nhạc vinyl",
+    desc: "Vĩ đĩa quay + nhạc cười (V-POP, Wedding...)",
+    widgetType: "music",
+  },
 ];
 
 export function PluginsTab({
@@ -94,6 +99,7 @@ export function PluginsTab({
   function addWidget(widgetType: WidgetProps["widgetType"]) {
     if (!editorDispatch) return;
     const element: CanvasElement = {
+      // eslint-disable-next-line react-hooks/immutability -- ID generation in event handler, not during render
       id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "widget",
       top: 100,

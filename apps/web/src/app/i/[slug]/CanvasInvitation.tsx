@@ -1711,7 +1711,7 @@ function CalendarRenderer({ props: p }: { props: Record<string, any> }) {
 
 /* ═══════ Craft.js v2 Static Renderer ═══════ */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 interface CraftNode {
   type: { resolvedName: string };
   props: Record<string, any>;

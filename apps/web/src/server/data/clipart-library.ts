@@ -25,6 +25,7 @@ export const CLIPART_CATEGORIES: ClipartCategory[] = [
   { id: "double-happiness", label: "Chữ hỷ", icon: "囍" },
   { id: "heart", label: "Trái tim", icon: "❤" },
   { id: "decoration", label: "Trang trí", icon: "✨" },
+  { id: "vietnamese", label: "Việt Nam", icon: "🏮" },
 ];
 
 export const CLIPART_ITEMS: ClipartItem[] = [
@@ -330,5 +331,78 @@ export const CLIPART_ITEMS: ClipartItem[] = [
     category: "heart",
     name: "Tim có cánh",
     svgContent: `<svg viewBox="0 0 140 70" xmlns="http://www.w3.org/2000/svg"><path d="M70 55 C55 40 45 32 45 22 C45 14 50 10 56 10 C61 10 66 14 70 20 C74 14 79 10 84 10 C90 10 95 14 95 22 C95 32 85 40 70 55Z" fill="#ec4899"/><path d="M45 28 Q30 15 15 20 Q5 24 10 32 Q15 40 30 35 Q20 30 18 22 Q25 12 38 22" fill="#e5e7eb" stroke="#d1d5db" stroke-width="0.5"/><path d="M45 32 Q32 22 20 28 Q12 32 16 38 Q22 45 35 40 Q25 38 24 30 Q30 22 42 30" fill="#e5e7eb" stroke="#d1d5db" stroke-width="0.5" opacity="0.7"/><path d="M95 28 Q110 15 125 20 Q135 24 130 32 Q125 40 110 35 Q120 30 122 22 Q115 12 102 22" fill="#e5e7eb" stroke="#d1d5db" stroke-width="0.5"/><path d="M95 32 Q108 22 120 28 Q128 32 124 38 Q118 45 105 40 Q115 38 116 30 Q110 22 98 30" fill="#e5e7eb" stroke="#d1d5db" stroke-width="0.5" opacity="0.7"/></svg>`,
+  },
+  // ── Vietnamese premium assets (Sprint 3C) ──
+  {
+    id: "vn-lantern-red",
+    category: "vietnamese",
+    name: "Đèn lồng đỏ",
+    svgContent: `<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg"><path d="M30 8 L20 12 L12 30 L12 60 L20 78 L30 82 L40 78 L48 60 L48 30 L40 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1"/><path d="M15 35 Q30 28 45 35" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/><path d="M13 45 Q30 38 47 45" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/><path d="M13 55 Q30 48 47 55" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/><path d="M15 65 Q30 58 45 65" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/><text x="30" y="52" text-anchor="middle" font-size="14" fill="#fbbf24" font-weight="bold" font-family="serif">囍</text><line x1="30" y1="5" x2="30" y2="1" stroke="#c49660" stroke-width="2"/><path d="M26 1 L34 1" stroke="#c49660" stroke-width="2" stroke-linecap="round"/><path d="M30 82 L28 92 L32 92 L30 82" fill="#fbbf24" opacity="0.8"/></svg>`,
+  },
+  {
+    id: "vn-lantern-pair",
+    category: "vietnamese",
+    name: "Đèn lồng cặp",
+    svgContent: `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><path d="M25 10 L17 14 L10 28 L10 55 L17 68 L25 72 L33 68 L40 55 L40 28 L33 14 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1"/><text x="25" y="45" text-anchor="middle" font-size="10" fill="#fbbf24" font-weight="bold" font-family="serif">囍</text><path d="M25 72 L24 80 L26 80" fill="#fbbf24" opacity="0.7"/><path d="M95 10 L87 14 L80 28 L80 55 L87 68 L95 72 L103 68 L110 55 L110 28 L103 14 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1"/><text x="95" y="45" text-anchor="middle" font-size="10" fill="#fbbf24" font-weight="bold" font-family="serif">囍</text><path d="M95 72 L94 80 L96 80" fill="#fbbf24" opacity="0.7"/><path d="M25 5 L25 1 M22 1 L28 1" stroke="#c49660" stroke-width="1.5" stroke-linecap="round"/><path d="M95 5 L95 1 M92 1 L98 1" stroke="#c49660" stroke-width="1.5" stroke-linecap="round"/><path d="M40 15 Q60 8 80 15" fill="none" stroke="#c49660" stroke-width="1.5" stroke-dasharray="3,2"/></svg>`,
+  },
+  {
+    id: "vn-lotus",
+    category: "vietnamese",
+    name: "Hoa sen",
+    svgContent: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 70 Q35 55 30 40 Q28 28 38 25 Q45 22 50 30 Q55 22 62 25 Q72 28 70 40 Q65 55 50 70Z" fill="#f9a8d4" opacity="0.9"/><path d="M50 70 Q20 60 15 42 Q12 28 25 24 Q35 20 45 32" fill="#fda4af" opacity="0.7"/><path d="M50 70 Q80 60 85 42 Q88 28 75 24 Q65 20 55 32" fill="#fda4af" opacity="0.7"/><path d="M50 70 Q10 68 8 50 Q6 35 20 32 Q32 29 42 40" fill="#fce7f3" opacity="0.5"/><path d="M50 70 Q90 68 92 50 Q94 35 80 32 Q68 29 58 40" fill="#fce7f3" opacity="0.5"/><ellipse cx="50" cy="52" rx="10" ry="6" fill="#fbbf24" opacity="0.5"/><path d="M50 70 L50 88" stroke="#6b8e5a" stroke-width="2.5" stroke-linecap="round"/><path d="M40 80 Q35 75 50 75 Q65 75 60 80" fill="#6b8e5a" opacity="0.4"/></svg>`,
+  },
+  {
+    id: "vn-chu-phuc",
+    category: "vietnamese",
+    name: "Chữ phúc",
+    svgContent: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="70" height="70" rx="8" fill="#dc2626" opacity="0.9"/><rect x="10" y="10" width="60" height="60" rx="6" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.5"/><text x="40" y="58" text-anchor="middle" font-size="44" fill="#fbbf24" font-weight="bold" font-family="serif">福</text></svg>`,
+  },
+  {
+    id: "vn-double-happiness-premium",
+    category: "vietnamese",
+    name: "Chữ hỷ đôi cao cấp",
+    svgContent: `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="116" height="76" rx="8" fill="#dc2626" opacity="0.95"/><rect x="6" y="6" width="108" height="68" rx="6" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/><text x="60" y="59" text-anchor="middle" font-size="52" fill="#fbbf24" font-weight="bold" font-family="serif">囍</text><path d="M15 15 L20 10 L20 15 M100 15 L105 10 L105 15" stroke="#fbbf24" stroke-width="1" fill="none" opacity="0.4"/><path d="M15 65 L20 70 L20 65 M100 65 L105 70 L105 65" stroke="#fbbf24" stroke-width="1" fill="none" opacity="0.4"/></svg>`,
+  },
+  {
+    id: "vn-phoenix-dragon",
+    category: "vietnamese",
+    name: "Long phụng",
+    svgContent: `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><path d="M10 60 Q20 40 35 45 Q45 50 40 35 Q38 25 50 20 Q58 16 55 28 Q52 38 60 32 Q70 26 75 35 Q80 44 70 50 Q60 55 65 65" fill="none" stroke="#d4a574" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="60" r="3" fill="#d4a574"/><path d="M50 20 L46 14 L52 16 M58 16 L60 10 L55 14" fill="#d4a574" opacity="0.7"/><path d="M110 60 Q100 40 85 45 Q75 50 80 35 Q82 25 70 20 Q62 16 65 28 Q68 38 60 32 Q50 26 45 35" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><circle cx="110" cy="60" r="3" fill="#dc2626"/><path d="M70 20 L74 14 L68 16 M62 16 L60 10 L65 14" fill="#dc2626" opacity="0.7"/><text x="60" y="70" text-anchor="middle" font-size="9" fill="#c49660" font-family="serif" opacity="0.6">Long Phụng</text></svg>`,
+  },
+  {
+    id: "vn-hoa-mai",
+    category: "vietnamese",
+    name: "Hoa mai vàng",
+    svgContent: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 85 L48 60 Q40 55 30 58 Q38 50 36 40 Q44 46 50 42 Q56 46 64 40 Q62 50 70 58 Q60 55 52 60 Z" fill="#6b8e5a" opacity="0.7"/><path d="M50 5 C50 22 50 22 50 22" stroke="#6b8e5a" stroke-width="0" fill="none"/><g transform="translate(50,32)"><polygon points="0,-12 3.5,-4 12,-4 5.5,2 8,10 0,5 -8,10 -5.5,2 -12,-4 -3.5,-4" fill="#fbbf24" opacity="0.9"/></g><g transform="translate(30,40)"><polygon points="0,-10 3,-3.5 10,-3.5 4.5,1.5 6.5,9 0,4.5 -6.5,9 -4.5,1.5 -10,-3.5 -3,-3.5" fill="#fbbf24" opacity="0.85"/></g><g transform="translate(70,40)"><polygon points="0,-10 3,-3.5 10,-3.5 4.5,1.5 6.5,9 0,4.5 -6.5,9 -4.5,1.5 -10,-3.5 -3,-3.5" fill="#fbbf24" opacity="0.85"/></g><g transform="translate(38,60)"><polygon points="0,-9 2.5,-3 9,-3 4,1.5 6,8 0,4 -6,8 -4,1.5 -9,-3 -2.5,-3" fill="#fbbf24" opacity="0.8"/></g><g transform="translate(62,60)"><polygon points="0,-9 2.5,-3 9,-3 4,1.5 6,8 0,4 -6,8 -4,1.5 -9,-3 -2.5,-3" fill="#fbbf24" opacity="0.8"/></g></svg>`,
+  },
+  {
+    id: "vn-wedding-gate",
+    category: "vietnamese",
+    name: "Cổng cưới truyền thống",
+    svgContent: `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="40" width="10" height="55" fill="#c49660" rx="2"/><rect x="102" y="40" width="10" height="55" fill="#c49660" rx="2"/><path d="M8 45 Q60 5 112 45" fill="#dc2626" stroke="#991b1b" stroke-width="2"/><path d="M12 50 Q60 15 108 50" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.5"/><rect x="5" y="35" width="110" height="10" rx="3" fill="#dc2626"/><rect x="5" y="35" width="110" height="5" rx="3" fill="#c49660" opacity="0.5"/><path d="M40 40 Q60 10 80 40" fill="#dc2626" opacity="0.4"/><text x="60" y="38" text-anchor="middle" font-size="10" fill="#fbbf24" font-family="serif" font-weight="bold">囍</text><path d="M30 95 L30 65 Q60 55 90 65 L90 95" fill="none" stroke="#c49660" stroke-width="1.5" opacity="0.4"/></svg>`,
+  },
+  {
+    id: "vn-five-fruits",
+    category: "vietnamese",
+    name: "Mâm ngũ quả",
+    svgContent: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="68" rx="42" ry="8" fill="#c49660" opacity="0.4"/><rect x="15" y="62" width="70" height="6" rx="3" fill="#d4a574" opacity="0.6"/><circle cx="50" cy="45" r="12" fill="#dc2626" opacity="0.9"/><circle cx="32" cy="52" r="10" fill="#f97316" opacity="0.85"/><circle cx="68" cy="52" r="10" fill="#f97316" opacity="0.85"/><circle cx="22" cy="60" r="9" fill="#16a34a" opacity="0.8"/><circle cx="78" cy="60" r="9" fill="#fbbf24" opacity="0.85"/><path d="M50 33 L50 28 Q52 24 48 20" stroke="#6b8e5a" stroke-width="1.5" fill="none"/><path d="M32 42 L30 37 Q32 33 28 30" stroke="#6b8e5a" stroke-width="1.2" fill="none"/><path d="M68 42 L70 37 Q68 33 72 30" stroke="#6b8e5a" stroke-width="1.2" fill="none"/></svg>`,
+  },
+  {
+    id: "vn-banana-blossom",
+    category: "vietnamese",
+    name: "Hoa chuối",
+    svgContent: `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 10 L40 80" stroke="#6b8e5a" stroke-width="3" stroke-linecap="round"/><path d="M40 25 Q55 20 58 30 Q55 38 40 35" fill="#dc2626" opacity="0.8"/><path d="M40 38 Q55 33 58 43 Q55 51 40 48" fill="#dc2626" opacity="0.75"/><path d="M40 51 Q55 46 58 56 Q55 64 40 61" fill="#9f1239" opacity="0.7"/><path d="M40 64 Q55 59 58 69 Q55 77 40 74" fill="#9f1239" opacity="0.65"/><path d="M40 25 Q25 20 22 30 Q25 38 40 35" fill="#fda4af" opacity="0.7"/><path d="M40 38 Q25 33 22 43 Q25 51 40 48" fill="#fda4af" opacity="0.65"/><path d="M40 5 Q42 2 40 0 Q38 2 40 5" fill="#fbbf24" opacity="0.7"/></svg>`,
+  },
+  {
+    id: "vn-ao-dai-couple",
+    category: "vietnamese",
+    name: "Cặp áo dài",
+    svgContent: `<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg"><circle cx="35" cy="15" r="9" fill="#fef3c7"/><path d="M24 28 Q30 22 35 22 Q40 22 46 28 L50 65 L30 70 L20 65 Z" fill="#dc2626"/><path d="M30 70 L22 95 M50 65 L45 95" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/><path d="M20 65 L18 72" stroke="#dc2626" stroke-width="3"/><path d="M50 65 L52 72" stroke="#dc2626" stroke-width="3"/><circle cx="65" cy="15" r="9" fill="#fef3c7"/><path d="M54 28 Q60 22 65 22 Q70 22 76 28 L82 65 L62 68 L52 65 Z" fill="#ec4899" opacity="0.9"/><path d="M62 68 L56 95 M82 65 L78 95" stroke="#ec4899" stroke-width="4" stroke-linecap="round" opacity="0.9"/><path d="M52 65 L50 72" stroke="#ec4899" stroke-width="3" opacity="0.9"/><path d="M82 65 L84 72" stroke="#ec4899" stroke-width="3" opacity="0.9"/><path d="M64 8 Q65 4 68 3" stroke="#c49660" stroke-width="1" fill="none"/></svg>`,
+  },
+  {
+    id: "vn-floral-border",
+    category: "vietnamese",
+    name: "Viền hoa cưới",
+    svgContent: `<svg viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="15" x2="115" y2="15" stroke="#d4a574" stroke-width="0.8" opacity="0.4"/><g transform="translate(15,15)"><circle cx="0" cy="0" r="4" fill="#f9a8d4" opacity="0.8"/><circle cx="0" cy="0" r="2" fill="#ec4899"/></g><g transform="translate(35,15)"><circle cx="0" cy="0" r="4" fill="#f9a8d4" opacity="0.8"/><circle cx="0" cy="0" r="2" fill="#ec4899"/></g><g transform="translate(60,15)"><circle cx="0" cy="0" r="5" fill="#fbbf24" opacity="0.7"/><circle cx="0" cy="0" r="2.5" fill="#d97706"/></g><g transform="translate(85,15)"><circle cx="0" cy="0" r="4" fill="#f9a8d4" opacity="0.8"/><circle cx="0" cy="0" r="2" fill="#ec4899"/></g><g transform="translate(105,15)"><circle cx="0" cy="0" r="4" fill="#f9a8d4" opacity="0.8"/><circle cx="0" cy="0" r="2" fill="#ec4899"/></g><ellipse cx="25" cy="15" rx="5" ry="2" fill="#6b8e5a" opacity="0.35" transform="rotate(15 25 15)"/><ellipse cx="47" cy="15" rx="5" ry="2" fill="#6b8e5a" opacity="0.35" transform="rotate(-20 47 15)"/><ellipse cx="73" cy="15" rx="5" ry="2" fill="#6b8e5a" opacity="0.35" transform="rotate(15 73 15)"/><ellipse cx="95" cy="15" rx="5" ry="2" fill="#6b8e5a" opacity="0.35" transform="rotate(-15 95 15)"/></svg>`,
   },
 ];

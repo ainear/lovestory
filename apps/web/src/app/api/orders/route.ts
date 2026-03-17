@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       `${SEPAY_CHECKOUT_URL}?${new URLSearchParams(checkoutParams).toString()}`;
 
     // Strip signature from client-facing response to prevent crypto material leak
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { signature: _sig, ...safeFormData } = checkoutParams;
 
     return NextResponse.json({

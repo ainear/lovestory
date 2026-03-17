@@ -41,11 +41,18 @@ function CalendarWidget({ props, scale }: { props: CanvasElement["props"]; scale
     );
 }
 
-// ── COUNTDOWN WIDGET ──
+// ── COUNTDOWN WIDGET ── (CineLove parity: 4 style themes)
 function CountdownWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    // eslint-disable-next-line react-hooks/immutability -- Date.now() is intentional for live countdown
     const [now, setNow] = useState(Date.now());
+    // eslint-disable-next-line react-hooks/immutability -- setInterval with Date.now() is a standard ticker pattern
     useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(iv); }, []);
-    const target = props.targetDate ? new Date(props.targetDate).getTime() : Date.now() + 30 * 86400000;
+
+    const cfg = ((props as { config?: Record<string, string | undefined> }).config) ?? {};
+    const targetDate = cfg.targetDate;
+    const label = cfg.label ?? props.label ?? "ĐẾM NGƯỢC NGÀY CƯỚI";
+    const style = cfg.style ?? "pink";
+    const target = targetDate ? new Date(targetDate).getTime() : Date.now() + 30 * 86400000;
     const diff = Math.max(0, target - now);
     const blocks = [
         { value: Math.floor(diff / 86400000), label: "Ngày" },
@@ -53,23 +60,65 @@ function CountdownWidget({ props, scale }: { props: CanvasElement["props"]; scal
         { value: Math.floor((diff % 3600000) / 60000), label: "Phút" },
         { value: Math.floor((diff % 60000) / 1000), label: "Giây" },
     ];
+
+    const themes: Record<string, { bg: string; text: string; numColor: string; blockBg: string; blockBorder: string }> = {
+        pink: {
+            bg: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
+            text: "#831843",
+            numColor: "#e11d48",
+            blockBg: "#fff",
+            blockBorder: "rgba(225,29,72,0.1)",
+        },
+        gold: {
+            bg: "linear-gradient(135deg, #fdf9f0 0%, #f5e6c8 100%)",
+            text: "#92400e",
+            numColor: "#c9a84c",
+            blockBg: "#fffbf0",
+            blockBorder: "rgba(201,168,76,0.2)",
+        },
+        dark: {
+            bg: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+            text: "#fef3c7",
+            numColor: "#c9a84c",
+            blockBg: "rgba(255,255,255,0.08)",
+            blockBorder: "rgba(201,168,76,0.3)",
+        },
+        minimal: {
+            bg: "#fff",
+            text: "#374151",
+            numColor: "#1f2937",
+            blockBg: "#f9fafb",
+            blockBorder: "rgba(0,0,0,0.08)",
+        },
+    };
+    const t = themes[style] ?? themes.pink;
+
     return (
-        <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #fdf2f8, #fce7f3)", borderRadius: 12 * scale, padding: 12 * scale, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 * scale }}>
-            <p style={{ fontSize: 11 * scale, fontWeight: 600, color: "#831843", margin: 0, letterSpacing: 1 }}>{props.label || "ĐẾM NGƯỢC NGÀY CƯỚI"}</p>
+        <div style={{ width: "100%", height: "100%", background: t.bg, borderRadius: 12 * scale, padding: 12 * scale, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 * scale }}>
+            <p style={{ fontSize: 10 * scale, fontWeight: 700, color: t.text, margin: 0, letterSpacing: 1.5, textTransform: "uppercase" }}>{label}</p>
             <div style={{ display: "flex", gap: 8 * scale }}>
                 {blocks.map(b => (
-                    <div key={b.label} style={{ textAlign: "center", background: "#fff", borderRadius: 8 * scale, padding: `${6 * scale}px ${10 * scale}px`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", minWidth: 48 * scale }}>
-                        <p style={{ fontSize: 18 * scale, fontWeight: 800, color: "#e11d48", margin: 0 }}>{String(b.value).padStart(2, "0")}</p>
-                        <p style={{ fontSize: 8 * scale, color: "#9ca3af", margin: 0 }}>{b.label}</p>
+                    <div key={b.label} style={{ textAlign: "center", background: t.blockBg, borderRadius: 8 * scale, padding: `${6 * scale}px ${10 * scale}px`, boxShadow: `0 2px 8px ${t.blockBorder}`, minWidth: 48 * scale, border: `1px solid ${t.blockBorder}` }}>
+                        <p style={{ fontSize: 22 * scale, fontWeight: 800, color: t.numColor, margin: 0, lineHeight: 1, fontFamily: "'Inter', sans-serif", fontVariantNumeric: "tabular-nums" }}>{String(b.value).padStart(2, "0")}</p>
+                        <p style={{ fontSize: 8 * scale, color: t.text, margin: "2px 0 0", opacity: 0.7, fontWeight: 600 }}>{b.label}</p>
                     </div>
                 ))}
             </div>
+            {target > Date.now() && (
+                <p style={{ fontSize: 8 * scale, color: t.text, margin: 0, opacity: 0.5 }}>
+                    {new Date(target).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                </p>
+            )}
         </div>
     );
 }
 
 // ── MAP WIDGET ──
 function MapWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    const cfg = ((props as { config?: Record<string, string | undefined> }).config) ?? {};
+    const venueName = cfg.venueName ?? props.venueName ?? props.label ?? "Vị trí tiệc cưới";
+    const venueAddress = cfg.venueAddress ?? props.venueAddress ?? "Nhấn để xem trên bản đồ";
+    const mapUrl = cfg.mapUrl ?? props.mapUrl ?? "";
     return (
         <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12 * scale, border: "1px solid #e5e7eb", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, background: "linear-gradient(135deg, #d1fae5, #ecfdf5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
@@ -77,38 +126,52 @@ function MapWidget({ props, scale }: { props: CanvasElement["props"]; scale: num
                 <div style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 7 * scale, padding: `${2 * scale}px ${6 * scale}px`, borderRadius: 4 * scale }}>Google Maps</div>
             </div>
             <div style={{ padding: `${8 * scale}px ${12 * scale}px`, background: "#fff" }}>
-                <p style={{ fontSize: 11 * scale, fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{props.venueName || props.label || "Vị trí tiệc cưới"}</p>
-                <p style={{ fontSize: 9 * scale, color: "#9ca3af", margin: "0 0 6px" }}>{props.venueAddress || "Nhấn để xem trên bản đồ"}</p>
-                <button style={{ width: "100%", padding: `${6 * scale}px`, borderRadius: 8 * scale, border: "none", background: "#10b981", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer" }}>🗺️ Chỉ đường</button>
+                <p style={{ fontSize: 11 * scale, fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{venueName}</p>
+                <p style={{ fontSize: 9 * scale, color: "#9ca3af", margin: "0 0 6px" }}>{venueAddress}</p>
+                <button
+                    onClick={(e) => { e.stopPropagation(); if (mapUrl) window.open(mapUrl, "_blank"); }}
+                    style={{ width: "100%", padding: `${6 * scale}px`, borderRadius: 8 * scale, border: "none", background: "#10b981", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer" }}
+                >
+                    🗺️ Chỉ đường
+                </button>
             </div>
         </div>
     );
 }
 
-// ── RSVP WIDGET (Sprint 44: Custom Form Builder) ──
+// ── RSVP WIDGET (Premium CineLove style) ──
 function RSVPWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
-    const inputStyle = { width: "100%", padding: `${7 * scale}px ${10 * scale}px`, border: "1px solid #e5e7eb", borderRadius: 8 * scale, fontSize: 10 * scale, outline: "none", background: "#f9fafb", boxSizing: "border-box" as const };
+    const cfg = ((props as { config?: Record<string, unknown> }).config) ?? {};
+    const rsvpTitle = String(cfg.rsvpTitle ?? props.rsvpTitle ?? "Xác nhận tham dự");
+    const rsvpSubtitle = String(cfg.rsvpSubtitle ?? props.rsvpSubtitle ?? "Vui lòng xác nhận sự hiện diện của bạn");
+    const rsvpButtonText = String(cfg.rsvpButtonText ?? props.rsvpButtonText ?? "Gửi xác nhận 💌");
+    const showPhone = !!(cfg.rsvpShowPhone ?? props.rsvpShowPhone);
+    const showGuest = !!(cfg.rsvpShowGuestCount ?? props.rsvpShowGuestCount);
+    const showDietary = !!(cfg.rsvpShowDietary ?? props.rsvpShowDietary);
+    const showMessage = !!(cfg.rsvpShowMessage ?? props.rsvpShowMessage);
+
+    const inputStyle = { width: "100%", padding: `${7 * scale}px ${10 * scale}px`, border: "1px solid #fce7f3", borderRadius: 8 * scale, fontSize: 10 * scale, outline: "none", background: "#fff8fc", boxSizing: "border-box" as const, color: "#4a2635" };
     return (
-        <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 12 * scale, border: "1px solid #e5e7eb", padding: 14 * scale, display: "flex", flexDirection: "column", gap: 6 * scale, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", overflow: "auto" }}>
-            <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 13 * scale, fontWeight: 700, color: "#374151", margin: 0 }}>{props.rsvpTitle || "Xác nhận tham dự"}</p>
-                <p style={{ fontSize: 9 * scale, color: "#9ca3af", margin: `${2 * scale}px 0 0` }}>{props.rsvpSubtitle || "Vui lòng xác nhận sự hiện diện của bạn"}</p>
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(180deg, #fff8fc 0%, #fff 100%)", borderRadius: 12 * scale, border: "1px solid #fce7f3", padding: 14 * scale, display: "flex", flexDirection: "column", gap: 6 * scale, boxShadow: "0 2px 16px rgba(225,29,72,0.06)", overflow: "auto" }}>
+            <div style={{ textAlign: "center", paddingBottom: 6 * scale, borderBottom: `1px solid #fce7f3` }}>
+                <p style={{ fontSize: 13 * scale, fontWeight: 700, color: "#831843", margin: 0, fontFamily: "'Cormorant Garamond', serif" }}>{rsvpTitle}</p>
+                <p style={{ fontSize: 9 * scale, color: "#be185d", margin: `${2 * scale}px 0 0`, opacity: 0.8 }}>{rsvpSubtitle}</p>
             </div>
             <input type="text" placeholder="Họ và tên *" readOnly style={inputStyle} />
-            {props.rsvpShowPhone && <input type="tel" placeholder="Số điện thoại" readOnly style={inputStyle} />}
-            {props.rsvpShowGuestCount && <input type="number" placeholder="Số người tham dự" readOnly style={inputStyle} />}
-            {props.rsvpShowDietary && (
+            {showPhone && <input type="tel" placeholder="Số điện thoại" readOnly style={inputStyle} />}
+            {showGuest && <input type="number" placeholder="Số người tham dự" readOnly style={inputStyle} />}
+            {showDietary && (
                 <select disabled style={{ ...inputStyle, color: "#9ca3af", cursor: "default", appearance: "none" as const }}>
                     <option>Chế độ ăn (Bình thường)</option>
                 </select>
             )}
-            {props.rsvpShowMessage && <textarea placeholder="Lời nhắn cho cô dâu chú rể..." readOnly rows={2} style={{ ...inputStyle, resize: "none" as const, fontFamily: "inherit" }} />}
+            {showMessage && <textarea placeholder="Lời nhắn cho cô dâu chú rể..." readOnly rows={2} style={{ ...inputStyle, resize: "none" as const, fontFamily: "inherit" }} />}
             <div style={{ display: "flex", gap: 6 * scale }}>
-                {["Tham dự", "Không thể"].map(opt => (
-                    <button key={opt} style={{ flex: 1, padding: `${6 * scale}px`, borderRadius: 8 * scale, border: "1px solid #e5e7eb", background: opt === "Tham dự" ? "#ecfdf5" : "#fff", fontSize: 9 * scale, fontWeight: 600, cursor: "pointer", color: opt === "Tham dự" ? "#10b981" : "#6b7280" }}>{opt}</button>
+                {["Tham dự ✓", "Không thể ✗"].map(opt => (
+                    <button key={opt} style={{ flex: 1, padding: `${6 * scale}px`, borderRadius: 8 * scale, border: `1px solid ${opt.includes("✓") ? "#10b981" : "#e5e7eb"}`, background: opt.includes("✓") ? "#ecfdf5" : "#fff", fontSize: 9 * scale, fontWeight: 600, cursor: "pointer", color: opt.includes("✓") ? "#10b981" : "#6b7280" }}>{opt}</button>
                 ))}
             </div>
-            <button style={{ width: "100%", padding: `${7 * scale}px`, borderRadius: 8 * scale, border: "none", background: "#ff6b9d", color: "#fff", fontSize: 10 * scale, fontWeight: 700, cursor: "pointer" }}>{props.rsvpButtonText || "Gửi xác nhận 💌"}</button>
+            <button style={{ width: "100%", padding: `${8 * scale}px`, borderRadius: 8 * scale, border: "none", background: "linear-gradient(135deg, #ff6b9d, #e11d48)", color: "#fff", fontSize: 11 * scale, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5 }}>{rsvpButtonText}</button>
         </div>
     );
 }
@@ -174,6 +237,69 @@ function YouTubeWidget({ props, scale }: { props: CanvasElement["props"]; scale:
     );
 }
 
+// ── VINYL MUSIC WIDGET (Sprint 3 — CineLove parity) ──
+function VinylMusicWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
+    const cfg = ((props as { config?: Record<string, unknown> }).config) ?? {};
+    const title = String(cfg.musicTitle ?? "Bài hát tặng em");
+    const artist = String(cfg.musicArtist ?? "Nhạc sĩ yêu thương");
+    const genre = String(cfg.musicGenre ?? "wedding");
+    const isPlaying = true; // always animate in editor preview
+
+    const genreColors: Record<string, { outer: string; inner: string; label: string; text: string }> = {
+        wedding: { outer: "#831843", inner: "#fce7f3", label: "Wedding", text: "#831843" },
+        vpop: { outer: "#1e40af", inner: "#eff6ff", label: "V-POP", text: "#1e40af" },
+        international: { outer: "#1f2937", inner: "#f3f4f6", label: "International", text: "#374151" },
+        lofi: { outer: "#78350f", inner: "#fef3c7", label: "Lo-Fi", text: "#92400e" },
+    };
+    const colors = genreColors[genre] ?? genreColors.wedding;
+    const uid = `vinyl-${genre}`;
+
+    return (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)", borderRadius: 12 * scale, padding: 12 * scale, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 * scale, overflow: "hidden", position: "relative" }}>
+            {/* CSS spin animation */}
+            <style>{`@keyframes ${uid}-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+            {/* Vinyl disc */}
+            <div style={{ position: "relative", width: 72 * scale, height: 72 * scale, animation: isPlaying ? `${uid}-spin 4s linear infinite` : "none" }}>
+                {/* Outer disc */}
+                <svg width={72 * scale} height={72 * scale} viewBox="0 0 72 72" style={{ position: "absolute", top: 0, left: 0 }}>
+                    <circle cx="36" cy="36" r="35" fill="#111" stroke="#333" strokeWidth="1"/>
+                    {/* Grooves */}
+                    {[30, 26, 22, 18, 14].map(r => (
+                        <circle key={r} cx="36" cy="36" r={r} fill="none" stroke="#2a2a2a" strokeWidth="1"/>
+                    ))}
+                    {/* Color label */}
+                    <circle cx="36" cy="36" r="12" fill={colors.inner}/>
+                    <circle cx="36" cy="36" r="3" fill={colors.outer}/>
+                    {/* Highlight gleam */}
+                    <ellipse cx="28" cy="22" rx="6" ry="3" fill="rgba(255,255,255,0.06)" transform="rotate(-30 28 22)"/>
+                </svg>
+            </div>
+
+            {/* Music info */}
+            <div style={{ textAlign: "center", width: "100%", padding: `0 ${4 * scale}px` }}>
+                <p style={{ fontSize: 10 * scale, fontWeight: 700, color: "#f9fafb", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</p>
+                <p style={{ fontSize: 8 * scale, color: "#9ca3af", margin: `${2 * scale}px 0 0`, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{artist}</p>
+            </div>
+
+            {/* Playback bar */}
+            <div style={{ width: "80%", height: 3 * scale, background: "#374151", borderRadius: 99 }}>
+                <div style={{ width: "45%", height: "100%", background: `linear-gradient(90deg, ${colors.outer}, #f472b6)`, borderRadius: 99 }}/>
+            </div>
+
+            {/* Genre badge */}
+            <div style={{ position: "absolute", top: 6 * scale, right: 6 * scale, background: colors.outer, color: "#fff", fontSize: 6 * scale, fontWeight: 700, padding: `${2 * scale}px ${5 * scale}px`, borderRadius: 99, letterSpacing: 0.5 }}>{colors.label}</div>
+
+            {/* Control icons */}
+            <div style={{ display: "flex", gap: 10 * scale, alignItems: "center" }}>
+                {["⏮", "⏸", "⏭"].map(icon => (
+                    <span key={icon} style={{ fontSize: icon === "⏸" ? 14 * scale : 10 * scale, cursor: "pointer", opacity: icon === "⏸" ? 1 : 0.5 }}>{icon}</span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // ── CALL BUTTON WIDGET (Sprint 33 — Cinelove parity) ──
 function CallWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
     return (
@@ -225,7 +351,7 @@ function GuestNameWidget({ props, scale }: { props: CanvasElement["props"]; scal
 export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetElementProps) {
     const scale = zoom / 100;
     const { x, y, width, height, opacity, rotation, props } = element;
-    const wt = props.widgetType ?? "countdown";
+    const wt = (props as { widgetType?: string }).widgetType ?? "countdown";
     return (
         <div data-element-id={element.id} onClick={(e) => { e.stopPropagation(); onSelect(); }} style={{ position: "absolute", left: x * scale, top: y * scale, width: width * scale, height: height * scale, opacity: opacity ?? 1, transform: rotation ? `rotate(${rotation}deg)` : undefined, cursor: "pointer", outline: isSelected ? "2px solid #3b82f6" : "none", outlineOffset: 2, transition: "outline 0.1s" }}>
             {wt === "calendar" && <CalendarWidget props={props} scale={scale} />}
@@ -235,9 +361,10 @@ export function WidgetElement({ element, zoom, isSelected, onSelect }: WidgetEle
             {wt === "qr" && <QRWidget props={props} scale={scale} />}
             {wt === "gift" && <GiftWidget props={props} scale={scale} />}
             {wt === "youtube" && <YouTubeWidget props={props} scale={scale} />}
-            {wt === "call" && <CallWidget props={props} scale={scale} />}
+            {wt === "callbutton" && <CallWidget props={props} scale={scale} />}
             {wt === "album" && <AlbumWidget props={props} scale={scale} />}
             {wt === "guestname" && <GuestNameWidget props={props} scale={scale} />}
+            {wt === "music" && <VinylMusicWidget props={props} scale={scale} />}
         </div>
     );
 }

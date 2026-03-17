@@ -251,7 +251,7 @@ function CraftEditorInner({
         /* ignore */
       }
     }
-  }, [initialCanvasJson]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialCanvasJson]);  
 
   // ── Backup recovery check ──
   useEffect(() => {
@@ -302,8 +302,7 @@ function CraftEditorInner({
   const save = useCallback(async () => {
     const currentEditorState = editorStateRef.current;
     setSaveStatus("saving");
-    let canvasJson: string;
-    canvasJson = JSON.stringify({
+    const canvasJson: string = JSON.stringify({
       version: 2,
       engine: "custom-canvas",
       canvas: {

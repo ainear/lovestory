@@ -39,6 +39,8 @@ import {
 import Script from "next/script";
 import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/client";
+import { PostHogProvider } from "@/lib/posthog/provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -358,7 +360,13 @@ export default function RootLayout({
         className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} ${sacramento.variable} ${alexBrush.variable} ${satisfy.variable} ${allura.variable} ${pinyonScript.variable} ${cinzelDecorative.variable} ${parisienne.variable} ${tangerine.variable} ${petitFormalScript.variable} ${italianno.variable} ${loversQuarrel.variable} ${rougeScript.variable} ${carattere.variable} ${cormorantInfant.variable} ${libreBaskerville.variable} ${ebGaramond.variable} ${crimsonText.variable} ${spectral.variable} ${raleway.variable} ${josefinSans.variable} ${poppins.variable} ${cinzel.variable} ${playfairDisplaySC.variable} ${bodoniModa.variable} ${tenorSans.variable} ${anticDidone.variable} antialiased`}
         style={{ margin: 0 }}
       >
-        <TRPCProvider>{children}</TRPCProvider>
+        <TRPCProvider>
+          <PostHogProvider>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </PostHogProvider>
+        </TRPCProvider>
       </body>
     </html>
   );

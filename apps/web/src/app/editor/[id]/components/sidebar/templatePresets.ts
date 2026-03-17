@@ -26,7 +26,7 @@ type TextShadowType = {
   x: number;
   y: number;
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function txt(
   sId: string,
   x: number,

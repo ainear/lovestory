@@ -130,6 +130,12 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const imageProps = isImage ? (el.props as ImageProps) : null;
   const widgetProps = isWidget ? (el.props as WidgetProps) : null;
   const isQrBox = widgetProps?.widgetType === "qrbox";
+  const isCountdown = widgetProps?.widgetType === "countdown";
+  const isRsvp = widgetProps?.widgetType === "rsvp";
+  const isMap = widgetProps?.widgetType === "map";
+  const isCall = widgetProps?.widgetType === "callbutton";
+  const isCalendar = widgetProps?.widgetType === "calendar";
+  const isMusic = widgetProps?.widgetType === "music";
 
   const updateProp = (props: Record<string, unknown>) => {
     dispatch({ type: "UPDATE_PROPS", id: el.id, props });
@@ -1024,6 +1030,302 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
                   fontSize: 12,
                   boxSizing: "border-box" as const,
                 }}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Countdown Config ── */}
+      {isCountdown && widgetProps && (
+        <PanelSection title="Cài đặt đếm ngược" icon="⏱️">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Ngày cưới</label>
+              <input
+                type="date"
+                value={String(widgetProps.config.targetDate ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, targetDate: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.label ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, label: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="ĐẾM NGƯỢC NGÀY CƯỚI"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Phong cách</label>
+              <select
+                value={String(widgetProps.config.style ?? "pink")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, style: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={selectStyle}
+              >
+                <option value="pink">Hồng lãng mạn</option>
+                <option value="gold">Vàng sang trọng</option>
+                <option value="dark">Tối huyền bí</option>
+                <option value="minimal">Tối giản trắng</option>
+              </select>
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Calendar Config ── */}
+      {isCalendar && widgetProps && (
+        <PanelSection title="Cài đặt lịch" icon="📅">
+          <div>
+            <label style={labelStyle}>Ngày cưới</label>
+            <input
+              type="date"
+              value={String(widgetProps.config.targetDate ?? "")}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, targetDate: e.target.value } } });
+                props.triggerAutosave();
+              }}
+              style={inputStyle}
+            />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <label style={labelStyle}>Ngày âm lịch (tùy chọn)</label>
+            <input
+              type="text"
+              value={String(widgetProps.config.lunarDate ?? "")}
+              onChange={(e) => {
+                dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, lunarDate: e.target.value } } });
+                props.triggerAutosave();
+              }}
+              placeholder="VD: Ngày 15 tháng 4 âm lịch"
+              style={inputStyle}
+            />
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── RSVP Config ── */}
+      {isRsvp && widgetProps && (
+        <PanelSection title="Cài đặt RSVP" icon="💌">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpTitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpTitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Xác nhận tham dự"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Mô tả</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpSubtitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpSubtitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Vui lòng xác nhận sự hiện diện"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Text nút gửi</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpButtonText ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpButtonText: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Gửi xác nhận 💌"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={labelStyle}>Trường tùy chọn</label>
+              {[
+                { key: "rsvpShowPhone", label: "📞 Số điện thoại" },
+                { key: "rsvpShowGuestCount", label: "👥 Số người" },
+                { key: "rsvpShowDietary", label: "🍽️ Chế độ ăn" },
+                { key: "rsvpShowMessage", label: "✍️ Lời nhắn" },
+              ].map(({ key, label: fieldLabel }) => (
+                <label key={key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 11, color: "#374151" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!widgetProps.config[key as keyof typeof widgetProps.config]}
+                    onChange={(e) => {
+                      dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, [key]: e.target.checked } } });
+                      props.triggerAutosave();
+                    }}
+                  />
+                  {fieldLabel}
+                </label>
+              ))}
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Map Config ── */}
+      {isMap && widgetProps && (
+        <PanelSection title="Cài đặt bản đồ" icon="📍">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tên địa điểm</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.venueName ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, venueName: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Nhà Hàng Tiệc Cưới"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Địa chỉ</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.venueAddress ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, venueAddress: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="123 Đường ABC, Quận 1, TP.HCM"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Link Google Maps</label>
+              <input
+                type="url"
+                value={String(widgetProps.config.mapUrl ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, mapUrl: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="https://maps.google.com/..."
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Call Button Config ── */}
+      {isCall && widgetProps && (
+        <PanelSection title="Nút liên hệ" icon="📞">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.label ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, label: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Liên hệ cô/chú rể"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Số điện thoại</label>
+              <input
+                type="tel"
+                value={String(widgetProps.config.phoneNumber ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, phoneNumber: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="0909 xxx xxx"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Music Config ── */}
+      {isMusic && widgetProps && (
+        <PanelSection title="Cài đặt nhạc vinyl" icon="🎵">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tên bài hát</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.musicTitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicTitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Bài hát tặng em"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Ca sĩ / Nhạc sĩ</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.musicArtist ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicArtist: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Mỹ Tâm, Đen Vâu..."
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Thể loại</label>
+              <select
+                value={String(widgetProps.config.musicGenre ?? "wedding")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicGenre: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={selectStyle}
+              >
+                <option value="wedding">💍 Wedding</option>
+                <option value="vpop">🎤 V-POP</option>
+                <option value="international">🌍 International</option>
+                <option value="lofi">☕ Lo-Fi</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Link YouTube (tùy chọn)</label>
+              <input
+                type="url"
+                value={String(widgetProps.config.youtubeUrl ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, youtubeUrl: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="https://youtube.com/watch?v=..."
+                style={inputStyle}
               />
             </div>
           </div>

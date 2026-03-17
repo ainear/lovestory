@@ -61,6 +61,7 @@ export function ShapesTab({ triggerAutosave, editorDispatch }: ShapesTabProps) {
   function addShape(shapeType: ShapeProps["shapeType"]) {
     if (!editorDispatch) return;
     const element: CanvasElement = {
+      // eslint-disable-next-line react-hooks/immutability -- ID generation in event handler, not during render
       id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "shape",
       top: 100,

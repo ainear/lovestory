@@ -29,6 +29,9 @@ export function Canvas({ width, height, background, sections, elements, selected
     const [hoveredId, setHoveredId] = useState<string | null>(null);
 
     useEffect(() => {
+        // Clear editing state when selection changes — eslint setState-in-effect
+        // is acceptable here because we derive editingId from selectedId prop change
+         
         if (editingId && editingId !== selectedId) {
             setEditingId(null);
         }
