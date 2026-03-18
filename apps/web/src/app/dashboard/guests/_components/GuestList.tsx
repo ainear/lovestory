@@ -30,7 +30,6 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [adding, setAdding] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [error, setError] = useState("");
   // Sprint 43: batch import + bulk copy
@@ -51,7 +50,6 @@ export function GuestList({ projects, appUrl }: GuestListProps) {
       setName("");
       setEmail("");
       setPhone("");
-      setAdding(false);
       setError("");
       refetch();
     },

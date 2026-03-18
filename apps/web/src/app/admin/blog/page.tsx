@@ -33,6 +33,7 @@ export default function AdminBlogPage() {
         setPosts(data || []);
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { loadPosts(); }, []);
 
     async function save() {
