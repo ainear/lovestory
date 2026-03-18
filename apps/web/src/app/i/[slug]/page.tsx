@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CanvasInvitation } from "./CanvasInvitation";
 
@@ -1768,7 +1768,9 @@ function HeartButton({ slug }: { slug: string }) {
 }
 
 // ── Main Public Invitation ──
-export default function PublicInvitationPage({
+// Suspense wrapper required because this component uses useSearchParams()
+// Without Suspense, Next.js App Router hydration causes React error #310
+function InvitationPageInner({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -3897,5 +3899,17 @@ export default function PublicInvitationPage({
         }
       `}</style>
     </div>
+  );
+}
+
+export default function PublicInvitationPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <InvitationPageInner params={params} />
+    </Suspense>
   );
 }
