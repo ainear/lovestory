@@ -1890,6 +1890,300 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
       txt("s1", 30, 1910, 330, 60, 12, "Cảm ơn bạn đã đến\nchia vui cùng chúng tôi 🌾", 20, "'Dancing Script', cursive", "#b45309", { lineHeight: 1.4 }),
     ],
   },
+
+  // ── Template 16: Rose Dust (Vintage Rose) ──
+  {
+    slug: "rose-dust",
+    label: "Rose Dust",
+    emoji: "🌹",
+    category: "romantic",
+    background: "linear-gradient(180deg, #f9e4e8 0%, #fdf0f3 50%, #fff8f9 100%)",
+    accent: "#c9848e",
+    sections: [],
+    elements: [
+      txt("r16", 30, 80, 330, 50, 1, "TRÂN TRỌNG KÍNH MỜI", 11, "'Montserrat', sans-serif", "#c9848e", { textTransform: "uppercase", letterSpacing: 3, fontWeight: "600" }),
+      txt("r16", 30, 150, 330, 80, 2, "Nguyễn Minh Tuấn", 34, "'Cormorant Garamond', serif", "#7a3340", { fontStyle: "italic" }),
+      txt("r16", 30, 240, 330, 40, 3, "& Trần Thị Lan Anh", 26, "'Cormorant Garamond', serif", "#c9848e", { fontStyle: "italic" }),
+      txt("r16", 30, 310, 330, 2, 4, "─────────────", 14, "serif", "#e8b4b8"),
+      txt("r16", 30, 340, 330, 50, 5, "Ngày 15 tháng 06 năm 2026", 16, "'Cormorant Garamond', serif", "#7a3340"),
+      txt("r16", 30, 400, 330, 40, 6, "THE ROSE GARDEN PALACE", 12, "'Montserrat', sans-serif", "#c9848e", { textTransform: "uppercase", letterSpacing: 2 }),
+      txt("r16", 30, 450, 330, 40, 7, "17:30 — Thứ Hai", 14, "'Cormorant Garamond', serif", "#9e5060"),
+    ],
+  },
+
+  // ── Template 17: Bamboo Forest (Japanese Zen) ──
+  {
+    slug: "bamboo-forest",
+    label: "Bamboo Forest",
+    emoji: "🎋",
+    category: "minimal",
+    background: "linear-gradient(180deg, #f0f7f0 0%, #e8f4e8 50%, #f5faf5 100%)",
+    accent: "#4a7c59",
+    sections: [],
+    elements: [
+      txt("b17", 30, 70, 330, 40, 1, "竹の結婚式", 14, "'Noto Serif', serif", "#4a7c59", { letterSpacing: 6 }),
+      txt("b17", 30, 130, 330, 60, 2, "Lê Thành Đạt", 36, "'Noto Serif', serif", "#2d5a3d", { fontWeight: "700" }),
+      txt("b17", 30, 200, 330, 30, 3, "cùng", 18, "'Noto Serif', serif", "#6aa67a"),
+      txt("b17", 30, 240, 330, 60, 4, "Phạm Thị Ngọc Hương", 28, "'Noto Serif', serif", "#2d5a3d", { fontWeight: "600" }),
+      txt("b17", 30, 330, 330, 2, 5, "━━━━━━━━━━━━━━", 12, "serif", "#4a7c59"),
+      txt("b17", 30, 360, 330, 40, 6, "20 · 08 · 2026", 20, "'Noto Serif', serif", "#2d5a3d", { letterSpacing: 4 }),
+      txt("b17", 30, 410, 330, 40, 7, "JADE PAVILION RESTAURANT", 11, "'Montserrat', sans-serif", "#6aa67a", { textTransform: "uppercase", letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 18: Golden Arch (Art Deco) ──
+  {
+    slug: "golden-arch",
+    label: "Golden Arch",
+    emoji: "🏛️",
+    category: "classic",
+    background: "linear-gradient(180deg, #0f1b2d 0%, #1a2e4a 60%, #0f1b2d 100%)",
+    accent: "#c9a84c",
+    sections: [],
+    elements: [
+      txt("g18", 30, 60, 330, 30, 1, "✦ ─────────── ✦", 14, "serif", "#c9a84c"),
+      txt("g18", 30, 110, 330, 40, 2, "THE WEDDING OF", 12, "'Cinzel', serif", "#c9a84c", { textTransform: "uppercase", letterSpacing: 5 }),
+      txt("g18", 30, 160, 330, 60, 3, "Hoàng Văn Đức", 36, "'Cinzel', serif", "#fff8e7", { fontWeight: "700" }),
+      txt("g18", 30, 230, 330, 30, 4, "& Vũ Thị Thanh Mai", 22, "'Cinzel', serif", "#c9a84c"),
+      txt("g18", 30, 280, 330, 30, 5, "✦ ─────────── ✦", 14, "serif", "#c9a84c"),
+      txt("g18", 30, 330, 330, 40, 6, "12 THÁNG 9 – 2026", 16, "'Cinzel', serif", "#fff8e7", { letterSpacing: 3 }),
+      txt("g18", 30, 390, 330, 40, 7, "GRAND BALLROOM — INTERCONTINENTAL", 10, "'Montserrat', sans-serif", "#c9a84c", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 19: Sakura Bloom (Japanese) ──
+  {
+    slug: "sakura-bloom",
+    label: "Sakura Bloom",
+    emoji: "🌸",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fff0f3 0%, #ffdde6 40%, #fff5f8 100%)",
+    accent: "#e87da0",
+    sections: [],
+    elements: [
+      txt("sk19", 30, 60, 330, 40, 1, "🌸 さくらの結婚式 🌸", 14, "serif", "#e87da0", { letterSpacing: 2 }),
+      txt("sk19", 30, 120, 330, 70, 2, "Kim Ngân", 46, "'Dancing Script', cursive", "#c25a7a", { fontWeight: "700" }),
+      txt("sk19", 30, 200, 330, 40, 3, "❤ cùng ❤", 18, "'Dancing Script', cursive", "#e87da0"),
+      txt("sk19", 30, 250, 330, 70, 4, "Quang Huy", 46, "'Dancing Script', cursive", "#c25a7a", { fontWeight: "700" }),
+      txt("sk19", 30, 340, 330, 40, 5, "Mời bạn đến chung vui", 16, "serif", "#9e4060"),
+      txt("sk19", 30, 395, 330, 40, 6, "15 · 05 · 2026  |  18:00", 15, "'Cormorant Garamond', serif", "#c25a7a"),
+      txt("sk19", 30, 450, 330, 40, 7, "SAKURA GARDEN — ĐÀ LẠT", 11, "'Montserrat', sans-serif", "#e87da0", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 20: Midnight Glow (Dark Luxury) ──
+  {
+    slug: "midnight-glow",
+    label: "Midnight Glow",
+    emoji: "✨",
+    category: "modern",
+    background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    accent: "#ffd700",
+    sections: [],
+    elements: [
+      txt("m20", 30, 70, 330, 30, 1, "★  WE'RE GETTING MARRIED  ★", 10, "'Montserrat', sans-serif", "#ffd700", { letterSpacing: 3 }),
+      txt("m20", 30, 120, 330, 70, 2, "Thiên Phúc", 42, "'Playfair Display', serif", "#ffffff", { fontStyle: "italic" }),
+      txt("m20", 30, 200, 330, 30, 3, "& Bảo Châu", 26, "'Playfair Display', serif", "#ffd700", { fontStyle: "italic" }),
+      txt("m20", 30, 255, 330, 2, 4, "═══════════════", 12, "serif", "#ffd70066"),
+      txt("m20", 30, 285, 330, 40, 5, "Thứ Bảy — 22 Tháng 11", 18, "'Cormorant Garamond', serif", "#e0e0e0"),
+      txt("m20", 30, 340, 330, 30, 6, "2026  ·  18:30", 16, "'Cormorant Garamond', serif", "#ffd700"),
+      txt("m20", 30, 390, 330, 40, 7, "THE RITZ-CARLTON HANOI", 11, "'Montserrat', sans-serif", "#a0a0c0", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 21: Coastal Breeze (Beach) ──
+  {
+    slug: "coastal-breeze",
+    label: "Coastal Breeze",
+    emoji: "🌊",
+    category: "modern",
+    background: "linear-gradient(180deg, #dff6ff 0%, #b3e8fb 40%, #e8f8ff 100%)",
+    accent: "#0096c7",
+    sections: [],
+    elements: [
+      txt("c21", 30, 60, 330, 40, 1, "🌊  BEACH WEDDING  🌊", 13, "'Quicksand', sans-serif", "#0096c7", { letterSpacing: 2, fontWeight: "700" }),
+      txt("c21", 30, 120, 330, 60, 2, "Minh Đức & Hải Yến", 30, "'Quicksand', sans-serif", "#005f8a", { fontWeight: "700" }),
+      txt("c21", 30, 200, 330, 40, 3, "Trân trọng kính mời đến mừng", 15, "'Quicksand', sans-serif", "#0077a8"),
+      txt("c21", 30, 255, 330, 2, 4, "～～～～～～～～～", 16, "serif", "#0096c7"),
+      txt("c21", 30, 285, 330, 40, 5, "Chủ Nhật · 07 · 06 · 2026", 16, "'Quicksand', sans-serif", "#005f8a", { fontWeight: "600" }),
+      txt("c21", 30, 340, 330, 30, 6, "17:00  Sunset Cocktail", 14, "'Quicksand', sans-serif", "#0096c7"),
+      txt("c21", 30, 390, 330, 40, 7, "SUNRISE BEACH RESORT — PHÚ QUỐC", 10, "'Quicksand', sans-serif", "#005f8a", { letterSpacing: 1, fontWeight: "600" }),
+    ],
+  },
+
+  // ── Template 22: Terracotta Sun (Boho) ──
+  {
+    slug: "terracotta-sun",
+    label: "Terracotta Sun",
+    emoji: "🌻",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fdf3e8 0%, #f9e0c4 50%, #fdf5ec 100%)",
+    accent: "#e2725b",
+    sections: [],
+    elements: [
+      txt("t22", 30, 60, 330, 30, 1, "☀ bohème ☀", 16, "'Josefin Sans', sans-serif", "#e2725b", { letterSpacing: 5 }),
+      txt("t22", 30, 110, 330, 60, 2, "Thanh Sơn", 40, "'Playfair Display', serif", "#7a3d2d", { fontStyle: "italic" }),
+      txt("t22", 30, 180, 330, 30, 3, "và", 20, "serif", "#c96a50"),
+      txt("t22", 30, 220, 330, 60, 4, "Mai Phương", 40, "'Playfair Display', serif", "#7a3d2d", { fontStyle: "italic" }),
+      txt("t22", 30, 300, 330, 30, 5, "🌿  ─────  🌿", 14, "serif", "#c96a50"),
+      txt("t22", 30, 345, 330, 40, 6, "Thứ Sáu · 10 Tháng 10 · 2026", 15, "'Josefin Sans', sans-serif", "#7a3d2d"),
+      txt("t22", 30, 400, 330, 40, 7, "BOHO GARDEN VILLA · ĐÀ LẠT", 11, "'Josefin Sans', sans-serif", "#e2725b", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 23: Indigo Night (Classic Formal) ──
+  {
+    slug: "indigo-night",
+    label: "Indigo Night",
+    emoji: "🔷",
+    category: "classic",
+    background: "linear-gradient(180deg, #e8ecf8 0%, #dfe4f5 50%, #eef0f9 100%)",
+    accent: "#3949ab",
+    sections: [],
+    elements: [
+      txt("i23", 30, 60, 330, 40, 1, "WEDDING INVITATION", 12, "'Playfair Display', serif", "#3949ab", { letterSpacing: 4 }),
+      txt("i23", 30, 120, 330, 60, 2, "Ngọc Hùng & Á Linh", 32, "'Playfair Display', serif", "#1a237e", { fontWeight: "700" }),
+      txt("i23", 30, 200, 330, 2, 3, "──────────────────", 10, "serif", "#3949ab"),
+      txt("i23", 30, 230, 330, 60, 4, "Trân trọng kính mời quý khách\nđến chung vui trong ngày trọng đại", 14, "'Playfair Display', serif", "#3949ab", { lineHeight: 1.6 }),
+      txt("i23", 30, 310, 330, 40, 5, "Thứ Bảy — 14 · 02 · 2026", 16, "'Playfair Display', serif", "#1a237e"),
+      txt("i23", 30, 365, 330, 30, 6, "18:00 — Tiệc Tối Trọng Thể", 14, "'Playfair Display', serif", "#3949ab"),
+      txt("i23", 30, 410, 330, 40, 7, "GRAND PALACE — 123 Đường Hoa Hồng", 11, "'Montserrat', sans-serif", "#5c6bc0", { fontWeight: "600" }),
+    ],
+  },
+
+  // ── Template 24: Jade Garden (Vietnamese Traditional) ──
+  {
+    slug: "jade-garden",
+    label: "Jade Garden",
+    emoji: "🏮",
+    category: "classic",
+    background: "linear-gradient(180deg, #fff8f0 0%, #fff0e0 50%, #fff8f0 100%)",
+    accent: "#c0392b",
+    sections: [],
+    elements: [
+      txt("j24", 30, 50, 330, 40, 1, "囍  Thiệp Hồng  囍", 20, "'Noto Serif', serif", "#c0392b", { letterSpacing: 3 }),
+      txt("j24", 30, 110, 330, 60, 2, "Quốc Bảo & Thủy Tiên", 28, "'Noto Serif', serif", "#8b1a1a", { fontWeight: "700" }),
+      txt("j24", 30, 190, 330, 60, 3, "Cùng hai họ trân trọng kính mời\ngia đình, bạn bè đến dự Lễ Vu Quy", 14, "'Noto Serif', serif", "#8b1a1a", { lineHeight: 1.7 }),
+      txt("j24", 30, 270, 330, 2, 4, "❧─────────────❧", 14, "serif", "#c0392b"),
+      txt("j24", 30, 300, 330, 40, 5, "Ngày 18 tháng 03 năm 2026", 16, "'Noto Serif', serif", "#8b1a1a"),
+      txt("j24", 30, 355, 330, 30, 6, "11:00 — Lễ Vu Quy  |  18:00 — Tiệc Cưới", 12, "'Noto Serif', serif", "#c0392b"),
+      txt("j24", 30, 400, 330, 40, 7, "NHÀ HÀNG HOA SEN VÀNG — HÀ NỘI", 10, "'Montserrat', sans-serif", "#8b1a1a", { letterSpacing: 1, fontWeight: "600" }),
+    ],
+  },
+
+  // ── Template 25: Silver Mist (Ultra Minimal) ──
+  {
+    slug: "silver-mist",
+    label: "Silver Mist",
+    emoji: "🩶",
+    category: "minimal",
+    background: "#f8f9fa",
+    accent: "#6c757d",
+    sections: [],
+    elements: [
+      txt("sm25", 30, 120, 330, 60, 1, "Trung Hiếu\n& Quỳnh Như", 32, "'Montserrat', sans-serif", "#212529", { fontWeight: "300", lineHeight: 1.5 }),
+      txt("sm25", 30, 220, 330, 1, 2, "─", 60, "sans-serif", "#dee2e6"),
+      txt("sm25", 30, 250, 330, 30, 3, "1 · 1 · 2026", 18, "'Montserrat', sans-serif", "#6c757d", { letterSpacing: 5 }),
+      txt("sm25", 30, 300, 330, 30, 4, "Hà Nội · 18:30", 14, "'Montserrat', sans-serif", "#adb5bd", { letterSpacing: 3 }),
+    ],
+  },
+
+  // ── Template 26: Peach Velvet (Soft Romantic) ──
+  {
+    slug: "peach-velvet",
+    label: "Peach Velvet",
+    emoji: "🍑",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fff4ef 0%, #ffe8de 50%, #fff4ef 100%)",
+    accent: "#e8845a",
+    sections: [],
+    elements: [
+      txt("pv26", 30, 70, 330, 40, 1, "With love & joy", 18, "'EB Garamond', serif", "#e8845a", { fontStyle: "italic" }),
+      txt("pv26", 30, 130, 330, 70, 2, "Văn Khôi & Kim Chi", 32, "'EB Garamond', serif", "#8b4513", { fontStyle: "italic", fontWeight: "600" }),
+      txt("pv26", 30, 220, 330, 60, 3, "Vui lòng đến chung vui cùng chúng tôi\ntrong ngày đặc biệt nhất cuộc đời", 14, "'EB Garamond', serif", "#c06030", { lineHeight: 1.7, fontStyle: "italic" }),
+      txt("pv26", 30, 310, 330, 30, 4, "🌺  ──────  🌺", 14, "serif", "#e8845a"),
+      txt("pv26", 30, 355, 330, 40, 5, "Chủ Nhật · 05 Tháng 4 · 2026", 15, "'EB Garamond', serif", "#8b4513"),
+      txt("pv26", 30, 410, 330, 30, 6, "PEACH BLOSSOM — SÀI GÒN", 11, "'Montserrat', sans-serif", "#e8845a", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 27: Noir Blanc (Bold B&W) ──
+  {
+    slug: "noir-blanc",
+    label: "Noir & Blanc",
+    emoji: "🖤",
+    category: "modern",
+    background: "#ffffff",
+    accent: "#000000",
+    sections: [],
+    elements: [
+      txt("nb27", 30, 50, 330, 30, 1, "▬▬▬▬▬▬▬", 10, "sans-serif", "#000000"),
+      txt("nb27", 30, 95, 330, 80, 2, "MINH NHẬT", 48, "'Libre Baskerville', serif", "#000000", { fontWeight: "700", letterSpacing: 2 }),
+      txt("nb27", 30, 185, 330, 30, 3, "& PHƯƠNG LY", 22, "'Libre Baskerville', serif", "#555555", { letterSpacing: 3 }),
+      txt("nb27", 30, 235, 330, 30, 4, "▬▬▬▬▬▬▬", 10, "sans-serif", "#000000"),
+      txt("nb27", 30, 280, 330, 40, 5, "28 THÁNG 6 · 2026", 16, "'Libre Baskerville', serif", "#000000", { letterSpacing: 4 }),
+      txt("nb27", 30, 335, 330, 30, 6, "19:00", 20, "'Libre Baskerville', serif", "#555555", { fontWeight: "700" }),
+      txt("nb27", 30, 380, 330, 30, 7, "THE BLACK TIE LOUNGE · HCM", 10, "'Montserrat', sans-serif", "#888888", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 28: Olive Grove (Rustic) ──
+  {
+    slug: "olive-grove",
+    label: "Olive Grove",
+    emoji: "🫒",
+    category: "romantic",
+    background: "linear-gradient(180deg, #f5f0e8 0%, #ede4d3 50%, #f5f0e8 100%)",
+    accent: "#7b9e4c",
+    sections: [],
+    elements: [
+      txt("og28", 30, 60, 330, 30, 1, "🌿  Garden Wedding  🌿", 15, "'Lora', serif", "#7b9e4c", { fontStyle: "italic" }),
+      txt("og28", 30, 115, 330, 60, 2, "Bình & Nhung", 40, "'Lora', serif", "#5a4a2a", { fontStyle: "italic", fontWeight: "700" }),
+      txt("og28", 30, 195, 330, 50, 3, "Kính mời quý vị đến dự tiệc cưới\ngiữa khung cảnh thiên nhiên thơ mộng", 13, "'Lora', serif", "#7a6040", { lineHeight: 1.7 }),
+      txt("og28", 30, 270, 330, 30, 4, "🌾 ─────────── 🌾", 12, "serif", "#7b9e4c"),
+      txt("og28", 30, 315, 330, 40, 5, "TH 7 · 17 · 01 · 2026  ·  16:00", 15, "'Lora', serif", "#5a4a2a"),
+      txt("og28", 30, 370, 330, 30, 6, "OLIVE VILLA · Đà LẠT", 11, "'Montserrat', sans-serif", "#7b9e4c", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 29: Crystal Blue (Modern Luxury) ──
+  {
+    slug: "crystal-blue",
+    label: "Crystal Blue",
+    emoji: "💎",
+    category: "modern",
+    background: "linear-gradient(180deg, #e3f4ff 0%, #cce9ff 50%, #e8f6ff 100%)",
+    accent: "#0096c7",
+    sections: [],
+    elements: [
+      txt("cb29", 30, 60, 330, 30, 1, "💎  LUXURY WEDDING  💎", 11, "'Raleway', sans-serif", "#0096c7", { letterSpacing: 3, fontWeight: "700" }),
+      txt("cb29", 30, 110, 330, 60, 2, "Tuấn Kiệt", 40, "'Raleway', sans-serif", "#005580", { fontWeight: "800" }),
+      txt("cb29", 30, 180, 330, 30, 3, "&  Diễm Mi", 24, "'Raleway', sans-serif", "#0096c7", { fontWeight: "300" }),
+      txt("cb29", 30, 230, 330, 2, 4, "⬡──────────⬡", 12, "serif", "#0096c7"),
+      txt("cb29", 30, 260, 330, 40, 5, "21 · 11 · 2026  ·  18:30", 16, "'Raleway', sans-serif", "#005580", { fontWeight: "600" }),
+      txt("cb29", 30, 315, 330, 40, 6, "CRYSTAL PALACE HOTEL · SÀI GÒN", 10, "'Raleway', sans-serif", "#0096c7", { letterSpacing: 2, fontWeight: "600" }),
+    ],
+  },
+
+  // ── Template 30: Cherry Red (Vibrant Latin) ──
+  {
+    slug: "cherry-red",
+    label: "Cherry Red",
+    emoji: "🍒",
+    category: "modern",
+    background: "linear-gradient(180deg, #fff5f5 0%, #ffe0e0 50%, #fff5f5 100%)",
+    accent: "#e63946",
+    sections: [],
+    elements: [
+      txt("cr30", 30, 55, 330, 50, 1, "¡ BODA ! WEDDING !", 22, "'Oswald', sans-serif", "#e63946", { fontWeight: "700", letterSpacing: 2 }),
+      txt("cr30", 30, 120, 330, 70, 2, "HÙNG & MY", 50, "'Oswald', sans-serif", "#8b0000", { fontWeight: "900", letterSpacing: 3 }),
+      txt("cr30", 30, 205, 330, 40, 3, "CÙNG GIA ĐÌNH TRÂN TRỌNG KÍNH MỜI", 11, "'Oswald', sans-serif", "#e63946", { letterSpacing: 2 }),
+      txt("cr30", 30, 260, 330, 2, 4, "▬▬▬▬▬▬▬▬▬▬", 12, "sans-serif", "#e63946"),
+      txt("cr30", 30, 285, 330, 40, 5, "THỨ BẢY · 04 · 07 · 2026", 16, "'Oswald', sans-serif", "#8b0000", { fontWeight: "600", letterSpacing: 2 }),
+      txt("cr30", 30, 340, 330, 30, 6, "18:30  ·  Tiệc Cưới Đặc Biệt", 14, "'Oswald', sans-serif", "#e63946"),
+      txt("cr30", 30, 385, 330, 40, 7, "THE CHERRY BLOSSOM BALLROOM · HCM", 9, "'Oswald', sans-serif", "#8b0000", { letterSpacing: 1, fontWeight: "600" }),
+    ],
+  },
 ];
 
 export const TEMPLATE_CATEGORIES = [
@@ -1899,3 +2193,4 @@ export const TEMPLATE_CATEGORIES = [
   { key: "classic", label: "Cổ điển" },
   { key: "minimal", label: "Tối giản" },
 ];
+

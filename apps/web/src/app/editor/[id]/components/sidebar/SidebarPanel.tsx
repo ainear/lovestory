@@ -233,6 +233,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
             musicWidgetColor={props.musicWidgetColor}
             setMusicWidgetColor={props.setMusicWidgetColor}
             triggerAutosave={props.triggerAutosave}
+            projectId={props.projectId}
           />
         )}
 

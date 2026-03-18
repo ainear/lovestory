@@ -1,9 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { MUSIC_PRESETS, MUSIC_WIDGET_STYLES } from "../editor-constants";
 import type { MusicFilterCategory } from "../editor-constants";
 import { ColorPicker } from "../canvas-engine/ColorPicker";
+
+interface UploadedSong {
+  id: string;
+  name: string;
+  url: string;
+  duration?: string;
+}
 
 interface MusicTabProps {
   musicUrl: string;
@@ -22,6 +29,7 @@ interface MusicTabProps {
   musicWidgetColor: string;
   setMusicWidgetColor: (val: string) => void;
   triggerAutosave: () => void;
+  projectId?: string;
 }
 
 export function MusicTab({
@@ -41,7 +49,47 @@ export function MusicTab({
   musicWidgetColor,
   setMusicWidgetColor,
   triggerAutosave,
+  projectId,
 }: MusicTabProps) {
+
+  const [myMusic, setMyMusic] = useState<UploadedSong[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAudioUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (projectId) formData.append("projectId", projectId);
+      const res = await fetch("/api/upload-audio", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error || "Upload thất bại");
+        return;
+      }
+      const newSong: UploadedSong = {
+        id: `my-${Date.now()}`,
+        name: data.name || file.name,
+        url: data.url,
+      };
+      setMyMusic((prev) => [newSong, ...prev]);
+      // Auto-select newly uploaded song
+      setMusicUrl(newSong.url);
+      setMusicName(newSong.name);
+      triggerAutosave();
+    } catch {
+      setUploadError("Lỗi kết nối, vui lòng thử lại");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
   const filtered = MUSIC_PRESETS.filter((m) => {
     if (musicFilter !== "all" && m.cat !== musicFilter) return false;
     if (
@@ -195,6 +243,101 @@ export function MusicTab({
           </button>
         ))}
       </div>
+
+      {/* ── Custom Upload section ── */}
+      <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: 0, flex: 1 }}>
+            🎵 Nhạc của tôi
+          </p>
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept=".mp3,.m4a,.wav,.ogg"
+            style={{ display: "none" }}
+            onChange={handleAudioUpload}
+          />
+          <button
+            onClick={() => audioInputRef.current?.click()}
+            disabled={uploading}
+            data-testid="upload-music-btn"
+            style={{
+              padding: "5px 12px",
+              borderRadius: 16,
+              fontSize: 11,
+              fontWeight: 600,
+              border: "none",
+              cursor: uploading ? "wait" : "pointer",
+              background: uploading ? "#e5e7eb" : "#3b82f6",
+              color: uploading ? "#9ca3af" : "#fff",
+              opacity: uploading ? 0.7 : 1,
+              transition: "all 0.15s",
+            }}
+          >
+            {uploading ? "⏳ Đang tải..." : "⬆ Tải lên"}
+          </button>
+        </div>
+        {uploadError && (
+          <p style={{ fontSize: 11, color: "#dc2626", margin: "0 0 6px" }}>⚠ {uploadError}</p>
+        )}
+        {myMusic.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 8 }}>
+            {myMusic.map((song) => (
+              <div
+                key={song.id}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: musicUrl === song.url ? "#fdf2f8" : "#f8f9fa",
+                  border: musicUrl === song.url ? "1px solid #ff6b9d" : "1px solid #e5e7eb",
+                }}
+              >
+                <span style={{ fontSize: 14 }}>🎵</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 11, fontWeight: 500, color: "#374151", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {song.name}
+                  </p>
+                  <p style={{ fontSize: 9, color: "#9ca3af", margin: 0 }}>Nhạc của tôi</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setMusicUrl(song.url);
+                    setMusicName(song.name);
+                    triggerAutosave();
+                  }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 12,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: "pointer",
+                    background: musicUrl === song.url ? "#dcfce7" : "#e0f2fe",
+                    color: musicUrl === song.url ? "#16a34a" : "#0369a1",
+                  }}
+                >
+                  {musicUrl === song.url ? "✓" : "Dùng"}
+                </button>
+                <button
+                  onClick={() => setMyMusic((prev) => prev.filter((s) => s.id !== song.id))}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 12 }}
+                >✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {myMusic.length === 0 && !uploading && (
+          <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: "4px 0 8px" }}>
+            Chưa có nhạc tải lên · Hỗ trợ MP3, M4A, WAV (tối đa 10MB)
+          </p>
+        )}
+      </div>
+
+      {/* Thư viện nhạc label */}
+      <p style={{ fontSize: 11, fontWeight: 700, color: "#374151", margin: "4px 0 0" }}>🎶 Thư viện nhạc</p>
 
       {/* Song list */}
       <div
