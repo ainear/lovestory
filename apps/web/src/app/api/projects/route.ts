@@ -13,7 +13,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get("id");
+    // Support both JSON body (client default) and searchParams (legacy)
+    let projectId = searchParams.get("id");
+    if (!projectId) {
+      try {
+        const body = await request.json();
+        projectId = body.projectId ?? body.id ?? null;
+      } catch {
+        // body not JSON, projectId stays null
+      }
+    }
+
 
     if (!projectId) {
       return NextResponse.json(
