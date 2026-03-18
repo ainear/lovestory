@@ -3,10 +3,5 @@
   "buildCommand": "cd ../.. && pnpm turbo build --filter=@lovestory/web",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "develop": false
-    }
-  }
+  "outputDirectory": ".next"
 }
