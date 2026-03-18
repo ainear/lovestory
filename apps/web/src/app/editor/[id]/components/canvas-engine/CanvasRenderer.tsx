@@ -706,6 +706,37 @@ function WidgetRendererInline({
         </div>
       );
     }
+    case "music":
+      return (
+        <div
+          style={{
+            background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)",
+            borderRadius: Number(c.borderRadius ?? 12),
+            padding: 12,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {/* Vinyl disc preview */}
+          <svg width={60} height={60} viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="35" fill="#111" stroke="#333" strokeWidth="1"/>
+            {[30, 26, 22, 18, 14].map(r => (
+              <circle key={r} cx="36" cy="36" r={r} fill="none" stroke="#2a2a2a" strokeWidth="1"/>
+            ))}
+            <circle cx="36" cy="36" r="12" fill="#fce7f3"/>
+            <circle cx="36" cy="36" r="3" fill="#831843"/>
+          </svg>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#f9fafb", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+            {String(c.musicTitle || "Bài hát tặng em")}
+          </div>
+          <div style={{ fontSize: 8, color: "#9ca3af" }}>
+            {String(c.musicArtist || "Nhạc sĩ yêu thương")}
+          </div>
+        </div>
+      );
     default:
       return (
         <div

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -14,6 +15,15 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 10 uploads/min per user
+    const rl = checkRateLimit(`upload:${user.id}`, { limit: 10, windowSec: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Quá nhiều upload, vui lòng thử lại sau" },
+        { status: 429, headers: { "Retry-After": String(rl.resetIn) } },
+      );
     }
 
     const formData = await request.formData();

@@ -22,6 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_guests_project ON guests(project_id);
 -- RLS for guests
 ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can manage own guests" ON guests;
 CREATE POLICY "Users can manage own guests" ON guests
     FOR ALL USING (user_id = auth.uid());
 

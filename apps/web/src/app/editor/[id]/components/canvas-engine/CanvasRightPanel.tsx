@@ -1,8 +1,9 @@
 "use client";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useEditorContext } from "./useEditorState";
 import { LayersPanel } from "./LayersPanel";
+import { HistoryPanel } from "./HistoryPanel";
 import { PremiumFeaturesPanel } from "./PremiumFeaturesPanel";
 import { ProjectSettingsPanel } from "./ProjectSettingsPanel";
 import type { TextProps, ImageProps, WidgetProps } from "./types";
@@ -77,6 +78,8 @@ interface CanvasRightPanelProps {
 
 export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const { state, dispatch, selectedElement: el } = useEditorContext();
+  // Preserve ref before the early-return guard so closures can see it
+  const selectedEl = el ?? null;
   const params = useParams<{ id: string }>();
   const imageUploadRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -117,8 +120,17 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
             props.setQrBank(v);
             props.triggerAutosave();
           }}
+          selectedElementId={selectedEl?.id}
+          selectedElementType={selectedEl?.type}
+          onApplySuggestion={(suggestionText) => {
+            if (selectedEl && selectedEl.type === "text") {
+              dispatch({ type: "UPDATE_PROPS", id: selectedEl.id, props: { text: suggestionText } });
+              props.triggerAutosave();
+            }
+          }}
         />
         <LayersPanel />
+        <HistoryPanel />
       </div>
     );
   }
@@ -130,6 +142,12 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
   const imageProps = isImage ? (el.props as ImageProps) : null;
   const widgetProps = isWidget ? (el.props as WidgetProps) : null;
   const isQrBox = widgetProps?.widgetType === "qrbox";
+  const isCountdown = widgetProps?.widgetType === "countdown";
+  const isRsvp = widgetProps?.widgetType === "rsvp";
+  const isMap = widgetProps?.widgetType === "map";
+  const isCall = widgetProps?.widgetType === "callbutton";
+  const isCalendar = widgetProps?.widgetType === "calendar";
+  const isMusic = widgetProps?.widgetType === "music";
 
   const updateProp = (props: Record<string, unknown>) => {
     dispatch({ type: "UPDATE_PROPS", id: el.id, props });
@@ -1030,6 +1048,313 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
         </PanelSection>
       )}
 
+      {/* ── Countdown Config ── */}
+      {isCountdown && widgetProps && (
+        <PanelSection title="Cài đặt đếm ngược" icon="⏱️">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Ngày cưới</label>
+              <input
+                type="date"
+                value={String(widgetProps.config.targetDate ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, targetDate: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.label ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, label: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="ĐẾM NGƯỢC NGÀY CƯỚI"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Phong cách</label>
+              <select
+                value={String(widgetProps.config.style ?? "pink")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, style: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={selectStyle}
+              >
+                <option value="pink">Hồng lãng mạn</option>
+                <option value="gold">Vàng sang trọng</option>
+                <option value="dark">Tối huyền bí</option>
+                <option value="minimal">Tối giản trắng</option>
+              </select>
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Calendar Config ── */}
+      {isCalendar && widgetProps && (
+        <PanelSection title="Cài đặt lịch" icon="📅">
+          <div>
+            <label style={labelStyle}>Ngày cưới</label>
+            <input
+              type="date"
+              value={String(widgetProps.config.targetDate ?? "")}
+              onChange={(e) => {
+                dispatch({ type: "SNAPSHOT" });
+                dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, targetDate: e.target.value } } });
+                props.triggerAutosave();
+              }}
+              style={inputStyle}
+            />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <label style={labelStyle}>Ngày âm lịch (tùy chọn)</label>
+            <input
+              type="text"
+              value={String(widgetProps.config.lunarDate ?? "")}
+              onChange={(e) => {
+                dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, lunarDate: e.target.value } } });
+                props.triggerAutosave();
+              }}
+              placeholder="VD: Ngày 15 tháng 4 âm lịch"
+              style={inputStyle}
+            />
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── RSVP Config ── */}
+      {isRsvp && widgetProps && (
+        <PanelSection title="Cài đặt RSVP" icon="💌">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpTitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpTitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Xác nhận tham dự"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Mô tả</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpSubtitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpSubtitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Vui lòng xác nhận sự hiện diện"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Text nút gửi</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.rsvpButtonText ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, rsvpButtonText: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Gửi xác nhận 💌"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={labelStyle}>Trường tùy chọn</label>
+              {[
+                { key: "rsvpShowPhone", label: "📞 Số điện thoại" },
+                { key: "rsvpShowGuestCount", label: "👥 Số người" },
+                { key: "rsvpShowDietary", label: "🍽️ Chế độ ăn" },
+                { key: "rsvpShowMessage", label: "✍️ Lời nhắn" },
+              ].map(({ key, label: fieldLabel }) => (
+                <label key={key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 11, color: "#374151" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!widgetProps.config[key as keyof typeof widgetProps.config]}
+                    onChange={(e) => {
+                      dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, [key]: e.target.checked } } });
+                      props.triggerAutosave();
+                    }}
+                  />
+                  {fieldLabel}
+                </label>
+              ))}
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Map Config ── */}
+      {isMap && widgetProps && (
+        <PanelSection title="Cài đặt bản đồ" icon="📍">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tên địa điểm</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.venueName ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, venueName: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Nhà Hàng Tiệc Cưới"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Địa chỉ</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.venueAddress ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, venueAddress: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="123 Đường ABC, Quận 1, TP.HCM"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Link Google Maps</label>
+              <input
+                type="url"
+                value={String(widgetProps.config.mapUrl ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, mapUrl: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="https://maps.google.com/..."
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Call Button Config ── */}
+      {isCall && widgetProps && (
+        <PanelSection title="Nút liên hệ" icon="📞">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tiêu đề</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.label ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, label: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Liên hệ cô/chú rể"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Số điện thoại</label>
+              <input
+                type="tel"
+                value={String(widgetProps.config.phoneNumber ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, phoneNumber: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="0909 xxx xxx"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── Music Config ── */}
+      {isMusic && widgetProps && (
+        <PanelSection title="Cài đặt nhạc vinyl" icon="🎵">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div>
+              <label style={labelStyle}>Tên bài hát</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.musicTitle ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicTitle: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Bài hát tặng em"
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Ca sĩ / Nhạc sĩ</label>
+              <input
+                type="text"
+                value={String(widgetProps.config.musicArtist ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicArtist: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="Mỹ Tâm, Đen Vâu..."
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Thể loại</label>
+              <select
+                value={String(widgetProps.config.musicGenre ?? "wedding")}
+                onChange={(e) => {
+                  dispatch({ type: "SNAPSHOT" });
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, musicGenre: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                style={selectStyle}
+              >
+                <option value="wedding">💍 Wedding</option>
+                <option value="vpop">🎤 V-POP</option>
+                <option value="international">🌍 International</option>
+                <option value="lofi">☕ Lo-Fi</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Link YouTube (tùy chọn)</label>
+              <input
+                type="url"
+                value={String(widgetProps.config.youtubeUrl ?? "")}
+                onChange={(e) => {
+                  dispatch({ type: "UPDATE_PROPS", id: el.id, props: { config: { ...widgetProps.config, youtubeUrl: e.target.value } } });
+                  props.triggerAutosave();
+                }}
+                placeholder="https://youtube.com/watch?v=..."
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </PanelSection>
+      )}
+
+      {/* ── AI Text Suggestions (text elements only) ── */}
+      {isText && (
+        <AiSuggestSection
+          elementId={el.id}
+          onApply={(text) => {
+            updateProp({ text });
+            props.triggerAutosave();
+          }}
+        />
+      )}
+
       {/* ── Lock ── */}
       <PanelSection title="Khóa" icon="🔒">
         <label
@@ -1051,6 +1376,119 @@ export function CanvasRightPanel(props: CanvasRightPanelProps) {
         </label>
       </PanelSection>
     </div>
+  );
+}
+
+/** AI Text Suggestion section (renders inside text element panel) */
+function AiSuggestSection({
+  elementId,
+  onApply,
+}: {
+  elementId: string;
+  onApply: (text: string) => void;
+}) {
+  const [suggestType, setSuggestType] = useState<"invitation" | "vow" | "description">("invitation");
+  const [groomName, setGroomName] = useState("");
+  const [brideName, setBrideName] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appliedIdx, setAppliedIdx] = useState<number | null>(null);
+
+  // Reset when element changes
+  useEffect(() => {
+    setSuggestions([]);
+    setError(null);
+  }, [elementId]);
+
+  async function generate() {
+    if (!groomName.trim() || !brideName.trim()) {
+      setError("Nhập tên cô dâu & chú rể.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuggestions([]);
+    setAppliedIdx(null);
+    try {
+      const res = await fetch("/api/ai/text-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: suggestType, groomName: groomName.trim(), brideName: brideName.trim() }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Lỗi. Thử lại."); return; }
+      setSuggestions(data.suggestions || []);
+    } catch { setError("Không kết nối được."); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <PanelSection title="Gợi ý AI" icon="✨">
+      {/* Type select */}
+      <label style={labelStyle}>Loại nội dung</label>
+      <select
+        value={suggestType}
+        onChange={(e) => { setSuggestType(e.target.value as "invitation" | "vow" | "description"); setSuggestions([]); }}
+        style={selectStyle}
+      >
+        <option value="invitation">💌 Lời mời</option>
+        <option value="vow">💍 Lời thề</option>
+        <option value="description">📖 Mô tả</option>
+      </select>
+
+      {/* Names */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8 }}>
+        <div>
+          <label style={labelStyle}>Chú rể</label>
+          <input type="text" value={groomName} onChange={(e) => setGroomName(e.target.value)}
+            placeholder="Minh" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
+        </div>
+        <div>
+          <label style={labelStyle}>Cô dâu</label>
+          <input type="text" value={brideName} onChange={(e) => setBrideName(e.target.value)}
+            placeholder="Lan" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
+        </div>
+      </div>
+
+      {/* Generate button */}
+      <button
+        onClick={generate} disabled={loading}
+        style={{
+          width: "100%", marginTop: 10, padding: "8px 0",
+          borderRadius: 8, border: "none",
+          background: loading ? "#f3f4f6" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+          color: loading ? "#9ca3af" : "#fff",
+          fontSize: 12, fontWeight: 700,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "🤖 Đang tạo..." : "🪄 Tạo gợi ý"}
+      </button>
+
+      {error && <p style={{ fontSize: 11, color: "#ef4444", margin: "6px 0 0" }}>⚠️ {error}</p>}
+
+      {/* Suggestion cards */}
+      {suggestions.map((s, i) => (
+        <div key={i} style={{
+          marginTop: 8, background: "#fafafa", border: "1px solid #e5e7eb",
+          borderRadius: 8, padding: "8px 10px",
+        }}>
+          <p style={{ fontSize: 11, color: "#374151", margin: "0 0 6px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{s}</p>
+          <button
+            onClick={() => { onApply(s); setAppliedIdx(i); setTimeout(() => setAppliedIdx(null), 2000); }}
+            style={{
+              padding: "3px 10px", borderRadius: 6, border: "none",
+              background: appliedIdx === i ? "#10b981" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+              color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer",
+            }}
+          >
+            {appliedIdx === i ? "✓ Đã dùng" : "Dùng"}
+          </button>
+        </div>
+      ))}
+    </PanelSection>
   );
 }
 

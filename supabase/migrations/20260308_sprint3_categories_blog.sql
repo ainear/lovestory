@@ -34,6 +34,7 @@ ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Anyone can read published posts') THEN
+    DROP POLICY IF EXISTS "Anyone can read published posts" ON blog_posts;
     CREATE POLICY "Anyone can read published posts" ON blog_posts
       FOR SELECT USING (published = true);
   END IF;
@@ -41,6 +42,7 @@ END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service role full access blog') THEN
+    DROP POLICY IF EXISTS "Service role full access blog" ON blog_posts;
     CREATE POLICY "Service role full access blog" ON blog_posts
       FOR ALL USING (auth.role() = 'service_role');
   END IF;

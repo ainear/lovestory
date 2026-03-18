@@ -51,12 +51,14 @@ GRANT EXECUTE ON FUNCTION increment_referral_conversions(TEXT) TO authenticated;
 -- Uncomment below to apply stricter policy:
 /*
 DROP POLICY IF EXISTS "Anyone can insert rsvp" ON rsvps;
+DROP POLICY IF EXISTS "Public RSVP insert" ON rsvps;
 CREATE POLICY "Public RSVP insert" ON rsvps
   FOR INSERT WITH CHECK (
     project_id IN (SELECT id FROM projects)   -- must be a real project
   );
 
 DROP POLICY IF EXISTS "Anyone can insert wish" ON wishes;
+DROP POLICY IF EXISTS "Public wish insert" ON wishes;
 CREATE POLICY "Public wish insert" ON wishes
   FOR INSERT WITH CHECK (
     project_id IN (SELECT id FROM projects)

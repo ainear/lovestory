@@ -39,6 +39,9 @@ import {
 import Script from "next/script";
 import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/client";
+import CookieBanner from "@/components/CookieBanner";
+import { PostHogProvider } from "@/lib/posthog/provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -298,6 +301,13 @@ const anticDidone = Antic_Didone({
  * - Soul Note Display (display/decorative) → Cinzel Decorative
  */
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ec4899",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "LoveStory — Thiệp cưới online & AI Video",
@@ -331,6 +341,12 @@ export const metadata: Metadata = {
     title: "LoveStory — Thiệp cưới online & AI Video",
     description: "Tạo thiệp cưới online đẹp trong 5 phút. Miễn phí!",
   },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -352,13 +368,23 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        {/* DNS preconnect for faster asset loading */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project.supabase.co"} crossOrigin="anonymous" />
       </head>
       <body
         suppressHydrationWarning
         className={`${inter.variable} ${dancingScript.variable} ${playfairDisplay.variable} ${lora.variable} ${quicksand.variable} ${montserrat.variable} ${greatVibes.variable} ${cormorantGaramond.variable} ${pacifico.variable} ${sacramento.variable} ${alexBrush.variable} ${satisfy.variable} ${allura.variable} ${pinyonScript.variable} ${cinzelDecorative.variable} ${parisienne.variable} ${tangerine.variable} ${petitFormalScript.variable} ${italianno.variable} ${loversQuarrel.variable} ${rougeScript.variable} ${carattere.variable} ${cormorantInfant.variable} ${libreBaskerville.variable} ${ebGaramond.variable} ${crimsonText.variable} ${spectral.variable} ${raleway.variable} ${josefinSans.variable} ${poppins.variable} ${cinzel.variable} ${playfairDisplaySC.variable} ${bodoniModa.variable} ${tenorSans.variable} ${anticDidone.variable} antialiased`}
         style={{ margin: 0 }}
       >
-        <TRPCProvider>{children}</TRPCProvider>
+        <TRPCProvider>
+          <PostHogProvider>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </PostHogProvider>
+        </TRPCProvider>
+        <CookieBanner />
       </body>
     </html>
   );

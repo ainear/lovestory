@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b9d"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#g)"/>
+  <!-- Heart shape -->
+  <path d="M50 70 C30 55 20 45 20 35 C20 25 28 18 38 22 C43 24 47 28 50 32 C53 28 57 24 62 22 C72 18 80 25 80 35 C80 45 70 55 50 70z"
+    fill="white" opacity="0.95"/>
+</svg>

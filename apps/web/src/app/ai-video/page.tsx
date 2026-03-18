@@ -23,7 +23,8 @@ export default function AIVideoPage() {
         "idle" | "uploading" | "processing" | "done" | "error"
     >("idle");
     const [progress, setProgress] = useState(0);
-    const [videoId, setVideoId] = useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future display
+    const [_videoId, setVideoId] = useState<string | null>(null);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState("");
     const fileRef = useRef<HTMLInputElement>(null);
@@ -75,7 +76,9 @@ export default function AIVideoPage() {
         setPreviews((prev) => prev.filter((_, i) => i !== index));
     }
 
-    // Poll video status
+    // Stable ref updated every render — avoids circular self-reference in useCallback
+    const pollStatusRef = useRef<((vid: string) => void) | null>(null);
+
     const pollStatus = useCallback(async (vid: string) => {
         try {
             const res = await fetch(
@@ -88,7 +91,7 @@ export default function AIVideoPage() {
             if (data.status === "complete" && data.output_url) {
                 setStatus("done");
                 setVideoUrl(data.output_url);
-                return; // Stop polling
+                return;
             }
 
             if (data.status === "failed") {
@@ -96,16 +99,20 @@ export default function AIVideoPage() {
                 setErrorMsg(
                     data.error_message || "Video generation failed",
                 );
-                return; // Stop polling
+                return;
             }
 
-            // Continue polling
-            pollRef.current = setTimeout(() => pollStatus(vid), 2000);
+            // Use ref to schedule next poll — avoids circular self-reference
+            pollRef.current = setTimeout(() => pollStatusRef.current?.(vid), 2000);
         } catch {
-            // Retry on network errors
-            pollRef.current = setTimeout(() => pollStatus(vid), 3000);
+            pollRef.current = setTimeout(() => pollStatusRef.current?.(vid), 3000);
         }
     }, []);
+
+    // Keep ref in sync with latest pollStatus (runs after each render)
+    useEffect(() => {
+        pollStatusRef.current = pollStatus;
+    });
 
     useEffect(() => {
         return () => {
@@ -170,7 +177,7 @@ export default function AIVideoPage() {
                 setVideoId(genData.videoId);
                 // Start polling for status
                 pollRef.current = setTimeout(
-                    () => pollStatus(genData.videoId),
+                    () => pollStatusRef.current?.(genData.videoId),
                     2000,
                 );
             } else {

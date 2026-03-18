@@ -72,7 +72,8 @@ export interface WidgetProps {
     | "youtube"
     | "callbutton"
     | "guestname"
-    | "formbuilder";
+    | "formbuilder"
+    | "music";
   config: Record<string, unknown>;
 }
 

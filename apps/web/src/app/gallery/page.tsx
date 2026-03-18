@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -115,8 +116,14 @@ export default async function GalleryPage() {
                                     {/* Card preview */}
                                     <div style={{ height: 200, background: bg, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                                         {inv.cover_image ? (
-                                            /* eslint-disable-next-line @next/next/no-img-element */
-                                            <img src={inv.cover_image} alt={names} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            <Image
+                                                src={inv.cover_image!}
+                                                alt={names}
+                                                width={400}
+                                                height={200}
+                                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                priority={false}
+                                            />
                                         ) : (
                                             <div style={{ textAlign: "center", padding: 24 }}>
                                                 <p style={{ fontSize: 11, color: accent, letterSpacing: 3, margin: "0 0 8px", fontWeight: 600 }}>SAVE THE DATE</p>

@@ -158,8 +158,8 @@ export function ImageCropModal({ imageUrl, onCrop, onCancel }: ImageCropModalPro
             });
         } else {
             // create
-            let w = pos.x - crop.x;
-            let h = aspectRatio ? w / aspectRatio : pos.y - crop.y;
+            const w = pos.x - crop.x;
+            const h = aspectRatio ? w / aspectRatio : pos.y - crop.y;
             setCrop(prev => ({ ...prev, width: Math.max(w, 20), height: Math.max(h, 20) }));
         }
         setDragStart(pos);

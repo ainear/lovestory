@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 const PLANS = {
@@ -20,21 +20,18 @@ const PLANS = {
 
 export default function CheckoutPage() {
     const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium">("basic");
-    const [orderCode, setOrderCode] = useState("");
+    // Lazy initializer — avoids setState inside useEffect
+    const [orderCode] = useState(() => `LS${Date.now().toString(36).toUpperCase()}`);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const formRef = useRef<HTMLFormElement>(null);
-
-    useEffect(() => {
-        const code = `LS${Date.now().toString(36).toUpperCase()}`;
-        setOrderCode(code);
-
-        // Check URL params for errors
+    // Lazy initializer reads URL params at mount time with no side effects
+    const [error, setError] = useState(() => {
+        if (typeof window === "undefined") return "";
         const params = new URLSearchParams(window.location.search);
-        if (params.get("error")) {
-            setError(params.get("error") === "cancelled" ? "Bạn đã hủy thanh toán" : "Thanh toán thất bại. Vui lòng thử lại");
-        }
-    }, []);
+        const e = params.get("error");
+        if (!e) return "";
+        return e === "cancelled" ? "Bạn đã hủy thanh toán" : "Thanh toán thất bại. Vui lòng thử lại";
+    });
+    const formRef = useRef<HTMLFormElement>(null);
 
     const plan = PLANS[selectedPlan];
 
