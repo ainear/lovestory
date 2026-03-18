@@ -2184,6 +2184,306 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
       txt("cr30", 30, 385, 330, 40, 7, "THE CHERRY BLOSSOM BALLROOM · HCM", 9, "'Oswald', sans-serif", "#8b0000", { letterSpacing: 1, fontWeight: "600" }),
     ],
   },
+
+  // ── Template 31: Đỏ Gold (Vietnamese Traditional) ──
+  {
+    slug: "do-gold",
+    label: "Đỏ Gold",
+    emoji: "🏮",
+    category: "classic",
+    background: "linear-gradient(180deg, #1a0000 0%, #3d0000 40%, #1a0000 100%)",
+    accent: "#d4af37",
+    sections: [],
+    elements: [
+      txt("dg31", 30, 30, 330, 40, 1, "❧ TRÂN TRỌNG KÍNH MỜI ❧", 11, "'Playfair Display', serif", "#d4af37", { letterSpacing: 3 }),
+      txt("dg31", 30, 90, 330, 80, 2, "ANH & EM", 52, "'Playfair Display', serif", "#d4af37", { fontWeight: "700" }),
+      txt("dg31", 30, 185, 330, 40, 3, "══════════════", 14, "serif", "#d4af37"),
+      txt("dg31", 30, 240, 330, 40, 4, "Ngày 12 tháng 05 năm 2026", 14, "'Playfair Display', serif", "#fff5e0"),
+      txt("dg31", 30, 295, 330, 35, 5, "18:00  ·  Sanh cưới Hoàng Gia", 13, "'Playfair Display', serif", "#d4af37"),
+      txt("dg31", 30, 345, 330, 45, 6, "🏮 🐉 🏮", 20, "sans-serif", "#d4af37"),
+      txt("dg31", 30, 400, 330, 30, 7, "Quận 1, Thành phố Hồ Chí Minh", 12, "'Playfair Display', serif", "#fff5e0"),
+    ],
+  },
+
+  // ── Template 32: Hà Nội Cổ (Hanoi Classic) ──
+  {
+    slug: "ha-noi-co",
+    label: "Hà Nội Cổ",
+    emoji: "🏛️",
+    category: "classic",
+    background: "linear-gradient(180deg, #f5f0e8 0%, #ebe0cc 50%, #f5f0e8 100%)",
+    accent: "#8b6536",
+    sections: [],
+    elements: [
+      txt("hn32", 30, 40, 330, 35, 1, "HÀ NỘI · 1954", 10, "'Cormorant Garamond', serif", "#8b6536", { letterSpacing: 5 }),
+      txt("hn32", 30, 95, 330, 75, 2, "Minh & Hà", 48, "'Cormorant Garamond', serif", "#3d2200", { fontStyle: "italic" }),
+      txt("hn32", 30, 185, 330, 30, 3, "Trân trọng kính mời", 14, "'Cormorant Garamond', serif", "#8b6536"),
+      txt("hn32", 30, 235, 330, 2, 4, "————————————————", 12, "serif", "#8b6536"),
+      txt("hn32", 30, 265, 330, 40, 5, "Thứ Bảy, 20 tháng 6, 2026", 15, "'Cormorant Garamond', serif", "#3d2200"),
+      txt("hn32", 30, 320, 330, 35, 6, "17:30  ·  Nhà Hàng Hoa Sứ", 13, "'Cormorant Garamond', serif", "#8b6536"),
+      txt("hn32", 30, 370, 330, 30, 7, "36 Phố Cổ · Hoàn Kiếm · Hà Nội", 12, "'Cormorant Garamond', serif", "#5a3e1b"),
+    ],
+  },
+
+  // ── Template 33: Scandinavia (Nordic Minimal) ──
+  {
+    slug: "scandinavia",
+    label: "Scandinavia",
+    emoji: "❄️",
+    category: "minimal",
+    background: "linear-gradient(180deg, #f8f9fa 0%, #e8ecf0 50%, #f8f9fa 100%)",
+    accent: "#2c3e50",
+    sections: [],
+    elements: [
+      txt("sc33", 60, 60, 270, 25, 1, "WEDDING INVITATION", 9, "'Montserrat', sans-serif", "#7f8c8d", { letterSpacing: 5, fontWeight: "600" }),
+      txt("sc33", 30, 110, 330, 70, 2, "Erik & Lena", 44, "'Raleway', sans-serif", "#2c3e50", { fontWeight: "300" }),
+      txt("sc33", 120, 195, 150, 2, 3, "—", 24, "sans-serif", "#bdc3c7"),
+      txt("sc33", 30, 230, 330, 35, 4, "June 21, 2026", 16, "'Montserrat', sans-serif", "#2c3e50", { fontWeight: "300" }),
+      txt("sc33", 30, 280, 330, 30, 5, "at five o'clock in the afternoon", 12, "'Raleway', sans-serif", "#7f8c8d"),
+      txt("sc33", 30, 325, 330, 35, 6, "Fjord House · Bergen", 14, "'Montserrat', sans-serif", "#2c3e50", { fontWeight: "500" }),
+      txt("sc33", 30, 375, 330, 25, 7, "Norway", 11, "'Montserrat', sans-serif", "#7f8c8d", { letterSpacing: 4 }),
+    ],
+  },
+
+  // ── Template 34: Dark Luxury ──
+  {
+    slug: "dark-luxury",
+    label: "Dark Luxury",
+    emoji: "🖤",
+    category: "modern",
+    background: "linear-gradient(180deg, #0d0d0d 0%, #1a1a2e 40%, #0d0d0d 100%)",
+    accent: "#e8c97a",
+    sections: [],
+    elements: [
+      txt("dl34", 30, 45, 330, 30, 1, "✦ LUXURY WEDDING ✦", 10, "'Cinzel', serif", "#e8c97a", { letterSpacing: 4 }),
+      txt("dl34", 30, 100, 330, 75, 2, "JAMES & EVA", 40, "'Cinzel', serif", "#ffffff", { fontWeight: "700", letterSpacing: 5 }),
+      txt("dl34", 100, 188, 190, 2, 3, "───────────────", 10, "sans-serif", "#e8c97a"),
+      txt("dl34", 30, 215, 330, 35, 4, "SEPTEMBER 11, 2026", 13, "'Cinzel', serif", "#e8c97a", { letterSpacing: 3 }),
+      txt("dl34", 30, 265, 330, 30, 5, "BLACK PEARL HOTEL · SUITE 2600", 11, "'Cinzel', serif", "#a0a0a0", { letterSpacing: 2 }),
+      txt("dl34", 30, 310, 330, 35, 6, "Cocktail 7 PM · Dinner 8 PM", 12, "'Cinzel', serif", "#e8c97a"),
+      txt("dl34", 30, 360, 330, 30, 7, "Black tie preferred", 11, "'Cinzel', serif", "#606060", { fontStyle: "italic" }),
+    ],
+  },
+
+  // ── Template 35: Copper Rose ──
+  {
+    slug: "copper-rose",
+    label: "Copper Rose",
+    emoji: "🌸",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fff8f5 0%, #ffe8df 50%, #fff8f5 100%)",
+    accent: "#b5651d",
+    sections: [],
+    elements: [
+      txt("cr35", 30, 50, 330, 30, 1, "An invitation to celebrate", 13, "'Dancing Script', cursive", "#b5651d"),
+      txt("cr35", 30, 100, 330, 70, 2, "Jade & Khan", 46, "'Dancing Script', cursive", "#7a3b1e", { fontWeight: "700" }),
+      txt("cr35", 30, 182, 330, 30, 3, "together with their families", 13, "'Lato', sans-serif", "#b5651d"),
+      txt("cr35", 30, 230, 330, 2, 4, "・・・・・・・・・・・・・・・", 14, "sans-serif", "#d4a373"),
+      txt("cr35", 30, 260, 330, 40, 5, "Saturday, October 3, 2026", 15, "'Lato', sans-serif", "#7a3b1e", { fontWeight: "600" }),
+      txt("cr35", 30, 315, 330, 30, 6, "4:00 PM  ·  Garden Terrace", 13, "'Lato', sans-serif", "#b5651d"),
+      txt("cr35", 30, 360, 330, 30, 7, "Copper Rose Estate, Da Lat", 12, "'Lato', sans-serif", "#9a7354"),
+    ],
+  },
+
+  // ── Template 36: Pearl White ──
+  {
+    slug: "pearl-white",
+    label: "Pearl White",
+    emoji: "🤍",
+    category: "minimal",
+    background: "linear-gradient(180deg, #ffffff 0%, #f0ede8 30%, #ffffff 100%)",
+    accent: "#c4a882",
+    sections: [],
+    elements: [
+      txt("pw36", 30, 55, 330, 30, 1, "Mr. & Mrs.", 16, "'Cormorant Garamond', serif", "#c4a882", { fontStyle: "italic" }),
+      txt("pw36", 30, 100, 330, 75, 2, "Ethan & Sophie", 42, "'Cormorant Garamond', serif", "#2d231e", { fontStyle: "italic" }),
+      txt("pw36", 90, 188, 210, 1, 3, "─────────────────", 11, "serif", "#ddd0c0"),
+      txt("pw36", 30, 210, 330, 35, 4, "Invite you to their wedding", 15, "'Lato', sans-serif", "#8a7060", { fontWeight: "300" }),
+      txt("pw36", 30, 260, 330, 40, 5, "November 28, 2026", 16, "'Cormorant Garamond', serif", "#2d231e"),
+      txt("pw36", 30, 315, 330, 30, 6, "The White Chapel · Dalat", 13, "'Lato', sans-serif", "#c4a882"),
+      txt("pw36", 30, 360, 330, 25, 7, "RSVP by November 1", 11, "'Lato', sans-serif", "#a0907e", { letterSpacing: 2 }),
+    ],
+  },
+
+  // ── Template 37: Wildflower ──
+  {
+    slug: "wildflower",
+    label: "Wildflower",
+    emoji: "🌻",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fffdf5 0%, #fef9e7 40%, #fdf5e0 100%)",
+    accent: "#d48b2e",
+    sections: [],
+    elements: [
+      txt("wf37", 30, 40, 330, 35, 1, "🌻 🌼 🌸 🌺 🌻", 18, "sans-serif", "#d4a017"),
+      txt("wf37", 30, 90, 330, 70, 2, "Tom & Lily", 46, "'Pacifico', cursive", "#6b4226"),
+      txt("wf37", 30, 175, 330, 30, 3, "are getting married!", 15, "'Lato', sans-serif", "#d4a017"),
+      txt("wf37", 30, 225, 330, 2, 4, "🌿 ～～～～～ 🌿", 16, "sans-serif", "#86a873"),
+      txt("wf37", 30, 262, 330, 40, 5, "Sunday, May 17, 2026", 16, "'Lato', sans-serif", "#6b4226", { fontWeight: "600" }),
+      txt("wf37", 30, 315, 330, 30, 6, "Wildflower Farm · 3:00 PM", 13, "'Lato', sans-serif", "#d4a017"),
+      txt("wf37", 30, 360, 330, 30, 7, "Moc Chau · Son La", 12, "'Lato', sans-serif", "#8a6040"),
+    ],
+  },
+
+  // ── Template 38: Pastel Garden ──
+  {
+    slug: "pastel-garden",
+    label: "Pastel Garden",
+    emoji: "🌷",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fef0f5 0%, #fde8f0 30%, #f0f8ff 100%)",
+    accent: "#e8a0bf",
+    sections: [],
+    elements: [
+      txt("pg38", 30, 50, 330, 30, 1, "💮 Together We Bloom 💮", 12, "'Poppins', sans-serif", "#e8a0bf"),
+      txt("pg38", 30, 100, 330, 75, 2, "Rafael & Iris", 44, "'Dancing Script', cursive", "#c06080", { fontWeight: "700" }),
+      txt("pg38", 30, 188, 330, 30, 3, "joyfully invite you to celebrate", 13, "'Poppins', sans-serif", "#d4789a"),
+      txt("pg38", 80, 235, 230, 1, 4, "───────────────────", 10, "serif", "#f4c2d8"),
+      txt("pg38", 30, 257, 330, 40, 5, "April 4, 2026 · Saturday", 16, "'Poppins', sans-serif", "#804060", { fontWeight: "600" }),
+      txt("pg38", 30, 308, 330, 30, 6, "5:00 PM  ·  Pastel Rose Garden", 13, "'Poppins', sans-serif", "#e8a0bf"),
+      txt("pg38", 30, 353, 330, 30, 7, "Đà Nẵng · Việt Nam", 12, "'Poppins', sans-serif", "#b07090"),
+    ],
+  },
+
+  // ── Template 39: Magnolia ──
+  {
+    slug: "magnolia",
+    label: "Magnolia",
+    emoji: "🤍",
+    category: "classic",
+    background: "linear-gradient(180deg, #fdfbf7 0%, #f5f0e8 40%, #fdfbf7 100%)",
+    accent: "#9b8470",
+    sections: [],
+    elements: [
+      txt("mg39", 100, 50, 190, 30, 1, "— MAGNOLIA —", 11, "'Cinzel', serif", "#9b8470", { letterSpacing: 4 }),
+      txt("mg39", 30, 100, 330, 80, 2, "William & Grace", 40, "'Playfair Display', serif", "#3d3027", { fontStyle: "italic" }),
+      txt("mg39", 30, 193, 330, 30, 3, "request the honour of your presence", 13, "'Lato', sans-serif", "#7a6550", { fontWeight: "300" }),
+      txt("mg39", 40, 242, 310, 1, 4, "────────────────────────────", 10, "serif", "#c8b8a0"),
+      txt("mg39", 30, 262, 330, 40, 5, "Friday the twelfth of June", 16, "'Playfair Display', serif", "#3d3027"),
+      txt("mg39", 30, 315, 330, 30, 6, "Two thousand twenty-six", 13, "'Playfair Display', serif", "#9b8470", { fontStyle: "italic" }),
+      txt("mg39", 30, 360, 330, 30, 7, "Magnolia Plantation · Hội An", 12, "'Lato', sans-serif", "#7a6550"),
+    ],
+  },
+
+  // ── Template 40: Summer Breeze ──
+  {
+    slug: "summer-breeze",
+    label: "Summer Breeze",
+    emoji: "🌊",
+    category: "modern",
+    background: "linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 40%, #e0f7fa 100%)",
+    accent: "#0097a7",
+    sections: [],
+    elements: [
+      txt("sb40", 30, 50, 330, 30, 1, "☀️ SUMMER WEDDING ☀️", 11, "'Poppins', sans-serif", "#00838f", { letterSpacing: 2 }),
+      txt("sb40", 30, 100, 330, 70, 2, "Marco & Bảo", 46, "'Poppins', sans-serif", "#00474f", { fontWeight: "700" }),
+      txt("sb40", 30, 185, 330, 30, 3, "invite you to a beach celebration", 13, "'Poppins', sans-serif", "#0097a7"),
+      txt("sb40", 30, 233, 330, 1, 4, "〜〜〜〜〜〜〜〜〜〜", 16, "sans-serif", "#80deea"),
+      txt("sb40", 30, 260, 330, 40, 5, "August 8, 2026 · Saturday", 16, "'Poppins', sans-serif", "#00474f", { fontWeight: "600" }),
+      txt("sb40", 30, 312, 330, 30, 6, "4:30 PM  ·  Sunset Beach Club", 13, "'Poppins', sans-serif", "#0097a7"),
+      txt("sb40", 30, 357, 330, 30, 7, "Phú Quốc · Kiên Giang", 12, "'Poppins', sans-serif", "#00696f"),
+    ],
+  },
+
+  // ── Template 41: Autumn Maple ──
+  {
+    slug: "autumn-maple",
+    label: "Autumn Maple",
+    emoji: "🍁",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fff8f0 0%, #ffe8d0 40%, #fff0e0 100%)",
+    accent: "#c0392b",
+    sections: [],
+    elements: [
+      txt("am41", 30, 45, 330, 30, 1, "🍁 Autumn Wedding 🍁", 13, "'Lora', serif", "#c0392b"),
+      txt("am41", 30, 95, 330, 75, 2, "Lucas & Lan", 48, "'Lora', serif", "#7b2c2c", { fontStyle: "italic" }),
+      txt("am41", 30, 185, 330, 30, 3, "together with their families", 13, "'Lato', sans-serif", "#c0392b"),
+      txt("am41", 40, 232, 310, 1, 4, "─────────────────────────", 10, "serif", "#e8a87c"),
+      txt("am41", 30, 252, 330, 40, 5, "October 17, 2026 · Saturday", 16, "'Lora', serif", "#7b2c2c", { fontWeight: "600" }),
+      txt("am41", 30, 305, 330, 30, 6, "3:00 PM  ·  Maple Forest Lodge", 13, "'Lato', sans-serif", "#c0392b"),
+      txt("am41", 30, 350, 330, 30, 7, "Đà Lạt · Lâm Đồng", 12, "'Lato', sans-serif", "#964b00"),
+    ],
+  },
+
+  // ── Template 42: Winter Frost ──
+  {
+    slug: "winter-frost",
+    label: "Winter Frost",
+    emoji: "❄️",
+    category: "minimal",
+    background: "linear-gradient(180deg, #eef6ff 0%, #ddeeff 40%, #eef6ff 100%)",
+    accent: "#1565c0",
+    sections: [],
+    elements: [
+      txt("wf42", 30, 50, 330, 30, 1, "❄ WINTER WEDDING ❄", 11, "'Raleway', sans-serif", "#42a5f5", { letterSpacing: 4 }),
+      txt("wf42", 30, 100, 330, 75, 2, "Ivan & Snow", 46, "'Raleway', sans-serif", "#0d47a1", { fontWeight: "200" }),
+      txt("wf42", 80, 190, 220, 1, 3, "─────────────────", 11, "sans-serif", "#90caf9"),
+      txt("wf42", 30, 212, 330, 35, 4, "January 3, 2026", 16, "'Raleway', sans-serif", "#1565c0", { fontWeight: "300" }),
+      txt("wf42", 30, 260, 330, 30, 5, "ceremony at 3 in the afternoon", 13, "'Lato', sans-serif", "#42a5f5"),
+      txt("wf42", 30, 305, 330, 35, 6, "Ice Castle · Sa Pa", 14, "'Raleway', sans-serif", "#0d47a1", { fontWeight: "500" }),
+      txt("wf42", 30, 355, 330, 30, 7, "Lào Cai, Việt Nam", 12, "'Raleway', sans-serif", "#5c8ec4"),
+    ],
+  },
+
+  // ── Template 43: Spring Blossom ──
+  {
+    slug: "spring-blossom",
+    label: "Spring Blossom",
+    emoji: "🌸",
+    category: "romantic",
+    background: "linear-gradient(180deg, #fff5fb 0%, #ffe0f0 40%, #fff5fb 100%)",
+    accent: "#e91e8c",
+    sections: [],
+    elements: [
+      txt("sp43", 30, 45, 330, 30, 1, "🌸 Spring · 2026 · Hội An 🌸", 11, "'Nunito', sans-serif", "#e91e8c"),
+      txt("sp43", 30, 95, 330, 75, 2, "An & Bình", 50, "'Dancing Script', cursive", "#880e4f", { fontWeight: "700" }),
+      txt("sp43", 30, 185, 330, 30, 3, "trân trọng kính mời", 14, "'Nunito', sans-serif", "#e91e8c"),
+      txt("sp43", 40, 232, 310, 1, 4, "～～～～～～～～～～～～", 14, "sans-serif", "#f8bbd0"),
+      txt("sp43", 30, 252, 330, 40, 5, "Thứ Bảy · 18 tháng 4 · 2026", 15, "'Nunito', sans-serif", "#880e4f", { fontWeight: "700" }),
+      txt("sp43", 30, 305, 330, 30, 6, "17:00  ·  Hội An Phố Cổ", 13, "'Nunito', sans-serif", "#e91e8c"),
+      txt("sp43", 30, 350, 330, 30, 7, "Quảng Nam · Việt Nam", 12, "'Nunito', sans-serif", "#b0406e"),
+    ],
+  },
+
+  // ── Template 44: Sài Gòn Đêm ──
+  {
+    slug: "sai-gon-dem",
+    label: "Sài Gòn Đêm",
+    emoji: "🌃",
+    category: "modern",
+    background: "linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 40%, #0a0a1a 100%)",
+    accent: "#ffd700",
+    sections: [],
+    elements: [
+      txt("sg44", 30, 45, 330, 30, 1, "🌃 SÀI GÒN · 2026 🌃", 11, "'Oswald', sans-serif", "#ffd700", { letterSpacing: 3 }),
+      txt("sg44", 30, 95, 330, 75, 2, "QUÂN & MINH", 44, "'Oswald', sans-serif", "#ffffff", { fontWeight: "700", letterSpacing: 4 }),
+      txt("sg44", 80, 185, 220, 2, 3, "══════════════", 12, "sans-serif", "#ffd700"),
+      txt("sg44", 30, 215, 330, 40, 4, "TRÂN TRỌNG KÍNH MỜI", 12, "'Oswald', sans-serif", "#ffd700", { letterSpacing: 3 }),
+      txt("sg44", 30, 270, 330, 40, 5, "THỨ SÁU · 13 · 11 · 2026", 16, "'Oswald', sans-serif", "#ffffff", { fontWeight: "600" }),
+      txt("sg44", 30, 325, 330, 30, 6, "19:00  ·  Rex Hotel Rooftop", 13, "'Oswald', sans-serif", "#ffd700"),
+      txt("sg44", 30, 370, 330, 30, 7, "Quận 1 · Thành Phố HCM", 12, "'Oswald', sans-serif", "#a0a0c0"),
+    ],
+  },
+
+  // ── Template 45: Huế Hoàng Triều ──
+  {
+    slug: "hue-hoang-trieu",
+    label: "Huế Hoàng Triều",
+    emoji: "👑",
+    category: "classic",
+    background: "linear-gradient(180deg, #1a0f00 0%, #3d2200 40%, #1a0f00 100%)",
+    accent: "#c8960c",
+    sections: [],
+    elements: [
+      txt("ht45", 30, 40, 330, 30, 1, "✦ HOÀNG TRIỀU · HUẾ ✦", 10, "'Playfair Display', serif", "#c8960c", { letterSpacing: 4 }),
+      txt("ht45", 30, 90, 330, 80, 2, "Tuấn & Linh", 46, "'Playfair Display', serif", "#f5e6c8", { fontStyle: "italic" }),
+      txt("ht45", 60, 185, 260, 2, 3, "════════════════", 12, "serif", "#c8960c"),
+      txt("ht45", 30, 215, 330, 30, 4, "kính mời quý vị lai lâm", 14, "'Playfair Display', serif", "#c8960c", { fontStyle: "italic" }),
+      txt("ht45", 30, 265, 330, 40, 5, "Thứ Tư · 22 tháng 7 · 2026", 15, "'Playfair Display', serif", "#f5e6c8"),
+      txt("ht45", 30, 318, 330, 30, 6, "18:30  ·  Đại Nội Huế", 13, "'Playfair Display', serif", "#c8960c"),
+      txt("ht45", 30, 363, 330, 30, 7, "Thành phố Huế · Thừa Thiên Huế", 11, "'Playfair Display', serif", "#a07840"),
+    ],
+  },
 ];
 
 export const TEMPLATE_CATEGORIES = [
