@@ -1671,6 +1671,225 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
       ),
     ],
   },
+
+  // ═══════════════════════════════════════════
+  // 8. LUXURY ĐEN VÀNG (Modern / Luxury)
+  // ═══════════════════════════════════════════
+  {
+    slug: "luxury-black-gold",
+    label: "Luxury Vàng",
+    emoji: "✨",
+    category: "modern",
+    background: "linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 40%, #111 100%)",
+    accent: "#d4af37",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 60, 30, 280, 35, 1, "BLACK TIE WEDDING", 11, "'Cinzel', serif", "#d4af37", { letterSpacing: 6, opacity: 0.7 }),
+      txt("s1", 20, 90, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 40, "'Great Vibes', cursive", "#f5e6a3", { lineHeight: 1.2, textShadow: { active: true, color: "#d4af37", blur: 25, x: 0, y: 0 } }),
+      txt("s1", 80, 240, 240, 30, 3, "28 . 05 . 2026", 20, "'Cinzel', serif", "#d4af37", { letterSpacing: 5 }),
+      txt("s1", 30, 320, 340, 30, 4, "⸻⸻⸻  💍  ⸻⸻⸻", 16, "'Inter', sans-serif", "#d4af37", { opacity: 0.4 }),
+      txt("s1", 30, 370, 330, 150, 5, "Trân trọng kính mời\n\nDự Lễ Thành Hôn\nvào 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Grand Palace Ballroom", 13, "'Cormorant Garamond', serif", "#e8d5a3", { lineHeight: 1.7 }),
+      txt("s1", 40, 580, 310, 40, 6, "Our Love Story", 28, "'Great Vibes', cursive", "#d4af37", {}),
+      txt("s1", 25, 640, 340, 110, 7, '"Giữa muôn vàn ánh sao đêm, chúng tôi nhận ra nhau chỉ qua một ánh nhìn. Tình yêu ấy, tinh tế như vàng, bền vững như đêm tối."', 12, "'Cormorant Garamond', serif", "#c9b87a", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 810, 220, 220, 8, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1075, 340, 100, 9, { widgetType: "countdown", label: "ĐẾM NGƯỢC", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1225, 340, 200, 10, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng phản hồi trước 28/04/2026" }),
+      wgt("s1", 25, 1475, 340, 200, 11, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Grand Palace Ballroom", venueAddress: "123 Lê Lợi, Q.1, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1720, 340, 200, 12, { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Vietcombank", accountNumber: "0123456789", accountName: "NGUYEN VAN A" }),
+      txt("s1", 30, 1970, 330, 60, 13, "Cảm ơn bạn đã đến\nchia vui cùng chúng tôi ✨", 20, "'Great Vibes', cursive", "#d4af37", { lineHeight: 1.4 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 9. THIÊN NHIÊN XANH (Nature / Sage Green)
+  // ═══════════════════════════════════════════
+  {
+    slug: "nature-garden",
+    label: "Thiên Nhiên",
+    emoji: "🌿",
+    category: "romantic",
+    background: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 100%)",
+    accent: "#16a34a",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 60, 25, 280, 30, 1, "GARDEN WEDDING", 11, "'Inter', sans-serif", "#15803d", { letterSpacing: 5, opacity: 0.6 }),
+      txt("s1", 20, 75, 360, 120, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Dancing Script', cursive", "#166534", { fontWeight: "bold", lineHeight: 1.2 }),
+      txt("s1", 80, 215, 240, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#15803d", { letterSpacing: 3 }),
+      txt("s1", 30, 305, 330, 150, 4, "Trân trọng kính mời\n\nBạn hiện diện cùng chúng tôi\nvào lúc 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Vườn Hoa Diamond Garden", 13, "'Inter', sans-serif", "#166534", { lineHeight: 1.7 }),
+      txt("s1", 40, 515, 310, 40, 5, "Chuyện tình xanh mãi", 26, "'Dancing Script', cursive", "#22c55e", { fontWeight: "bold" }),
+      txt("s1", 25, 575, 340, 110, 6, '"Giống như cây xanh cần ánh nắng để lớn, tình yêu cũng cần sự chăm sóc và trân trọng mỗi ngày. Hôm nay, chúng tôi trồng cây tình yêu ấy mãi mãi."', 12, "'Inter', sans-serif", "#15803d", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 750, 220, 220, 7, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1010, 340, 100, 8, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1160, 340, 200, 9, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng cho chúng tôi biết bạn có đến không" }),
+      wgt("s1", 25, 1410, 340, 200, 10, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Diamond Garden", venueAddress: "45 Pasteur, Q.3, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1660, 340, 200, 11, { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Techcombank", accountNumber: "9876543210", accountName: "NGUYEN MAI LAN" }),
+      txt("s1", 30, 1910, 330, 60, 12, "Cảm ơn bạn đã đến\nchung vui cùng chúng tôi 🌿", 20, "'Dancing Script', cursive", "#22c55e", { lineHeight: 1.4 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 10. ĐỎ VÀNG TRUYỀN THỐNG (Classic VN Red)
+  // ═══════════════════════════════════════════
+  {
+    slug: "traditional-red-gold",
+    label: "Đỏ Vàng",
+    emoji: "🏮",
+    category: "classic",
+    background: "linear-gradient(180deg, #7f1d1d 0%, #991b1b 30%, #7f1d1d 100%)",
+    accent: "#fbbf24",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 60, 20, 280, 35, 1, "囍 THIỆP CƯỚI 囍", 20, "'Cinzel', serif", "#fbbf24", { letterSpacing: 4 }),
+      txt("s1", 20, 80, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Dancing Script', cursive", "#fef9c3", { fontWeight: "bold", lineHeight: 1.2, textShadow: { active: true, color: "#fbbf24", blur: 15, x: 0, y: 0 } }),
+      txt("s1", 80, 230, 240, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#fbbf24", { letterSpacing: 4 }),
+      txt("s1", 30, 310, 330, 30, 4, "⸻⸻  ✦  ⸻⸻", 18, "'Inter', sans-serif", "#fbbf24", { opacity: 0.5 }),
+      txt("s1", 30, 360, 330, 160, 5, "Kính mời\n\nQuý gia quyến\nDự Lễ Vu Quy — Lễ Thành Hôn\nvào 10:30, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Trung Tâm Tiệc Cưới Hoàng Gia", 13, "'Cormorant Garamond', serif", "#fef3c7", { lineHeight: 1.75 }),
+      txt("s1", 40, 580, 310, 50, 6, "Nhân Duyên Trời Định", 26, "'Dancing Script', cursive", "#fbbf24", { fontWeight: "bold" }),
+      txt("s1", 25, 650, 340, 110, 7, '"Từ thuở xa xôi, duyên trời đã se, hai người gặp nhau như duyên số định sẵn. Ngày vui thành hôn, kính mời quý khách chia sẻ niềm hạnh phúc."', 12, "'Cormorant Garamond', serif", "#fde68a", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 820, 220, 220, 8, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1080, 340, 100, 9, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY VUI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1230, 340, 200, 10, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng hồi âm trước ngày 28/04/2026" }),
+      wgt("s1", 25, 1480, 340, 200, 11, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Hoàng Gia Palace", venueAddress: "88 Hai Bà Trưng, Q.1, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1730, 340, 200, 12, { widgetType: "gift", label: "Mừng cưới", bankName: "VPBank", accountNumber: "1234567890", accountName: "TUAN MINH" }),
+      txt("s1", 30, 1980, 330, 80, 13, "囍\nXin chân thành cảm ơn quý khách\nđã đến chung vui cùng chúng tôi.", 18, "'Cormorant Garamond', serif", "#fbbf24", { lineHeight: 1.5 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 11. TỐI GIẢN TRẮNG (Minimal / Clean White)
+  // ═══════════════════════════════════════════
+  {
+    slug: "clean-minimal-white",
+    label: "Tối Giản",
+    emoji: "🤍",
+    category: "minimal",
+    background: "#fafafa",
+    accent: "#374151",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 80, 40, 240, 20, 1, "WEDDING", 10, "'Inter', sans-serif", "#9ca3af", { letterSpacing: 8, opacity: 0.7 }),
+      txt("s1", 20, 80, 360, 110, 2, "Tuấn Minh\n&\nMai Lan", 36, "'Playfair Display', serif", "#111827", { lineHeight: 1.3 }),
+      txt("s1", 100, 210, 200, 2, 3, "─────────────", 14, "'Inter', sans-serif", "#d1d5db", {}),
+      txt("s1", 80, 230, 240, 30, 4, "28 . 05 . 2026", 18, "'Inter', sans-serif", "#6b7280", { letterSpacing: 4 }),
+      txt("s1", 30, 310, 330, 140, 5, "Trân trọng kính mời bạn\n\nDự Lễ Thành Hôn\nvào 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại The Reverie Saigon", 13, "'Inter', sans-serif", "#374151", { lineHeight: 1.8 }),
+      txt("s1", 40, 510, 310, 35, 6, "Our Story", 24, "'Playfair Display', serif", "#111827", {}),
+      txt("s1", 25, 560, 340, 110, 7, '"Không có ánh hoa lộng lẫy, chỉ là những khoảnh khắc đơn giản bên nhau. Và chúng tôi nhận ra, sự bình yên cùng nhau mới là điều tuyệt vời nhất."', 12, "'Inter', sans-serif", "#6b7280", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 730, 220, 220, 8, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 990, 340, 100, 9, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1140, 340, 200, 10, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng phản hồi trước 28/04/2026" }),
+      wgt("s1", 25, 1390, 340, 200, 11, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "The Reverie Saigon", venueAddress: "22-36 Nguyễn Huệ, Q.1, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1640, 340, 200, 12, { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "ACB", accountNumber: "0987654321", accountName: "MAI LAN" }),
+      txt("s1", 80, 1890, 240, 40, 13, "Thank you.", 22, "'Playfair Display', serif", "#374151", {}),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 12. MỘNG MƠ TÍM (Lavender / Dreamy)
+  // ═══════════════════════════════════════════
+  {
+    slug: "lavender-dream",
+    label: "Mộng Mơ",
+    emoji: "💜",
+    category: "romantic",
+    background: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 40%, #e9d5ff 100%)",
+    accent: "#9333ea",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 50, 25, 300, 30, 1, "TOGETHER FOREVER", 11, "'Inter', sans-serif", "#7e22ce", { letterSpacing: 5, opacity: 0.6 }),
+      txt("s1", 20, 75, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Dancing Script', cursive", "#581c87", { fontWeight: "bold", lineHeight: 1.2 }),
+      txt("s1", 85, 225, 230, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#7e22ce", { letterSpacing: 3 }),
+      txt("s1", 30, 310, 330, 150, 4, "Trân trọng kính mời\n\nBạn dự bữa tiệc hạnh phúc\nvào 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Lavender Palace", 13, "'Inter', sans-serif", "#581c87", { lineHeight: 1.7 }),
+      txt("s1", 40, 520, 310, 40, 5, "Chuyện Tình Mộng Mơ", 25, "'Dancing Script', cursive", "#9333ea", { fontWeight: "bold" }),
+      txt("s1", 25, 580, 340, 110, 6, '"Giữa những đám mây tím mộng mơ, chúng tôi gặp nhau trong một giấc mơ đẹp. Và khi tỉnh dậy, chúng tôi nhận ra nhau đã là thực tại."', 12, "'Inter', sans-serif", "#7e22ce", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 750, 220, 220, 7, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1010, 340, 100, 8, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1160, 340, 200, 9, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng cho chúng tôi biết bạn có đến không" }),
+      wgt("s1", 25, 1410, 340, 200, 10, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Lavender Palace", venueAddress: "99 Đinh Tiên Hoàng, Bình Thạnh, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1660, 340, 200, 11, { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "BIDV", accountNumber: "1122334455", accountName: "NGUYEN VAN A" }),
+      txt("s1", 30, 1910, 330, 60, 12, "Cảm ơn bạn đã đến\nchung vui cùng chúng tôi 💜", 20, "'Dancing Script', cursive", "#9333ea", { lineHeight: 1.4 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 13. NẮNG VÀNG RỰC (Bold Sunny / Warm Gold)
+  // ═══════════════════════════════════════════
+  {
+    slug: "sunny-gold",
+    label: "Nắng Vàng",
+    emoji: "☀️",
+    category: "modern",
+    background: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 40%, #fde68a 100%)",
+    accent: "#d97706",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 50, 25, 300, 30, 1, "✦ WEDDING INVITATION ✦", 12, "'Cinzel', serif", "#92400e", { letterSpacing: 3, opacity: 0.7 }),
+      txt("s1", 20, 80, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Great Vibes', cursive", "#78350f", { lineHeight: 1.2 }),
+      txt("s1", 85, 230, 230, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#b45309", { fontWeight: "bold", letterSpacing: 4 }),
+      txt("s1", 30, 315, 330, 150, 4, "Trân trọng kính mời\n\nQuý khách dự tiệc hỷ\nvào lúc 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Sunshine Palace Ballroom", 13, "'Cormorant Garamond', serif", "#78350f", { lineHeight: 1.7 }),
+      txt("s1", 40, 525, 310, 40, 5, "Ánh Nắng Tình Yêu", 26, "'Great Vibes', cursive", "#d97706", {}),
+      txt("s1", 25, 585, 340, 110, 6, '"Như ánh mặt trời chiếu rọi mỗi sáng, tình yêu của chúng tôi cũng ấm áp và trung thành. Ngày hôm nay, chúng tôi chia sẻ ánh nắng ấy với bạn."', 12, "'Cormorant Garamond', serif", "#92400e", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 755, 220, 220, 7, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1015, 340, 100, 8, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY VUI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1165, 340, 200, 9, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng phản hồi trước 28/04/2026" }),
+      wgt("s1", 25, 1415, 340, 200, 10, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Sunshine Palace", venueAddress: "150 Bến Vân Đồn, Q.4, TP.HCM", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1665, 340, 200, 11, { widgetType: "gift", label: "Mừng cưới", bankName: "MB Bank", accountNumber: "1230456789", accountName: "NGUYEN VAN A" }),
+      txt("s1", 30, 1915, 330, 60, 12, "Cảm ơn bạn đã đến\nchung vui cùng chúng tôi ☀️", 20, "'Great Vibes', cursive", "#d97706", { lineHeight: 1.4 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 14. XANH BIỂN (Ocean Blue / Coastal)
+  // ═══════════════════════════════════════════
+  {
+    slug: "ocean-blue",
+    label: "Xanh Biển",
+    emoji: "🌊",
+    category: "modern",
+    background: "linear-gradient(180deg, #eff6ff 0%, #dbeafe 30%, #bfdbfe 100%)",
+    accent: "#2563eb",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 50, 25, 300, 30, 1, "OCEAN WEDDING", 12, "'Inter', sans-serif", "#1d4ed8", { letterSpacing: 5, opacity: 0.6 }),
+      txt("s1", 20, 75, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Dancing Script', cursive", "#1e3a8a", { fontWeight: "bold", lineHeight: 1.2 }),
+      txt("s1", 85, 225, 230, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#1d4ed8", { letterSpacing: 3 }),
+      txt("s1", 30, 310, 330, 150, 4, "Trân trọng kính mời\n\nBạn dự Lễ Thành Hôn\nvào lúc 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Oceanfront Resort & Spa", 13, "'Inter', sans-serif", "#1e3a8a", { lineHeight: 1.7 }),
+      txt("s1", 40, 520, 310, 40, 5, "Giữa Đại Dương Tình Yêu", 24, "'Dancing Script', cursive", "#2563eb", { fontWeight: "bold" }),
+      txt("s1", 25, 580, 340, 110, 6, '"Như sóng biển vỗ mãi vào bờ, tình yêu của chúng tôi không ngừng nghỉ. Mỗi ngày là một con sóng mới, mang theo những yêu thương vô tận."', 12, "'Inter', sans-serif", "#1d4ed8", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 750, 220, 220, 7, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1010, 340, 100, 8, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1160, 340, 200, 9, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng phản hồi trước 28/04" }),
+      wgt("s1", 25, 1410, 340, 200, 10, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Oceanfront Resort", venueAddress: "Bãi Biển Long Hải, Vũng Tàu", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1660, 340, 200, 11, { widgetType: "gift", label: "Phong bì mừng cưới", bankName: "Sacombank", accountNumber: "0011223344", accountName: "MAI LAN" }),
+      txt("s1", 30, 1910, 330, 60, 12, "Cảm ơn bạn đã đến\nchia vui cùng chúng tôi 🌊", 20, "'Dancing Script', cursive", "#2563eb", { lineHeight: 1.4 }),
+    ],
+  },
+
+  // ═══════════════════════════════════════════
+  // 15. ĐỒNG QUÊ (Rustic / Vintage Farmhouse)
+  // ═══════════════════════════════════════════
+  {
+    slug: "rustic-vintage",
+    label: "Đồng Quê",
+    emoji: "🌾",
+    category: "classic",
+    background: "linear-gradient(180deg, #fdfcfb 0%, #fdf8f0 40%, #f9f1e4 100%)",
+    accent: "#92400e",
+    sections: [{ id: "s1", name: "Full", height: 3000 }],
+    elements: [
+      txt("s1", 50, 20, 300, 28, 1, "✿ RUSTIC WEDDING ✿", 12, "'Cinzel', serif", "#78350f", { letterSpacing: 4, opacity: 0.65 }),
+      txt("s1", 20, 70, 360, 130, 2, "Tuấn Minh\n&\nMai Lan", 38, "'Dancing Script', cursive", "#5c2d0e", { fontWeight: "bold", lineHeight: 1.2 }),
+      txt("s1", 85, 220, 230, 30, 3, "28 . 05 . 2026", 20, "'Playfair Display', serif", "#92400e", { letterSpacing: 3 }),
+      txt("s1", 30, 305, 330, 150, 4, "Trân trọng kính mời\n\nBạn dự tiệc hỷ\nvào lúc 17:00, Thứ Bảy\nNgày 28 tháng 05 năm 2026\ntại Finca Del Sol Garden\nTiền Giang", 13, "'Cormorant Garamond', serif", "#78350f", { lineHeight: 1.7 }),
+      txt("s1", 40, 520, 310, 40, 5, "Chuyện Tình Đồng Quê", 25, "'Dancing Script', cursive", "#b45309", {}),
+      txt("s1", 25, 580, 340, 110, 6, '"Trên cánh đồng vàng óng, giữa hương thơm của đất và lúa, chúng tôi tìm thấy nhau. Tình yêu đơn sơ mà sâu sắc, như quê hương trong tim."', 12, "'Cormorant Garamond', serif", "#78350f", { fontStyle: "italic", lineHeight: 1.8 }),
+      wgt("s1", 85, 750, 220, 220, 7, { widgetType: "calendar", label: "Lịch cưới", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1010, 340, 100, 8, { widgetType: "countdown", label: "ĐẾM NGƯỢC NGÀY CƯỚI", targetDate: "2026-05-28" }),
+      wgt("s1", 25, 1160, 340, 200, 9, { widgetType: "rsvp", rsvpTitle: "Xác nhận tham dự", rsvpSubtitle: "Vui lòng phản hồi trước 28/04" }),
+      wgt("s1", 25, 1410, 340, 200, 10, { widgetType: "map", label: "Vị trí tiệc cưới", venueName: "Finca Del Sol Garden", venueAddress: "Xã Thạnh Phú, Tiền Giang", mapUrl: "https://maps.google.com" }),
+      wgt("s1", 25, 1660, 340, 200, 11, { widgetType: "gift", label: "Mừng cưới", bankName: "Agribank", accountNumber: "9988776655", accountName: "NGUYEN VAN A" }),
+      txt("s1", 30, 1910, 330, 60, 12, "Cảm ơn bạn đã đến\nchia vui cùng chúng tôi 🌾", 20, "'Dancing Script', cursive", "#b45309", { lineHeight: 1.4 }),
+    ],
+  },
 ];
 
 export const TEMPLATE_CATEGORIES = [

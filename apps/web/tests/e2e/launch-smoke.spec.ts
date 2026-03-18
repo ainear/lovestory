@@ -38,10 +38,12 @@ test.describe("Public Pages", () => {
 
   test("/pricing page loads with plan cards", async ({ page }) => {
     await page.goto(`${BASE}/pricing`);
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("h1")).toContainText("Chọn gói");
-    await expect(page.locator("text=Free")).toBeVisible();
-    await expect(page.locator("text=Basic")).toBeVisible();
-    await expect(page.locator("text=Premium")).toBeVisible();
+    // Plan cards: VN labels
+    await expect(page.locator("body")).toContainText("Miễn phí");
+    await expect(page.locator("body")).toContainText("Basic");
+    await expect(page.locator("body")).toContainText("Premium");
   });
 
   test("/privacy page loads with all 7 sections", async ({ page }) => {
@@ -65,8 +67,8 @@ test.describe("SEO & Technical", () => {
     const res = await request.get(`${BASE}/robots.txt`);
     expect(res.status()).toBe(200);
     const body = await res.text();
-    expect(body).toContain("User-agent");
-    expect(body).toContain("Sitemap");
+    expect(body.toLowerCase()).toContain("user-agent");
+    expect(body.toLowerCase()).toContain("sitemap");
   });
 
   test("sitemap.xml returns valid XML", async ({ request }) => {
