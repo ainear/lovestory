@@ -42,6 +42,9 @@ export class EditorErrorBoundary extends React.Component<Props, State> {
       return (
         <div
           data-error-boundary="true"
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
           style={{
             padding: "16px",
             borderRadius: 12,
@@ -50,7 +53,9 @@ export class EditorErrorBoundary extends React.Component<Props, State> {
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: 22, margin: "0 0 8px" }}>⚠️</p>
+          <p style={{ fontSize: 22, margin: "0 0 8px" }} aria-hidden="true">
+            ⚠️
+          </p>
           <p
             style={{
               fontSize: 12,
@@ -66,6 +71,7 @@ export class EditorErrorBoundary extends React.Component<Props, State> {
           </p>
           <button
             onClick={() => this.setState({ hasError: false, errorMsg: "" })}
+            aria-label={`Thử lại tab ${this.props.tabName ?? ""}`}
             style={{
               padding: "6px 16px",
               borderRadius: 16,
@@ -82,6 +88,7 @@ export class EditorErrorBoundary extends React.Component<Props, State> {
         </div>
       );
     }
+
     return this.props.children;
   }
 }

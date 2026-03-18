@@ -132,6 +132,8 @@ export function SidebarPanel(props: SidebarPanelProps) {
         </p>
         <button
           onClick={() => setActiveTab("")}
+          aria-label="Đóng bảng công cụ"
+          title="Đóng"
           style={{
             background: "none",
             border: "none",

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -10,6 +11,18 @@ export async function DELETE(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 10 deletes per hour per user (prevents mass-delete attacks)
+    const rl = checkRateLimit(`delete-project:${user.id}`, {
+      limit: 10,
+      windowSec: 3600,
+    });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        { status: 429, headers: { "Retry-After": String(rl.resetIn) } },
+      );
     }
 
     const { searchParams } = new URL(request.url);

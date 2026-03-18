@@ -9,7 +9,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
 
-const SECRET = process.env.UNSUBSCRIBE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "lovestory-unsub";
+const SECRET =
+  process.env.UNSUBSCRIBE_SECRET ??
+  // NOTE: Never use SERVICE_ROLE_KEY as a signing secret for public-facing tokens.
+  // If UNSUBSCRIBE_SECRET is missing, log a warning and use a safe dedicated fallback.
+  (() => {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[SECURITY] UNSUBSCRIBE_SECRET env var not set — " +
+          "set this in Vercel environment variables.",
+      );
+    }
+    return "lovestory-unsub-2026-v2";
+  })();
+
 
 function verifyToken(token: string): { email: string; projectId: string } | null {
   try {

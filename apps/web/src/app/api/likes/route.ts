@@ -11,6 +11,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing slug" }, { status: 400 });
     }
 
+    // Slug format validation — prevent malformed payloads
+    if (slug.length > 100 || !/^[a-zA-Z0-9_-]+$/.test(slug)) {
+      return NextResponse.json({ error: "Invalid slug format" }, { status: 400 });
+    }
+
     // Rate limit: 10 likes per minute per IP
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -65,6 +70,11 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const slug = new URL(request.url).searchParams.get("slug");
   if (!slug) return NextResponse.json({ likes: 0 });
+
+  // Slug format validation
+  if (slug.length > 100 || !/^[a-zA-Z0-9_-]+$/.test(slug)) {
+    return NextResponse.json({ likes: 0 });
+  }
 
   const supabase = await createClient();
   const { data } = await supabase
