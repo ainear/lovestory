@@ -7,6 +7,7 @@ export function useKeyboard() {
   const stateRef = useRef(state);
   const nudgeSnapshotRef = useRef(false);
   const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clipboardRef = useRef<string | null>(null); // stores copied element id
 
   // Keep stateRef in sync without re-registering listener
   useEffect(() => {
@@ -51,6 +52,63 @@ export function useKeyboard() {
         return;
       }
 
+      // Ctrl+D — Duplicate element
+      if (e.key === "d" && (e.ctrlKey || e.metaKey) && el) {
+        e.preventDefault();
+        dispatch({ type: "SNAPSHOT" });
+        dispatch({
+          type: "ADD_ELEMENT",
+          element: {
+            ...el,
+            id: `${el.id}_copy_${Date.now()}`,
+            top: el.top + 20,
+            left: el.left + 20,
+          },
+        });
+        return;
+      }
+
+      // Ctrl+C — Copy element to clipboard ref
+      if (e.key === "c" && (e.ctrlKey || e.metaKey) && el) {
+        clipboardRef.current = el.id;
+        return;
+      }
+
+      // Ctrl+V — Paste copied element
+      if (e.key === "v" && (e.ctrlKey || e.metaKey) && clipboardRef.current) {
+        const src = elements.find((el) => el.id === clipboardRef.current);
+        if (src) {
+          e.preventDefault();
+          dispatch({ type: "SNAPSHOT" });
+          dispatch({
+            type: "ADD_ELEMENT",
+            element: {
+              ...src,
+              id: `${src.id}_paste_${Date.now()}`,
+              top: src.top + 20,
+              left: src.left + 20,
+            },
+          });
+        }
+        return;
+      }
+
+      // Ctrl+] — Bring forward (increase zIndex)
+      if (e.key === "]" && (e.ctrlKey || e.metaKey) && el) {
+        e.preventDefault();
+        dispatch({ type: "SNAPSHOT" });
+        dispatch({ type: "UPDATE_ELEMENT", id: el.id, patch: { zIndex: (el.zIndex ?? 0) + 1 } });
+        return;
+      }
+
+      // Ctrl+[ — Send backward (decrease zIndex)
+      if (e.key === "[" && (e.ctrlKey || e.metaKey) && el) {
+        e.preventDefault();
+        dispatch({ type: "SNAPSHOT" });
+        dispatch({ type: "UPDATE_ELEMENT", id: el.id, patch: { zIndex: Math.max(0, (el.zIndex ?? 0) - 1) } });
+        return;
+      }
+
       // Arrow key nudge (1px, Shift = 10px) — snapshot only once per burst
       if (
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
@@ -64,7 +122,6 @@ export function useKeyboard() {
           dispatch({ type: "SNAPSHOT" });
           nudgeSnapshotRef.current = true;
         }
-        // Reset snapshot flag after 500ms of no arrow keys
         if (nudgeTimerRef.current) clearTimeout(nudgeTimerRef.current);
         nudgeTimerRef.current = setTimeout(() => {
           nudgeSnapshotRef.current = false;
@@ -87,5 +144,5 @@ export function useKeyboard() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [dispatch]); // dispatch is stable from useReducer
+  }, [dispatch]);
 }
