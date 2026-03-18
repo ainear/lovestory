@@ -1,4 +1,20 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "LoveStory — Thiệp cưới online đẹp nhất Việt Nam",
+  description: "Tạo thiệp cưới online đẹp, chia sẻ link cho khách mời, nhận RSVP tự động. Hoàn toàn miễn phí. Nhiều mẫu đẹp với hiệu ứng độc đáo.",
+  keywords: ["thiệp cưới online","thiệp cưới","thiệp mời","RSVP","wedding invitation","LoveStory"],
+  openGraph: {
+    title: "LoveStory — Thiệp cưới online đẹp nhất Việt Nam",
+    description: "Tạo thiệp cưới online miễn phí, chia sẻ link, nhận RSVP tự động.",
+    type: "website",
+    locale: "vi_VN",
+    siteName: "LoveStory",
+  },
+  twitter: { card: "summary_large_image", title: "LoveStory", description: "Thiệp cưới online đẹp nhất Việt Nam" },
+  alternates: { canonical: "/" },
+};
 
 export default function LandingPage() {
   return (
@@ -726,7 +742,15 @@ export default function LandingPage() {
           </div>
         </div>
         <div style={{ maxWidth: 1100, margin: "16px auto 0", borderTop: "1px solid #1f2937", paddingTop: 16 }}>
-          <p style={{ fontSize: 12, textAlign: "center", margin: 0 }}>© 2026 LoveStory. Made with ❤️ in Vietnam</p>
+          <p style={{ fontSize: 12, textAlign: "center", margin: 0, color: "#9ca3af" }}>
+            © 2026 LoveStory. Made with ❤️ in Vietnam
+            {" · "}
+            <Link href="/privacy" style={{ color: "#6b7280", textDecoration: "none" }}>Chính sách bảo mật</Link>
+            {" · "}
+            <Link href="/blog" style={{ color: "#6b7280", textDecoration: "none" }}>Blog</Link>
+            {" · "}
+            <Link href="/pricing" style={{ color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
+          </p>
         </div>
       </footer>
 
