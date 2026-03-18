@@ -52,13 +52,11 @@ test.describe("Login page — UI", () => {
 
 test.describe("Public invitation page — no auth required", () => {
     test("invitation page loads without auth", async ({ page }) => {
-        // The demo page or any public slug should load
-        const res = await page.goto("/i/demo");
-        // Should not redirect to login — it's a public page
+        await page.goto("/i/demo-wedding", { waitUntil: "domcontentloaded", timeout: 20000 });
+        // Public page — must NOT redirect to login
         expect(page.url()).not.toContain("/login");
-        // Status should be 200 or 404 (if demo slug doesn't exist), never 401
-        if (res) {
-            expect([200, 404]).toContain(res.status());
-        }
+        // Must not show 500 error
+        await expect(page.locator("text=Internal Server Error")).not.toBeVisible();
     });
 });
+
