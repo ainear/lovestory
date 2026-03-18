@@ -3,14 +3,30 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PERF-01: Remove console.log in production builds — reduces JS bundle
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
+  },
   images: {
+    // PERF-02: Enable modern image formats — ~40% smaller than JPEG/PNG
+    formats: ["image/avif", "image/webp"],
+    // PERF-03: Cache optimized images for 24 hours (default is 60s)
+    minimumCacheTTL: 86400,
     remotePatterns: [
       { protocol: "https", hostname: "img.vietqr.io" },
       { protocol: "https", hostname: "quickchart.io" },
       { protocol: "https", hostname: "*.supabase.co" },
+      // Pixabay CDN — music tab thumbnails
+      { protocol: "https", hostname: "cdn.pixabay.com" },
+      // i.ibb.co — some template thumbnails
+      { protocol: "https", hostname: "i.ibb.co" },
       // Sprint 55: cinelove.me removed — templates are now self-hosted
     ],
   },
+
   // Security headers
   async headers() {
     return [

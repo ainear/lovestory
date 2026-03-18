@@ -1,22 +1,77 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { TABS } from "../editor-constants";
 import { TextTab } from "./TextTab";
 import { ImageTab } from "./ImageTab";
 import { BgTab } from "./BgTab";
-import { PluginsTab } from "./PluginsTab";
-import { StockTab } from "./StockTab";
-import { ShapesTab } from "./ShapesTab";
-import { TemplatesTab } from "./TemplatesTab";
-import { EffectsTab } from "./EffectsTab";
 import { MusicTab } from "./MusicTab";
-import { ComponentsTab } from "./ComponentsTab";
+import { TemplatesTab } from "./TemplatesTab";
 import { EditorErrorBoundary } from "../EditorErrorBoundary";
 import type { TEXT_PRESETS } from "../editor-constants";
 import type { MusicFilterCategory } from "../editor-constants";
 import type { EditorAction, EditorState } from "../canvas-engine/types";
 
+/** Shared skeleton shown while a heavy tab loads */
+function TabSkeleton({ label }: { label: string }) {
+  return (
+    <div style={{ padding: 16, animation: "pulse 1.5s ease infinite" }}>
+      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      <div
+        style={{
+          height: 12,
+          width: "60%",
+          background: "#e5e7eb",
+          borderRadius: 6,
+          marginBottom: 12,
+        }}
+      />
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          style={{
+            height: 48,
+            background: "#f3f4f6",
+            borderRadius: 8,
+            marginBottom: 8,
+          }}
+          aria-hidden="true"
+        />
+      ))}
+      <span className="sr-only">Đang tải {label}...</span>
+    </div>
+  );
+}
+
+// PERF-04: Heavy tabs code-split from initial editor bundle via next/dynamic
+const PluginsTab = dynamic(() => import("./PluginsTab").then((m) => m.PluginsTab), {
+  ssr: false,
+  loading: () => <TabSkeleton label="Tiện ích" />,
+});
+
+const StockTab = dynamic(() => import("./StockTab").then((m) => m.StockTab), {
+  ssr: false,
+  loading: () => <TabSkeleton label="Kho ảnh" />,
+});
+
+const ShapesTab = dynamic(() => import("./ShapesTab").then((m) => m.ShapesTab), {
+  ssr: false,
+  loading: () => <TabSkeleton label="Hình khối" />,
+});
+
+const EffectsTab = dynamic(() => import("./EffectsTab").then((m) => m.EffectsTab), {
+  ssr: false,
+  loading: () => <TabSkeleton label="Hiệu ứng" />,
+});
+
+const ComponentsTab = dynamic(
+  () => import("./ComponentsTab").then((m) => m.ComponentsTab),
+  {
+    ssr: false,
+    loading: () => <TabSkeleton label="Thành phần" />,
+  },
+);
 
 interface UploadedImage {
   url: string;
