@@ -747,9 +747,12 @@ export default function LandingPage() {
             {" · "}
             <Link href="/privacy" style={{ color: "#6b7280", textDecoration: "none" }}>Chính sách bảo mật</Link>
             {" · "}
+            <Link href="/terms" style={{ color: "#6b7280", textDecoration: "none" }}>Điều khoản sử dụng</Link>
+            {" · "}
             <Link href="/blog" style={{ color: "#6b7280", textDecoration: "none" }}>Blog</Link>
             {" · "}
             <Link href="/pricing" style={{ color: "#6b7280", textDecoration: "none" }}>Bảng giá</Link>
+
           </p>
         </div>
       </footer>
