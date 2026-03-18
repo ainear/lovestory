@@ -98,24 +98,18 @@ function CellValue({ value }: { value: string | boolean }) {
 
 export default async function PricingPage() {
   // ── A/B test: basic tier pricing (cookie-based, 50/50) ──
+  // Next.js 15: cookies().set() is only allowed in Server Actions/Route Handlers.
+  // We read the existing cookie but do NOT set it here (middleware handles persistence).
   const cookieStore = await cookies();
   const abCookie = cookieStore.get("ab_pricing")?.value;
-  const abVariant: "control" | "variant" = (abCookie as "control" | "variant") ??
+  const abVariant: "control" | "variant" =
+    (abCookie as "control" | "variant") ??
     (Math.random() < 0.5 ? "control" : "variant");
-
-  // Persist variant for 30 days if not yet set
-  if (!abCookie) {
-    cookieStore.set("ab_pricing", abVariant, {
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-  }
 
   // Variant: 49K basic (lower friction). Control: 199K (original).
   const basicPrice = abVariant === "variant" ? 49_000 : PLANS.basic.price;
   const isDev = process.env.NODE_ENV === "development";
+
 
   return (
     <div className="min-h-screen bg-gray-50">
