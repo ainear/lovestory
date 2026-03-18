@@ -4,12 +4,13 @@ import React from "react";
 import {
   SECTION_PRESETS as CANVAS_PRESETS,
   SECTION_PRESET_CATEGORIES,
-} from "@/server/data/section-presets";
+} from "../editor-constants/section-presets-client";
 import type {
   CanvasElement,
   EditorAction,
   EditorState,
 } from "../canvas-engine/types";
+
 
 interface ComponentsTabProps {
   sectionCat: string;

@@ -12,9 +12,11 @@ import { TemplatesTab } from "./TemplatesTab";
 import { EffectsTab } from "./EffectsTab";
 import { MusicTab } from "./MusicTab";
 import { ComponentsTab } from "./ComponentsTab";
+import { EditorErrorBoundary } from "../EditorErrorBoundary";
 import type { TEXT_PRESETS } from "../editor-constants";
 import type { MusicFilterCategory } from "../editor-constants";
 import type { EditorAction, EditorState } from "../canvas-engine/types";
+
 
 interface UploadedImage {
   url: string;
@@ -144,109 +146,132 @@ export function SidebarPanel(props: SidebarPanelProps) {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-        {activeTab === "text" && <TextTab addCraftText={props.addCraftText} />}
+        {activeTab === "text" && (
+          <EditorErrorBoundary tabName="Văn bản">
+            <TextTab addCraftText={props.addCraftText} />
+          </EditorErrorBoundary>
+        )}
 
         {activeTab === "image" && (
-          <ImageTab
-            fileInputRef={props.fileInputRef}
-            handleImageUpload={props.handleImageUpload}
-            uploadedImages={props.uploadedImages}
-            setUploadedImages={props.setUploadedImages}
-            triggerAutosave={props.triggerAutosave}
-            editorDispatch={props.editorDispatch}
-          />
+          <EditorErrorBoundary tabName="Hình ảnh">
+            <ImageTab
+              fileInputRef={props.fileInputRef}
+              handleImageUpload={props.handleImageUpload}
+              uploadedImages={props.uploadedImages}
+              setUploadedImages={props.setUploadedImages}
+              triggerAutosave={props.triggerAutosave}
+              editorDispatch={props.editorDispatch}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "bg" && (
-          <BgTab
-            background={props.background}
-            setBackground={props.setBackground}
-            bgSubTab={props.bgSubTab}
-            setBgSubTab={props.setBgSubTab}
-            bgOpacity={props.bgOpacity}
-            setBgOpacity={props.setBgOpacity}
-            triggerAutosave={props.triggerAutosave}
-            projectId={props.projectId}
-          />
+          <EditorErrorBoundary tabName="Nền">
+            <BgTab
+              background={props.background}
+              setBackground={props.setBackground}
+              bgSubTab={props.bgSubTab}
+              setBgSubTab={props.setBgSubTab}
+              bgOpacity={props.bgOpacity}
+              setBgOpacity={props.setBgOpacity}
+              triggerAutosave={props.triggerAutosave}
+              projectId={props.projectId}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "plugins" && (
-          <PluginsTab
-            triggerAutosave={props.triggerAutosave}
-            editorDispatch={props.editorDispatch}
-          />
+          <EditorErrorBoundary tabName="Tiện ích">
+            <PluginsTab
+              triggerAutosave={props.triggerAutosave}
+              editorDispatch={props.editorDispatch}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "stock" && (
-          <StockTab
-            clipartCat={props.clipartCat}
-            setClipartCat={props.setClipartCat}
-            triggerAutosave={props.triggerAutosave}
-            editorDispatch={props.editorDispatch}
-          />
+          <EditorErrorBoundary tabName="Kho ảnh">
+            <StockTab
+              clipartCat={props.clipartCat}
+              setClipartCat={props.setClipartCat}
+              triggerAutosave={props.triggerAutosave}
+              editorDispatch={props.editorDispatch}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "shapes" && (
-          <ShapesTab
-            triggerAutosave={props.triggerAutosave}
-            editorDispatch={props.editorDispatch}
-          />
+          <EditorErrorBoundary tabName="Hình khối">
+            <ShapesTab
+              triggerAutosave={props.triggerAutosave}
+              editorDispatch={props.editorDispatch}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "templates" && (
-          <TemplatesTab
-            background={props.background}
-            setBackground={props.setBackground}
-            triggerAutosave={props.triggerAutosave}
-          />
+          <EditorErrorBoundary tabName="Mẫu thiệp">
+            <TemplatesTab
+              background={props.background}
+              setBackground={props.setBackground}
+              triggerAutosave={props.triggerAutosave}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "effects" && (
-          <EffectsTab
-            effectSubTab={props.effectSubTab}
-            setEffectSubTab={props.setEffectSubTab}
-            pageAnimation={props.pageAnimation}
-            setPageAnimation={props.setPageAnimation}
-            curtainEffect={props.curtainEffect}
-            setCurtainEffect={props.setCurtainEffect}
-            particleEffect={props.particleEffect}
-            setParticleEffect={props.setParticleEffect}
-            triggerAutosave={props.triggerAutosave}
-          />
+          <EditorErrorBoundary tabName="Hiệu ứng">
+            <EffectsTab
+              effectSubTab={props.effectSubTab}
+              setEffectSubTab={props.setEffectSubTab}
+              pageAnimation={props.pageAnimation}
+              setPageAnimation={props.setPageAnimation}
+              curtainEffect={props.curtainEffect}
+              setCurtainEffect={props.setCurtainEffect}
+              particleEffect={props.particleEffect}
+              setParticleEffect={props.setParticleEffect}
+              triggerAutosave={props.triggerAutosave}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "music" && (
-          <MusicTab
-            musicUrl={props.musicUrl}
-            setMusicUrl={props.setMusicUrl}
-            musicName={props.musicName}
-            setMusicName={props.setMusicName}
-            musicFilter={props.musicFilter}
-            setMusicFilter={props.setMusicFilter}
-            musicSearch={props.musicSearch}
-            setMusicSearch={props.setMusicSearch}
-            previewId={props.previewId}
-            setPreviewId={props.setPreviewId}
-            musicAudioRef={props.musicAudioRef}
-            musicWidgetStyle={props.musicWidgetStyle}
-            setMusicWidgetStyle={props.setMusicWidgetStyle}
-            musicWidgetColor={props.musicWidgetColor}
-            setMusicWidgetColor={props.setMusicWidgetColor}
-            triggerAutosave={props.triggerAutosave}
-            projectId={props.projectId}
-          />
+          <EditorErrorBoundary tabName="Âm nhạc">
+            <MusicTab
+              musicUrl={props.musicUrl}
+              setMusicUrl={props.setMusicUrl}
+              musicName={props.musicName}
+              setMusicName={props.setMusicName}
+              musicFilter={props.musicFilter}
+              setMusicFilter={props.setMusicFilter}
+              musicSearch={props.musicSearch}
+              setMusicSearch={props.setMusicSearch}
+              previewId={props.previewId}
+              setPreviewId={props.setPreviewId}
+              musicAudioRef={props.musicAudioRef}
+              musicWidgetStyle={props.musicWidgetStyle}
+              setMusicWidgetStyle={props.setMusicWidgetStyle}
+              musicWidgetColor={props.musicWidgetColor}
+              setMusicWidgetColor={props.setMusicWidgetColor}
+              triggerAutosave={props.triggerAutosave}
+              projectId={props.projectId}
+            />
+          </EditorErrorBoundary>
         )}
 
         {activeTab === "components" && (
-          <ComponentsTab
-            sectionCat={props.sectionCat}
-            setSectionCat={props.setSectionCat}
-            triggerAutosave={props.triggerAutosave}
-            editorDispatch={props.editorDispatch}
-            editorState={props.editorState}
-          />
+          <EditorErrorBoundary tabName="Thành phần">
+            <ComponentsTab
+              sectionCat={props.sectionCat}
+              setSectionCat={props.setSectionCat}
+              triggerAutosave={props.triggerAutosave}
+              editorDispatch={props.editorDispatch}
+              editorState={props.editorState}
+            />
+          </EditorErrorBoundary>
         )}
       </div>
     </div>
   );
+
 }
