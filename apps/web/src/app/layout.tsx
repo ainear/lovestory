@@ -39,6 +39,7 @@ import {
 import Script from "next/script";
 import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/client";
+import CookieBanner from "@/components/CookieBanner";
 import { PostHogProvider } from "@/lib/posthog/provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 
@@ -376,6 +377,7 @@ export default function RootLayout({
             </ErrorBoundary>
           </PostHogProvider>
         </TRPCProvider>
+        <CookieBanner />
       </body>
     </html>
   );

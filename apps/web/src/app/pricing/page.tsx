@@ -102,6 +102,17 @@ export default async function PricingPage() {
   const abCookie = cookieStore.get("ab_pricing")?.value;
   const abVariant: "control" | "variant" = (abCookie as "control" | "variant") ??
     (Math.random() < 0.5 ? "control" : "variant");
+
+  // Persist variant for 30 days if not yet set
+  if (!abCookie) {
+    cookieStore.set("ab_pricing", abVariant, {
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
+
   // Variant: 49K basic (lower friction). Control: 199K (original).
   const basicPrice = abVariant === "variant" ? 49_000 : PLANS.basic.price;
   const isDev = process.env.NODE_ENV === "development";
