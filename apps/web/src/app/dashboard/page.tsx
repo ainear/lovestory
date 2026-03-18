@@ -21,7 +21,7 @@ export default async function DashboardPage() {
             .from("subscriptions")
             .select("plan")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
 
         if (sub?.plan === "basic") maxProjects = 5;
         else if (sub?.plan === "premium") maxProjects = 999;

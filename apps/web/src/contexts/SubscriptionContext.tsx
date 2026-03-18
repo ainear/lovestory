@@ -79,7 +79,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           .from("subscriptions")
           .select("plan, expires_at")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (!cancelled && data?.plan && data.plan in PLANS) {
           // Check if subscription has expired

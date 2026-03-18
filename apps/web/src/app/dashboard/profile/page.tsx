@@ -20,7 +20,7 @@ export default async function ProfilePage() {
             .from("subscriptions")
             .select("*, orders(*)")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
         if (data) {
             subscription = data;
             currentPlan = data.plan;

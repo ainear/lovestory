@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     .from("subscriptions")
     .select("plan")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   const adminEmail = (process.env.ADMIN_EMAIL || "").trim();
   const isAdmin = user.email === adminEmail;

@@ -29,7 +29,7 @@ export default async function ProjectsPage() {
         .from("subscriptions")
         .select("plan")
         .eq("user_id", user.id)
-        .single(),
+        .maybeSingle(),
     ]);
     projects = data || [];
     if (subData?.plan && subData.plan in PLANS) {

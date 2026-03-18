@@ -17,7 +17,7 @@ export default async function MyPlanPage() {
             .from("subscriptions")
             .select("plan")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
         if (data) currentPlan = data.plan;
     }
 
