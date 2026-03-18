@@ -301,6 +301,13 @@ const anticDidone = Antic_Didone({
  * - Soul Note Display (display/decorative) → Cinzel Decorative
  */
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ec4899",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "LoveStory — Thiệp cưới online & AI Video",
