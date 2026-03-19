@@ -39,6 +39,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Input length validation — prevent DB errors from oversized payloads
+    if (typeof guestName !== "string" || guestName.length > 200) {
+      return NextResponse.json(
+        { error: "Tên khách mời quá dài (tối đa 200 ký tự)" },
+        { status: 400 },
+      );
+    }
+    if (typeof projectId !== "string" || projectId.length > 100) {
+      return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
+    }
+
     // Per-project rate limit: 50 RSVPs/hour per project (prevents mass spam)
     const prl = checkRateLimit(`rsvp-proj:${projectId}`, {
       limit: 50,

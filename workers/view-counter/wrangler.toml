@@ -1,0 +1,21 @@
+name = "view-counter"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV namespace for view counts + plan cache
+[[kv_namespaces]]
+binding = "VIEW_KV"
+id = "YOUR_KV_NAMESPACE_ID"          # replace after: wrangler kv:namespace create VIEW_KV
+preview_id = "YOUR_KV_PREVIEW_ID"   # replace after creating preview namespace
+
+[vars]
+SUPABASE_URL = "https://your-project.supabase.co"
+
+# Secrets (set via `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`)
+# SUPABASE_SERVICE_ROLE_KEY = ""
+
+[[routes]]
+# Handles POST /track?projectId=... from invitation pages
+pattern = "7app.online/api/view-count"
+zone_name = "7app.online"

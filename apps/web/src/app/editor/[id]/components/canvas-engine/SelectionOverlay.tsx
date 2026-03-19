@@ -70,6 +70,12 @@ export function SelectionOverlay() {
     snapshotTaken: boolean;
   }>({ active: false, snapshotTaken: false });
 
+  // ── UP — must be before early return to satisfy Rules of Hooks ──────────────
+  const handlePointerUp = useCallback(() => {
+    resizeRef.current = null;
+    rotateRef.current = { active: false, snapshotTaken: false };
+  }, []);
+
   const el = state.elements.find((e) => e.id === state.selectedId);
   if (!el) return null;
 
@@ -196,11 +202,7 @@ export function SelectionOverlay() {
     });
   };
 
-  // ── UP ─────────────────────────────────────────────────────────────────────
-  const handlePointerUp = useCallback(() => {
-    resizeRef.current = null;
-    rotateRef.current = { active: false, snapshotTaken: false };
-  }, []);
+  // ── UP — moved before early return (see top of component) ─────────────────
 
   // ──────────────────────────────────────────────────────────────────────────
 

@@ -43,9 +43,9 @@ function CalendarWidget({ props, scale }: { props: CanvasElement["props"]; scale
 
 // ── COUNTDOWN WIDGET ── (CineLove parity: 4 style themes)
 function CountdownWidget({ props, scale }: { props: CanvasElement["props"]; scale: number }) {
-    // eslint-disable-next-line react-hooks/immutability -- Date.now() is intentional for live countdown
+     
     const [now, setNow] = useState(Date.now());
-    // eslint-disable-next-line react-hooks/immutability -- setInterval with Date.now() is a standard ticker pattern
+     
     useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(iv); }, []);
 
     const cfg = ((props as { config?: Record<string, string | undefined> }).config) ?? {};

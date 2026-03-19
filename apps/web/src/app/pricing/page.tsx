@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PLANS, PLAN_IDS, formatPrice, type PlanId } from "@/config/plans";
 import { cookies } from "next/headers";
+import { ProductJsonLd } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
   title: "Bảng giá — LoveStory",
@@ -113,6 +114,8 @@ export default async function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* S17-C: SoftwareApplication JSON-LD for Google Rich Results */}
+      <ProductJsonLd />
       {isDev && (
         <div style={{ position: "fixed", bottom: 8, right: 8, zIndex: 9999,
           background: abVariant === "variant" ? "#10b981" : "#3b82f6",

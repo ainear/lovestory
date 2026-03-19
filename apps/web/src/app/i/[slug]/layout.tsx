@@ -114,5 +114,17 @@ export default function InvitationLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  const cdnOrigin = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+    ? new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_URL).origin
+    : null;
+
+  return (
+    <>
+      {/* S17-D: Preconnect to R2/CDN for faster image loading (LCP) */}
+      {cdnOrigin && (
+        <link rel="preconnect" href={cdnOrigin} crossOrigin="anonymous" />
+      )}
+      {children}
+    </>
+  );
 }

@@ -69,8 +69,8 @@ test("CineLove — Find ALL elements with positioning", async ({ page }) => {
     if (!fiberKey) return { found: false, note: "No React fiber" };
 
     // @ts-ignore
-    let fiber = rootEl[fiberKey];
-    let craftStore: any = null;
+    const fiber = rootEl[fiberKey];
+    const craftStore: any = null;
     let depth = 0;
     const MAX_DEPTH = 200;
 

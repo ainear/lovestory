@@ -11,7 +11,14 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:security": "playwright test tests/e2e/api-security.spec.ts --reporter=list",
-    "test:auth": "playwright test tests/e2e/auth.spec.ts --reporter=list"
+    "test:auth": "playwright test tests/e2e/auth.spec.ts --reporter=list",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:p0": "playwright test tests/e2e/p0-business-critical.spec.ts --project=chromium --reporter=list",
+    "test:smoke": "playwright test tests/e2e/launch-smoke.spec.ts --project=chromium --reporter=list",
+    "test:all": "vitest run && playwright test tests/e2e/launch-smoke.spec.ts tests/e2e/p0-business-critical.spec.ts tests/e2e/api-security.spec.ts --project=chromium",
+    "test:stress": "k6 run tests/stress/stress-test.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1002.0",
@@ -45,10 +52,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "pg": "^8.20.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   }
 }

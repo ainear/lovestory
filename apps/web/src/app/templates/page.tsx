@@ -419,6 +419,26 @@ export default function TemplatesPage() {
 
     return (
         <div style={{ minHeight: "100vh", background: "#f8f9fb", fontFamily: "'Inter', -apple-system, sans-serif" }}>
+            {/* S17-C: ItemList JSON-LD for Google Rich Results */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "ItemList",
+                        name: "Mẫu thiệp cưới online đẹp nhất 2025",
+                        description: `${TEMPLATES.length}+ mẫu thiệp điện tử: cưới, sinh nhật, sự kiện. Tùy chỉnh dễ dàng, RSVP thông minh.`,
+                        url: "https://7app.online/templates",
+                        numberOfItems: TEMPLATES.length,
+                        itemListElement: TEMPLATES.slice(0, 10).map((t, i) => ({
+                            "@type": "ListItem",
+                            position: i + 1,
+                            name: t.name,
+                            description: t.desc,
+                        })),
+                    }),
+                }}
+            />
             {/* ── Navbar ── */}
             <nav style={{
                 background: "#fff",

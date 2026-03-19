@@ -28,7 +28,7 @@ export function StockTab({
   function addSticker(item: { id: string; svgContent: string }) {
     if (!editorDispatch) return;
     const element: CanvasElement = {
-      // eslint-disable-next-line react-hooks/immutability -- ID generation in event handler, not during render
+       
       id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       type: "sticker",
       top: 100,

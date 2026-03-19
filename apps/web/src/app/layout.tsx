@@ -42,6 +42,7 @@ import { TRPCProvider } from "@/lib/trpc/client";
 import CookieBanner from "@/components/CookieBanner";
 import { PostHogProvider } from "@/lib/posthog/provider";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { WebSiteJsonLd } from "@/lib/seo/json-ld";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -371,6 +372,8 @@ export default function RootLayout({
         {/* DNS preconnect for faster asset loading */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project.supabase.co"} crossOrigin="anonymous" />
+        {/* S17-C: Structured data for Google Rich Results */}
+        <WebSiteJsonLd />
       </head>
       <body
         suppressHydrationWarning
