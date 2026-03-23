@@ -9,31 +9,40 @@ out
 build
 .turbo
 
-# Environment
+# Environment – NEVER commit real env files
 .env
 .env.local
 .env.*.local
 .env.dev
+.env.prod
+.env.production
+.env.staging
 .env.*
+# Keep only .env.example
+!.env.example
 
-# IDE
+# IDE / OS
 .vscode
 .idea
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
-# Debug
+# Debug logs
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
-# Testing
+# Testing & reports
 coverage
 test-results/
 playwright-report/
 .playwright-mcp/
+*-report.json
+k6-stress-report.json
 
 # Debug screenshots
 /*.png
@@ -42,7 +51,59 @@ apps/web/tests/e2e/screenshots/
 # Drizzle
 drizzle/meta
 
-# Agent/AI
+# Agent / AI tools (local-only, never push)
 .agent
+.agents
 .gemini
+.claude
+.cursorrules
+
+# Backups
 backups/
+
+# ─── SECURITY: credentials & keys ─────────────────────────────────────────────
+# Private keys
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.cer
+
+# Android keystores
+*.jks
+*.keystore
+
+# Firebase / Google Service Account
+google-services.json
+GoogleService-Info.plist
+*-service-account*.json
+*service_account*.json
+firebase-adminsdk*.json
+serviceAccountKey*.json
+
+# Supabase temp / local CLI state (contains project-ref, pool URLs)
+supabase/.temp/
+
+# Generic
+*credentials*.json
+*secret*.json
+*secrets*.json
+*private*.json
+
+# ─── Mobile build artefacts (large binary, no need in repo) ───────────────────
+*.apk
+*.aab
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Video / large media
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# ─── Vercel ───────────────────────────────────────────────────────────────────
+.vercel
