@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
 
   // Security headers
   async headers() {
+    const isProd = process.env.NODE_ENV === "production";
+    const cspHeader = isProd
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; media-src 'self' https:; frame-src 'self' https://www.youtube.com https://www.google.com"
+      : "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; style-src 'self' 'unsafe-inline' https: http:; img-src 'self' data: https: http:; font-src 'self' data: https: http:; connect-src 'self' https: http: ws: wss:; media-src 'self' https: http:; frame-src 'self' https: http:";
+
     return [
       {
         source: "/(.*)",
@@ -47,8 +52,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; media-src 'self' https:; frame-src 'self' https://www.youtube.com https://www.google.com",
+            value: cspHeader,
           },
         ],
       },

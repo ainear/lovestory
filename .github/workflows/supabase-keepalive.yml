@@ -23,8 +23,7 @@ jobs:
             echo "::error::SUPABASE_ANON_KEY secret is not set! Go to: Repo → Settings → Secrets → Actions → New secret"
             exit 1
           fi
-          echo "✅ Secrets are configured"
-          echo "🔗 URL: ${{ secrets.SUPABASE_URL }}"
+          echo "✅ Secrets are configured successfully"
 
       - name: Ping Supabase Auth
         continue-on-error: true
@@ -49,6 +48,19 @@ jobs:
           echo "✅ Supabase REST responded with HTTP $HTTP_STATUS"
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error::Supabase REST API is not responding (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: Ping Real Database (Wake up PostgreSQL)
+        continue-on-error: true
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/templates?limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "✅ Supabase Database query responded with HTTP $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ] && [ "$HTTP_STATUS" -ne 406 ]; then
+            echo "::error::Supabase Database is not responding (HTTP $HTTP_STATUS)"
             exit 1
           fi
 
