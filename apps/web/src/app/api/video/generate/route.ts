@@ -68,6 +68,64 @@ export async function POST(req: NextRequest) {
   // Use service role for all DB updates (this runs async, no user session)
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+  // Sprint 58: Check and deduct video credit before resource rendering
+  let tenantId: string | null = null;
+  try {
+    const { data: videoRecord } = await supabase
+      .from("videos")
+      .select("tenant_id")
+      .eq("id", videoId)
+      .single();
+
+    if (!videoRecord || !videoRecord.tenant_id) {
+      await updateStatus(supabase, videoId, "failed", 0, "Không tìm thấy thông tin dự án video");
+      return NextResponse.json({ error: "Video record or tenant not found" }, { status: 404 });
+    }
+
+    tenantId = videoRecord.tenant_id;
+
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("credits")
+      .eq("id", tenantId)
+      .single();
+
+    if (!tenant) {
+      await updateStatus(supabase, videoId, "failed", 0, "Không tìm thấy tài khoản người dùng");
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+
+    if (tenant.credits <= 0) {
+      await updateStatus(
+        supabase,
+        videoId,
+        "failed",
+        0,
+        "Tài khoản của bạn đã hết lượt render video AI (0 Credit). Vui lòng nâng cấp gói hoặc mua thêm credit pack!"
+      );
+      return NextResponse.json(
+        { error: "Insufficient video credits" },
+        { status: 403 }
+      );
+    }
+
+    // Deduct 1 credit
+    const { error: deductError } = await supabase
+      .from("tenants")
+      .update({ credits: tenant.credits - 1 })
+      .eq("id", tenantId);
+
+    if (deductError) {
+      console.error("Deduct credit failed:", deductError);
+      await updateStatus(supabase, videoId, "failed", 0, "Không thể xử lý khấu trừ credit");
+      return NextResponse.json({ error: "Failed to deduct credit" }, { status: 500 });
+    }
+  } catch (creditCheckErr) {
+    console.error("Credit check system error:", creditCheckErr);
+    await updateStatus(supabase, videoId, "failed", 0, "Lỗi kiểm tra bản quyền tài khoản");
+    return NextResponse.json({ error: "Credit system error" }, { status: 500 });
+  }
+
   const workDir = join(tmpdir(), `lovestory-video-${randomUUID()}`);
 
   try {
@@ -345,6 +403,26 @@ export async function POST(req: NextRequest) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
     await updateStatus(supabase, videoId, "failed", 0, errorMessage);
+
+    // Refund credit to the user on server-side failure
+    try {
+      if (tenantId) {
+        const { data: currentTenant } = await supabase
+          .from("tenants")
+          .select("credits")
+          .eq("id", tenantId)
+          .single();
+        if (currentTenant) {
+          await supabase
+            .from("tenants")
+            .update({ credits: currentTenant.credits + 1 })
+            .eq("id", tenantId);
+          console.log(`[Credit System] Refunded 1 credit to tenant ${tenantId} due to render failure`);
+        }
+      }
+    } catch (refundErr) {
+      console.error("[Credit System] Failed to refund credit:", refundErr);
+    }
 
     // Cleanup on failure
     await cleanupWorkDir(workDir);

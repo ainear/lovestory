@@ -122,6 +122,8 @@ function TemplateCard({
 }) {
     const [hovered, setHovered] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
+    const imgRef = useRef<HTMLImageElement>(null);
+    const [imgNaturalHeight, setImgNaturalHeight] = useState(0);
 
     // Intersection Observer fade-in
     useEffect(() => {
@@ -134,6 +136,11 @@ function TemplateCard({
         obs.observe(el);
         return () => obs.disconnect();
     }, []);
+
+    // CineLove-style: calculate scroll distance for hover preview
+    // Container height ≈ 140% of card width. Image is a long thumbnail.
+    // On hover, scroll the image from top to bottom over 3s.
+    const isHot = template.usageCount >= 10000;
 
     return (
         <div
@@ -148,134 +155,149 @@ function TemplateCard({
                 cursor: "pointer",
                 background: "#fff",
                 transition: "box-shadow 0.3s ease, transform 0.3s ease",
-                boxShadow: hovered ? "0 8px 30px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
-                transform: hovered ? "translateY(-3px)" : "none",
+                boxShadow: hovered ? "0 12px 40px rgba(0,0,0,0.18)" : "0 1px 4px rgba(0,0,0,0.06)",
+                transform: hovered ? "translateY(-4px) scale(1.01)" : "none",
             }}
             onClick={onPreview}
         >
-            {/* Thumbnail */}
+            {/* Thumbnail — CineLove scroll preview on hover */}
             <div style={{ position: "relative", paddingBottom: "140%", overflow: "hidden" }}>
                 <img
+                    ref={imgRef}
                     src={template.thumbnail}
                     alt={template.name}
                     loading="lazy"
+                    onLoad={(e) => setImgNaturalHeight((e.target as HTMLImageElement).naturalHeight)}
                     style={{
-                        position: "absolute", inset: 0,
-                        width: "100%", height: "100%",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        // height: auto allows natural height to show for scroll effect
+                        height: "auto",
+                        // CineLove scroll: on hover translateY to scroll through the long thumbnail
+                        // Scroll amount = image natural height minus container height (in %)
+                        // Container is 140% of card width. If img is 400% tall, scroll = 260% of width.
+                        transform: hovered && imgNaturalHeight > 0
+                            ? "translateY(calc(-100% + 140%))"
+                            : "translateY(0%)",
+                        transition: hovered
+                            ? "transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+                            : "transform 0.4s ease",
                         objectFit: "cover",
-                        transition: "transform 0.4s ease",
-                        transform: hovered ? "scale(1.05)" : "scale(1)",
+                        objectPosition: "top center",
                     }}
                 />
 
-                {/* BASIC / PREMIUM / FREE Badge */}
+                {/* Tier Badge — left */}
                 <span style={{
                     position: "absolute", top: 8, left: 8, zIndex: 2,
-                    padding: "3px 8px", borderRadius: 4,
-                    fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
-                    background: template.tier === "premium" ? "#9333EA" : template.tier === "free" ? "#10B981" : "#3B82F6",
+                    padding: "3px 8px", borderRadius: 20,
+                    fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    background: template.tier === "premium"
+                        ? "linear-gradient(135deg, #7c3aed, #5b21b6)"
+                        : template.tier === "free"
+                        ? "linear-gradient(135deg, #059669, #047857)"
+                        : "linear-gradient(135deg, #2563eb, #1d4ed8)",
                     color: "#fff",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                    backdropFilter: "blur(4px)",
+                    transition: "opacity 0.3s, transform 0.3s",
+                    opacity: hovered ? 0 : 1,
+                    transform: hovered ? "translateY(-20px)" : "none",
                 }}>
                     {template.tier === "premium" ? "PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
                 </span>
+
+                {/* HOT badge — right, only for popular */}
+                {isHot && (
+                    <span style={{
+                        position: "absolute", top: 8, right: 8, zIndex: 2,
+                        padding: "3px 8px", borderRadius: 20,
+                        fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+                        textTransform: "uppercase",
+                        background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                        color: "#fff",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                        transition: "opacity 0.3s, transform 0.3s",
+                        opacity: hovered ? 0 : 1,
+                        transform: hovered ? "translateY(-20px)" : "none",
+                    }}>
+                        🔥 HOT
+                    </span>
+                )}
 
                 {/* Premium lock overlay — always visible on premium cards */}
                 {template.tier === "premium" && (
                     <div
                         style={{
                             position: "absolute",
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
+                            bottom: 0, left: 0, right: 0,
                             zIndex: 4,
                             background: "linear-gradient(0deg, rgba(109,40,217,0.92) 0%, transparent 100%)",
                             padding: "40px 12px 12px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: 4,
+                            display: "flex", flexDirection: "column",
+                            alignItems: "center", gap: 4,
                         }}
                     >
                         <span style={{ fontSize: 20 }}>🔒</span>
-                        <span
-                            style={{
-                                fontSize: 10,
-                                fontWeight: 700,
-                                color: "#fff",
-                                letterSpacing: 1,
-                                textTransform: "uppercase",
-                            }}
-                        >
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", letterSpacing: 1, textTransform: "uppercase" }}>
                             ⭐ Gói Premium
                         </span>
                         <a
                             href={`/pricing?from=template&id=${template.slug}`}
                             onClick={(e) => e.stopPropagation()}
-                            style={{
-                                fontSize: 10,
-                                color: "#e9d5ff",
-                                fontWeight: 600,
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                            }}
+                            style={{ fontSize: 10, color: "#e9d5ff", fontWeight: 600, textDecoration: "underline", cursor: "pointer" }}
                         >
                             Nâng cấp →
                         </a>
                     </div>
                 )}
 
-                {hovered && (
-                    <div style={{
-                        position: "absolute", inset: 0, zIndex: 3,
-                        background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%)",
-                        display: "flex", flexDirection: "column",
-                        alignItems: "center", justifyContent: "flex-end",
-                        padding: "16px 12px",
-                        animation: "fadeIn 0.15s ease",
+                {/* Hover overlay — gradient + buttons */}
+                <div style={{
+                    position: "absolute", inset: 0, zIndex: 3,
+                    background: hovered
+                        ? "linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.6) 100%)"
+                        : "transparent",
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "flex-end",
+                    padding: "16px 12px",
+                    transition: "background 0.3s ease",
+                    pointerEvents: hovered ? "auto" : "none",
+                }}>
+                    {/* Usage count chip */}
+                    <span style={{
+                        fontSize: 11, color: "#fff",
+                        background: "rgba(0,0,0,0.5)",
+                        padding: "3px 8px", borderRadius: 10,
+                        fontWeight: 600, marginBottom: 8,
+                        opacity: hovered ? 1 : 0,
+                        transform: hovered ? "none" : "translateY(10px)",
+                        transition: "opacity 0.3s, transform 0.3s",
                     }}>
-                        {/* Top-right: heart + views */}
-                        <div style={{
-                            position: "absolute", top: 8, right: 8,
-                            display: "flex", gap: 8, alignItems: "center",
-                        }}>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); /* TODO: save to favorites */ }}
-                                style={{
-                                    width: 30, height: 30, borderRadius: "50%",
-                                    background: "rgba(255,255,255,0.9)", border: "none",
-                                    cursor: "pointer", display: "flex",
-                                    alignItems: "center", justifyContent: "center",
-                                    fontSize: 14,
-                                }}
-                                title="Yêu thích"
-                            >
-                                ♡
-                            </button>
-                            <span style={{
-                                fontSize: 11, color: "#fff",
-                                background: "rgba(0,0,0,0.45)",
-                                padding: "3px 8px", borderRadius: 10,
-                                fontWeight: 500,
-                            }}>
-                                {template.usageCount.toLocaleString()}
-                            </span>
-                        </div>
+                        👁 {template.usageCount.toLocaleString()} lượt dùng
+                    </span>
 
-                        {/* Center: "Xem mẫu" button */}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onPreview(); }}
-                            style={{
-                                padding: "10px 24px", borderRadius: 8,
-                                background: "#fff", border: "none",
-                                fontSize: 13, fontWeight: 600, color: "#1f2937",
-                                cursor: "pointer", marginBottom: 4,
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                            }}
-                        >
-                            Xem mẫu
-                        </button>
-                    </div>
-                )}
+                    {/* "Xem mẫu" CTA button */}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                        style={{
+                            padding: "10px 28px", borderRadius: 24,
+                            background: "linear-gradient(135deg, #EF7E90, #f43f5e)",
+                            border: "none",
+                            fontSize: 13, fontWeight: 700, color: "#fff",
+                            cursor: "pointer",
+                            boxShadow: "0 4px 16px rgba(239,126,144,0.5)",
+                            opacity: hovered ? 1 : 0,
+                            transform: hovered ? "none" : "translateY(16px)",
+                            transition: "opacity 0.3s 0.05s, transform 0.3s 0.05s",
+                        }}
+                    >
+                        Xem mẫu
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import { CraftVisualEditor } from "./components/CraftVisualEditor";
+import { MobileFormEditor } from "./components/MobileFormEditor";
+import { useIsMobile } from "./hooks/useIsMobile";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 
 interface Project {
@@ -124,16 +126,29 @@ export default function EditorPage() {
     );
   }
 
+  const isMobile = useIsMobile();
+
   return (
     <SubscriptionProvider>
-      <CraftVisualEditor
-        projectId={project.id}
-        initialCanvasJson={project.canvas_json}
-        projectSlug={project.slug}
-        onPublish={() => {
-          router.push(`/i/${project.slug}`);
-        }}
-      />
+      {isMobile ? (
+        <MobileFormEditor
+          projectId={project.id}
+          initialCanvasJson={project.canvas_json}
+          projectSlug={project.slug}
+          onPublish={() => {
+            router.push(`/i/${project.slug}`);
+          }}
+        />
+      ) : (
+        <CraftVisualEditor
+          projectId={project.id}
+          initialCanvasJson={project.canvas_json}
+          projectSlug={project.slug}
+          onPublish={() => {
+            router.push(`/i/${project.slug}`);
+          }}
+        />
+      )}
     </SubscriptionProvider>
   );
 }

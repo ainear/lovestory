@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 const PLANS = {
     basic: {
@@ -20,10 +21,8 @@ const PLANS = {
 
 export default function CheckoutPage() {
     const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium">("basic");
-    // Lazy initializer — avoids setState inside useEffect
-    const [orderCode] = useState(() => `LS${Date.now().toString(36).toUpperCase()}`);
     const [loading, setLoading] = useState(false);
-    // Lazy initializer reads URL params at mount time with no side effects
+    
     const [error, setError] = useState(() => {
         if (typeof window === "undefined") return "";
         const params = new URLSearchParams(window.location.search);
@@ -31,7 +30,6 @@ export default function CheckoutPage() {
         if (!e) return "";
         return e === "cancelled" ? "Bạn đã hủy thanh toán" : "Thanh toán thất bại. Vui lòng thử lại";
     });
-    const formRef = useRef<HTMLFormElement>(null);
 
     const plan = PLANS[selectedPlan];
 
@@ -43,62 +41,45 @@ export default function CheckoutPage() {
             const res = await fetch("/api/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ plan: selectedPlan, amount: plan.price, orderCode }),
+                body: JSON.stringify({ plan: selectedPlan }),
             });
 
             const data = await res.json();
 
             if (data.checkoutUrl) {
-                // Redirect to SePay checkout
+                // Redirect straight to PayOS secure checkout portal
                 window.location.href = data.checkoutUrl;
-            } else if (data.formAction && data.formData) {
-                // Fallback: create hidden form and auto-submit to SePay
-                const form = formRef.current;
-                if (form) {
-                    form.action = data.formAction;
-                    form.method = "POST";
-                    // Clear existing inputs
-                    form.innerHTML = "";
-                    // Add form fields
-                    Object.entries(data.formData as Record<string, string>).forEach(([key, value]) => {
-                        const input = document.createElement("input");
-                        input.type = "hidden";
-                        input.name = key;
-                        input.value = value;
-                        form.appendChild(input);
-                    });
-                    form.submit();
-                }
             } else {
-                setError("Không thể tạo liên kết thanh toán");
+                setError(data.error || "Không thể tạo liên kết thanh toán PayOS");
                 setLoading(false);
             }
-        } catch {
-            setError("Lỗi kết nối. Vui lòng thử lại");
+        } catch (err) {
+            console.error("Payment error:", err);
+            setError("Lỗi kết nối máy chủ. Vui lòng thử lại");
             setLoading(false);
         }
     };
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f9fafb", fontFamily: "'Inter', sans-serif", padding: "40px 24px" }}>
+        <div style={{ minHeight: "100vh", background: "#faf9f6", fontFamily: "var(--font-outfit), -apple-system, sans-serif", padding: "40px 24px" }}>
             <div style={{ maxWidth: 800, margin: "0 auto" }}>
                 {/* Header */}
                 <div style={{ textAlign: "center", marginBottom: 32 }}>
-                    <Link href="/" style={{ fontSize: 22, fontWeight: 800, background: "linear-gradient(135deg, #ff6b9d, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", textDecoration: "none" }}>
+                    <Link href="/" style={{ fontSize: 22, fontWeight: 800, background: "linear-gradient(135deg, #e2b49a, #be8a70)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", textDecoration: "none" }}>
                         ❤️ LoveStory
                     </Link>
                     <h1 style={{ fontSize: 28, fontWeight: 700, color: "#1f2937", margin: "16px 0 4px" }}>
                         Nâng cấp tài khoản
                     </h1>
-                    <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
-                        Chọn gói phù hợp — thanh toán an toàn qua SePay
+                    <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+                        Chọn gói phù hợp — thanh toán quét mã QR tự động qua cổng bảo mật PayOS
                     </p>
                 </div>
 
                 {/* Error */}
                 {error && (
                     <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "12px 20px", marginBottom: 24, textAlign: "center" }}>
-                        <p style={{ fontSize: 14, color: "#dc2626", margin: 0 }}>⚠️ {error}</p>
+                        <p style={{ fontSize: 13, color: "#dc2626", margin: 0 }}>⚠️ {error}</p>
                     </div>
                 )}
 
@@ -114,9 +95,9 @@ export default function CheckoutPage() {
                                 style={{
                                     padding: 28,
                                     borderRadius: 20,
-                                    border: isSelected ? "2px solid #c084fc" : "1px solid #e5e7eb",
-                                    background: isSelected ? "linear-gradient(180deg, #fff, #fef3ff)" : "#fff",
-                                    boxShadow: isSelected ? "0 8px 24px rgba(192,132,252,0.15)" : "0 2px 8px rgba(0,0,0,0.04)",
+                                    border: isSelected ? "2px solid #be8a70" : "1px solid #e5e7eb",
+                                    background: isSelected ? "linear-gradient(180deg, #fff, #fdf8f5)" : "#fff",
+                                    boxShadow: isSelected ? "0 8px 24px rgba(190,138,112,0.15)" : "0 2px 8px rgba(0,0,0,0.02)",
                                     cursor: "pointer",
                                     textAlign: "left",
                                     position: "relative",
@@ -124,17 +105,17 @@ export default function CheckoutPage() {
                                 }}
                             >
                                 {p === "basic" && (
-                                    <div style={{ position: "absolute", top: -10, right: 16, padding: "3px 12px", borderRadius: 8, background: "linear-gradient(135deg, #ff6b9d, #c084fc)", color: "#fff", fontSize: 11, fontWeight: 700 }}>
+                                    <div style={{ position: "absolute", top: -10, right: 16, padding: "3px 12px", borderRadius: 8, background: "linear-gradient(135deg, #e2b49a, #be8a70)", color: "#fff", fontSize: 10, fontWeight: 700 }}>
                                         🔥 PHỔ BIẾN
                                     </div>
                                 )}
-                                <p style={{ fontSize: 16, fontWeight: 600, color: p === "basic" ? "#7c3aed" : "#d97706", margin: "0 0 4px" }}>{planInfo.name}</p>
+                                <p style={{ fontSize: 15, fontWeight: 700, color: p === "basic" ? "#be8a70" : "#d97706", margin: "0 0 4px" }}>{planInfo.name}</p>
                                 <p style={{ fontSize: 32, fontWeight: 800, color: "#1f2937", margin: "0 0 4px" }}>{planInfo.priceLabel}</p>
-                                <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 16px" }}>1 lần duy nhất</p>
+                                <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 16px" }}>Thanh toán 1 lần duy nhất</p>
                                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
                                     {planInfo.features.map((f, i) => (
                                         <li key={i} style={{ fontSize: 13, color: "#4b5563", display: "flex", alignItems: "center", gap: 6 }}>
-                                            <span style={{ color: "#10b981" }}>✓</span> {f}
+                                            <span style={{ color: "#be8a70", fontWeight: "bold" }}>✓</span> {f}
                                         </li>
                                     ))}
                                 </ul>
@@ -150,33 +131,34 @@ export default function CheckoutPage() {
                         disabled={loading}
                         style={{
                             padding: "16px 48px",
-                            borderRadius: 14,
-                            background: loading ? "#9ca3af" : "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                            borderRadius: 30,
+                            background: loading ? "#9ca3af" : "linear-gradient(135deg, #e2b49a, #be8a70)",
                             color: "#fff",
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: 700,
                             border: "none",
                             cursor: loading ? "not-allowed" : "pointer",
-                            boxShadow: loading ? "none" : "0 8px 24px rgba(255,107,157,0.35)",
+                            boxShadow: loading ? "none" : "0 8px 24px rgba(190,138,112,0.3)",
                             transition: "all 0.2s",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
                         }}
                     >
-                        {loading ? "⏳ Đang chuyển..." : `💳 Thanh toán ${plan.priceLabel}`}
+                        {loading && <Loader2 size={16} className="animate-spin" />}
+                        {loading ? "⏳ Đang khởi tạo đơn hàng..." : `💳 Quét mã VietQR ${plan.priceLabel}`}
                     </button>
                     <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 12 }}>
-                        🔒 Thanh toán an toàn qua SePay.vn · Chấp nhận mọi ngân hàng VN
+                        🔒 Cổng thanh toán bảo mật PayOS · Nhận tiền & Kích hoạt gói tự động ngay lập tức
                     </p>
                 </div>
-
-                {/* Hidden form for SePay redirect */}
-                <form ref={formRef} style={{ display: "none" }} />
 
                 {/* Trust badges */}
                 <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 40 }}>
                     {[
-                        { icon: "🔒", label: "SSL Encrypted" },
-                        { icon: "🏦", label: "40+ Ngân hàng" },
-                        { icon: "⚡", label: "Xác nhận tức thì" },
+                        { icon: "🔒", label: "Mã hóa SSL" },
+                        { icon: "🏦", label: "Mọi ngân hàng VN" },
+                        { icon: "⚡", label: "Tự động kích hoạt" },
                     ].map((b, i) => (
                         <div key={i} style={{ textAlign: "center" }}>
                             <p style={{ fontSize: 20, margin: "0 0 4px" }}>{b.icon}</p>

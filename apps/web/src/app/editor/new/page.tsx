@@ -2566,7 +2566,7 @@ function buildTemplateCanvasJson(templateSlug: string): string {
   return JSON.stringify({
     version: 2,
     engine: "custom-canvas",
-    canvas: { width: 500, height: 7300, bg: bgCss },
+    canvas: { width: 390, height: 7300, bg: bgCss },
     elements: canvasElements,
     meta: { musicUrl: "", musicName: "" },
     effects: { particleEffect: "none" },
