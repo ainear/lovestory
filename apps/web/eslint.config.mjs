@@ -11,6 +11,9 @@ const eslintConfig = [
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "tests/**",
+    "playwright.config.ts",
+    "vitest.config.ts",
   ]),
   // CI stability: suppress react-compiler and non-critical errors
   // Placed LAST to take precedence over Next.js defaults

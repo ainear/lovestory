@@ -372,7 +372,7 @@ export function useCanvasReducer(initial?: Partial<CanvasState>) {
                 props: { src, objectFit: "cover", borderRadius: 12, opacity: 1 },
             },
         });
-    }, []);
+    }, [state.sections]);
 
     return { state, dispatch, addText, addImage };
 }

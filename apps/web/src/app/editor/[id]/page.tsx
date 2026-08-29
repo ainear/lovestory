@@ -21,6 +21,7 @@ export default function EditorPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -125,8 +126,6 @@ export default function EditorPage() {
       </div>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <SubscriptionProvider>

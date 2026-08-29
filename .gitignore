@@ -51,12 +51,15 @@ apps/web/tests/e2e/screenshots/
 # Drizzle
 drizzle/meta
 
-# Agent / AI tools (local-only, never push)
-.agent
-.agents
-.gemini
-.claude
+# AI Agent temp, logs & caches (ignore logs/cache only, KEEP rules, skills, workflows)
+.gemini/
+.claude/
 .cursorrules
+.agent/logs/
+.agent/cache/
+.agents/logs/
+.agents/cache/
+.codegraph/
 
 # Backups
 backups/
@@ -98,12 +101,15 @@ supabase/.temp/
 *.dSYM
 *.dSYM.zip
 
-# Video / large media
+# Video / large media / archives
 *.mp4
 *.mov
 *.avi
 *.mkv
 *.webm
+*.tar.gz
+*.rar
+*.7z
 
 # ─── Vercel ───────────────────────────────────────────────────────────────────
 .vercel

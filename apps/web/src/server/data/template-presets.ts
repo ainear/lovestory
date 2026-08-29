@@ -120,7 +120,32 @@ function img(
   };
 }
 
-// ═══════════════════════════════════════════
+/** Helper: widget element (countdown, calendar, rsvp, map, qrbox, etc.) */
+function wgt(
+  id: string,
+  type: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  props: Record<string, unknown>,
+  zIndex = 5,
+): TemplateElement {
+  return {
+    id,
+    type,
+    x,
+    y,
+    width: w,
+    height: h,
+    rotation: 0,
+    opacity: 1,
+    zIndex,
+    locked: false,
+    animation: { entrance: "fadeIn", loop: "none" },
+    props,
+  };
+}
 // LAYOUT A: ROMANTIC — Full-bleed hero, centered names, side-by-side portraits
 // Section flow: Hero → Deco → Invite/Names → Family columns → Portraits row → Date block → Events → Gallery grid → Quote → Venue
 // ═══════════════════════════════════════════
@@ -2099,88 +2124,494 @@ function makeCineLove53(): TemplateElement[] {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// TOP 20 UNIQUE BESPOKE WEDDING TEMPLATE BUILDERS (CineLove Parity 90%+)
+// ═══════════════════════════════════════════════════════════════════
+
+/** 1. Thiệp Cưới 42 — Rose Garden Romance (Top 1 • 38.2k views) */
+function makeThiepCuoi42(): TemplateElement[] {
+  const rose = "#be185d";
+  const dark = "#831843";
+  const soft = "#fda4af";
+  return [
+    txt("txt-header-label", 20, 25, 350, 30, "SAVE THE DATE", { size: 13, font: "'Cinzel', serif", color: rose, weight: "600", opacity: 0.8 }),
+    img("img-main", 20, 65, 350, 440, { radius: 18, borderWidth: 3, borderColor: soft, src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&fit=crop" }),
+    txt("txt-ceremony", 20, 520, 350, 32, "Lễ Thành Hôn", { size: 22, font: "'Cormorant Garamond', serif", italic: true, color: rose }),
+    txt("txt-names", 10, 560, 370, 110, "Tuấn Minh\n&\nMai Lan", { size: 44, font: "'Dancing Script', cursive", weight: "bold", color: dark, lineHeight: 1.15 }),
+    txt("txt-deco1", 20, 680, 350, 24, "❀ ──────── ❀", { size: 13, font: "'Georgia', serif", color: soft, locked: true }),
+    txt("txt-family", 20, 715, 350, 60, "Trân trọng kính mời quý khách\ntới dự bữa tiệc chung vui cùng gia đình chúng tôi", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    txt("txt-nhatrai-label", 20, 790, 170, 26, "NHÀ TRAI", { size: 13, font: "'Inter', sans-serif", weight: "bold", color: rose }),
+    txt("txt-nhatrai", 20, 820, 170, 70, "Ông: Nguyễn Văn A\nBà: Trần Thị B\nCon trai: Tuấn Minh", { size: 12, font: "'Lora', serif", color: dark, lineHeight: 1.8, align: "left" }),
+    txt("txt-nhagai-label", 200, 790, 170, 26, "NHÀ GÁI", { size: 13, font: "'Inter', sans-serif", weight: "bold", color: rose }),
+    txt("txt-nhagai", 200, 820, 170, 70, "Ông: Lê Văn C\nBà: Phạm Thị D\nCon gái: Mai Lan", { size: 12, font: "'Lora', serif", color: dark, lineHeight: 1.8, align: "left" }),
+    img("img-groom", 35, 910, 150, 200, { radius: 14, rotation: -3, borderColor: soft, zIndex: 2 }),
+    img("img-bride", 205, 910, 150, 200, { radius: 14, rotation: 3, borderColor: soft, zIndex: 3 }),
+    txt("name-groom", 35, 1120, 150, 28, "Tuấn Minh", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: dark }),
+    txt("name-bride", 205, 1120, 150, 28, "Mai Lan", { size: 18, font: "'Dancing Script', cursive", weight: "bold", color: dark }),
+    txt("txt-date-header", 20, 1165, 350, 30, "THÁNG 05 · NĂM 2026", { size: 15, font: "'Cormorant Garamond', serif", weight: "bold", color: dark }),
+    txt("txt-date-day", 135, 1195, 120, 75, "28", { size: 64, font: "'Cormorant Garamond', serif", weight: "bold", color: rose }),
+    txt("txt-date-time", 20, 1275, 350, 28, "17:00 · Thứ Bảy", { size: 15, font: "'Lora', serif", italic: true, color: dark }),
+    wgt("plugin-countdown", "countdown", 20, 1320, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC NGÀY CƯỚI", accentColor: rose }),
+    wgt("plugin-calendar", "calendar", 20, 1450, 350, 240, { selectedDate: "2026-05-28", accentColor: rose }),
+    txt("txt-timeline-title", 20, 1710, 350, 40, "Chương Trình Tiệc Cưới", { size: 24, font: "'Dancing Script', cursive", weight: "bold", color: rose }),
+    txt("txt-tl1", 20, 1760, 110, 50, "16:30\nĐón khách", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.5 }),
+    txt("txt-tl2", 140, 1760, 110, 50, "17:00\nLễ thành hôn", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.5 }),
+    txt("txt-tl3", 260, 1760, 110, 50, "18:00\nKhai tiệc", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.5 }),
+    txt("txt-quote", 30, 1830, 330, 70, '"Tình yêu giống như một đoá hồng — cần được chăm sóc mỗi ngày để nở rộ rực rỡ."', { size: 15, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.7 }),
+    img("img-gallery1", 25, 1920, 165, 160, { radius: 10, borderColor: soft }),
+    img("img-gallery2", 200, 1920, 165, 160, { radius: 10, borderColor: soft }),
+    img("img-gallery3", 25, 2095, 165, 160, { radius: 10, borderColor: soft }),
+    img("img-gallery4", 200, 2095, 165, 160, { radius: 10, borderColor: soft }),
+    wgt("plugin-map", "map", 20, 2280, 350, 200, { address: "Diamond Palace, 123 Nguyễn Huệ, Quận 1, TP.HCM", label: "Trung tâm Tiệc cưới Diamond Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 2500, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Gửi phản hồi", accentColor: rose }),
+    wgt("plugin-qrbox", "qrbox", 20, 2800, 350, 280, { groomName: "TUAN MINH", groomBank: "VIETCOMBANK", groomAccount: "0123456789", brideName: "MAI LAN", brideBank: "MB BANK", brideAccount: "9876543210" }),
+    txt("txt-footer-thanks", 20, 3100, 350, 50, "Cảm ơn bạn đã đến chung vui cùng chúng tôi 🌹", { size: 20, font: "'Dancing Script', cursive", weight: "bold", color: rose }),
+  ];
+}
+
+/** 2. Thiệp Cưới 39 — Classic Champagne Cream & Harmony (Top 2 • 23.3k views) */
+function makeThiepCuoi39(): TemplateElement[] {
+  const gold = "#92400e";
+  const dark = "#78350f";
+  const accent = "#b45309";
+  return [
+    txt("txt-top-callout", 20, 30, 350, 30, "L Ễ   V U   Q U Y", { size: 14, font: "'Cinzel', serif", color: accent, weight: "bold" }),
+    txt("txt-names", 10, 70, 370, 110, "Tuấn Minh\n&\nMai Lan", { size: 42, font: "'Playfair Display', serif", weight: "bold", italic: true, color: dark, lineHeight: 1.15 }),
+    txt("txt-deco1", 20, 190, 350, 24, "~ ♥ ~", { size: 14, font: "'Georgia', serif", color: accent, opacity: 0.6, locked: true }),
+    img("img-main", 30, 225, 330, 420, { radius: 100, borderWidth: 2, borderColor: accent, src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&fit=crop" }),
+    txt("txt-invite", 20, 665, 350, 32, "Trân trọng kính mời", { size: 17, font: "'Cormorant Garamond', serif", italic: true, color: gold }),
+    txt("txt-family", 20, 700, 350, 55, "Quý khách đến dự bữa tiệc thân mật\nmừng ngày hạnh phúc của hai con", { size: 14, font: "'Lora', serif", color: dark, lineHeight: 1.6 }),
+    txt("txt-nhatrai-label", 20, 770, 170, 24, "ĐẠI DIỆN NHÀ TRAI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: accent }),
+    txt("txt-nhatrai", 20, 798, 170, 65, "Ông: Nguyễn Văn A\nBà: Trần Thị B", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    txt("txt-nhagai-label", 200, 770, 170, 24, "ĐẠI DIỆN NHÀ GÁI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: accent }),
+    txt("txt-nhagai", 200, 798, 170, 65, "Ông: Lê Văn C\nBà: Phạm Thị D", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    txt("txt-date", 20, 880, 350, 45, "Thứ Bảy, 28 Tháng 05 Năm 2026", { size: 20, font: "'Cormorant Garamond', serif", weight: "bold", color: dark }),
+    txt("txt-time", 20, 925, 350, 28, "Đón khách: 17:00 · Khai tiệc: 18:00", { size: 14, font: "'Lora', serif", italic: true, color: gold }),
+    img("img-groom", 40, 970, 140, 180, { radius: 70, borderColor: accent }),
+    img("img-bride", 210, 970, 140, 180, { radius: 70, borderColor: accent }),
+    txt("name-groom", 40, 1160, 140, 26, "Chú Rể Tuấn Minh", { size: 14, font: "'Playfair Display', serif", weight: "bold", color: dark }),
+    txt("name-bride", 210, 1160, 140, 26, "Cô Dâu Mai Lan", { size: 14, font: "'Playfair Display', serif", weight: "bold", color: dark }),
+    wgt("plugin-countdown", "countdown", 20, 1210, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC NGÀY TRỌNG ĐẠI", accentColor: accent }),
+    wgt("plugin-calendar", "calendar", 20, 1340, 350, 240, { selectedDate: "2026-05-28", accentColor: accent }),
+    img("img-couple2", 20, 1600, 350, 240, { radius: 12, borderColor: accent, borderWidth: 1 }),
+    txt("txt-quote", 30, 1860, 330, 60, '"Bên nhau là khởi đầu, gắn bó là tiến bước, cùng nhau là hạnh phúc trọn đời."', { size: 15, font: "'Cormorant Garamond', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-map", "map", 20, 1940, 350, 200, { address: "Grand Palace, 142/18 Cộng Hòa, Q. Tân Bình, TP.HCM", label: "Trung Tâm Tiệc Cưới Grand Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 2160, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: accent }),
+    wgt("plugin-qrbox", "qrbox", 20, 2460, 350, 280, { groomName: "NGUYEN TUAN MINH", groomBank: "BIDV", groomAccount: "123456789", brideName: "LE MAI LAN", brideBank: "TCB", brideAccount: "987654321" }),
+    txt("txt-footer", 20, 2760, 350, 40, "Sự hiện diện của quý vị là niềm vinh hạnh lớn của chúng tôi", { size: 14, font: "'Cormorant Garamond', serif", italic: true, color: gold }),
+  ];
+}
+
+/** 3. Thiệp Cưới 46 — Modern Trend Lavender & Violet (Top 3 • 22.5k views) */
+function makeThiepCuoi46(): TemplateElement[] {
+  const purple = "#6d28d9";
+  const deep = "#4c1d95";
+  const light = "#c4b5fd";
+  return [
+    txt("txt-header", 20, 30, 350, 30, "W E D D I N G   C E L E B R A T I O N", { size: 12, font: "'Cinzel', serif", color: purple, weight: "bold", opacity: 0.8 }),
+    img("img-main", 20, 70, 350, 420, { radius: 24, borderWidth: 2, borderColor: light, src: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&fit=crop" }),
+    txt("txt-names", 10, 510, 370, 100, "Tuấn Minh\n&\nMai Lan", { size: 40, font: "'Playfair Display', serif", weight: "bold", color: deep, lineHeight: 1.2 }),
+    txt("txt-date-badge", 95, 620, 200, 36, "28 . 05 . 2026", { size: 18, font: "'Inter', sans-serif", weight: "bold", color: purple }),
+    txt("txt-invite", 20, 670, 350, 60, "Trân trọng kính mời quý khách đến tham dự buổi tiệc cưới\ncủa chúng tôi tại Star Palace", { size: 14, font: "'Inter', sans-serif", color: deep, lineHeight: 1.6 }),
+    img("img-gallery1", 20, 750, 110, 150, { radius: 10, borderColor: light }),
+    img("img-gallery2", 140, 750, 110, 150, { radius: 10, borderColor: light }),
+    img("img-gallery3", 260, 750, 110, 150, { radius: 10, borderColor: light }),
+    txt("txt-sched-title", 20, 920, 350, 30, "Lịch Trình Sự Kiện", { size: 18, font: "'Playfair Display', serif", weight: "bold", color: deep }),
+    txt("txt-sched1", 20, 960, 110, 45, "17:00\nĐón Khách", { size: 13, font: "'Inter', sans-serif", color: deep }),
+    txt("txt-sched2", 140, 960, 110, 45, "18:00\nLễ Cưới", { size: 13, font: "'Inter', sans-serif", color: deep }),
+    txt("txt-sched3", 260, 960, 110, 45, "19:00\nDạ Tiệc", { size: 13, font: "'Inter', sans-serif", color: deep }),
+    wgt("plugin-countdown", "countdown", 20, 1025, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN TO OUR BIG DAY", accentColor: purple }),
+    wgt("plugin-calendar", "calendar", 20, 1150, 350, 240, { selectedDate: "2026-05-28", accentColor: purple }),
+    wgt("plugin-map", "map", 20, 1410, 350, 200, { address: "Star Palace, 123 Lê Lợi, Q.1, TP.HCM", label: "Trung tâm Hội nghị Tiệc cưới Star Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1630, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Gửi xác nhận", accentColor: purple }),
+    wgt("plugin-qrbox", "qrbox", 20, 1930, 350, 280, { groomName: "TUAN MINH", groomBank: "TPBANK", groomAccount: "000123456", brideName: "MAI LAN", brideBank: "MBBANK", brideAccount: "999876543" }),
+    txt("txt-footer", 20, 2230, 350, 40, "Thank you for being part of our special day ✨", { size: 16, font: "'Dancing Script', cursive", color: purple }),
+  ];
+}
+
+/** 4. Thiệp Cưới 38 — Soft Pastel Coral Floral (Top 4 • 21.9k views) */
+function makeThiepCuoi38(): TemplateElement[] {
+  const coral = "#e11d48";
+  const dark = "#9f1239";
+  const soft = "#fda4af";
+  return [
+    txt("txt-top-deco", 20, 25, 350, 30, "❀ ── SAVE OUR DATE ── ❀", { size: 13, font: "'Lora', serif", color: coral, opacity: 0.9 }),
+    txt("txt-names", 10, 65, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 44, font: "'Great Vibes', cursive", color: dark, lineHeight: 1.1 }),
+    img("img-main", 30, 175, 330, 400, { radius: 16, borderColor: soft, borderWidth: 3, src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&fit=crop" }),
+    txt("txt-ceremony", 20, 595, 350, 32, "LỄ THÀNH HÔN", { size: 20, font: "'Cormorant Garamond', serif", weight: "bold", color: coral }),
+    txt("txt-date", 20, 635, 350, 30, "28 Tháng 05 Năm 2026", { size: 18, font: "'Lora', serif", color: dark }),
+    txt("txt-invite", 20, 675, 350, 55, "Thân mời bạn cùng gia đình đến chung vui\ntrong ngày trọng đại nhất cuộc đời chúng tôi", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.6 }),
+    txt("txt-nhatrai-label", 20, 745, 170, 24, "NHÀ TRAI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: coral }),
+    txt("txt-nhatrai", 20, 772, 170, 60, "Nguyễn Văn A\nTrần Thị B", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.6, align: "left" }),
+    txt("txt-nhagai-label", 200, 745, 170, 24, "NHÀ GÁI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: coral }),
+    txt("txt-nhagai", 200, 772, 170, 60, "Lê Văn C\nPhạm Thị D", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.6, align: "left" }),
+    img("img-gallery1", 20, 850, 170, 160, { radius: 12, borderColor: soft }),
+    img("img-gallery2", 200, 850, 170, 160, { radius: 12, borderColor: soft }),
+    wgt("plugin-countdown", "countdown", 20, 1030, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC NGÀY CƯỚI", accentColor: coral }),
+    wgt("plugin-calendar", "calendar", 20, 1160, 350, 240, { selectedDate: "2026-05-28", accentColor: coral }),
+    wgt("plugin-map", "map", 20, 1420, 350, 200, { address: "White Palace, 194 Hoàng Văn Thụ, Phú Nhuận, TP.HCM", label: "Trung tâm White Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1640, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: coral }),
+    wgt("plugin-qrbox", "qrbox", 20, 1940, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "11223344", brideName: "MAI LAN", brideBank: "ACB", brideAccount: "55667788" }),
+    txt("txt-footer", 20, 2240, 350, 40, "Cảm ơn bạn đã luôn đồng hành cùng chúng mình 🌸", { size: 18, font: "'Great Vibes', cursive", color: coral }),
+  ];
+}
+
+/** 5. Thiệp Cưới 36 — Classic Royal Heritage Burgundy & Gold (Top 5 • 20.1k views) */
+function makeThiepCuoi36(): TemplateElement[] {
+  const gold = "#b45309";
+  const royal = "#701a75";
+  const dark = "#4a044e";
+  return [
+    txt("txt-monogram", 145, 25, 100, 40, "M & L", { size: 24, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-header", 20, 70, 350, 25, "ROYAL WEDDING INVITATION", { size: 12, font: "'Cinzel', serif", color: gold, weight: "bold" }),
+    txt("txt-names", 10, 100, 370, 110, "Tuấn Minh\n&\nMai Lan", { size: 44, font: "'Playfair Display', serif", weight: "bold", color: royal, lineHeight: 1.15 }),
+    img("img-main", 30, 220, 330, 420, { radius: 8, borderWidth: 3, borderColor: gold, src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&fit=crop" }),
+    txt("txt-ceremony", 20, 660, 350, 35, "LỄ THÀNH HÔN", { size: 22, font: "'Cormorant Garamond', serif", weight: "bold", color: gold }),
+    txt("txt-date", 20, 700, 350, 30, "Thứ Bảy, ngày 28 tháng 05 năm 2026", { size: 16, font: "'Playfair Display', serif", color: dark }),
+    txt("txt-invite", 20, 740, 350, 50, "Trân trọng kính mời quý khách tới tham dự lễ cưới hoàng gia", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    txt("txt-nhatrai-label", 20, 805, 170, 24, "NHÀ TRAI", { size: 13, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-nhatrai", 20, 832, 170, 60, "Ông: Nguyễn Văn A\nBà: Trần Thị B", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    txt("txt-nhagai-label", 200, 805, 170, 24, "NHÀ GÁI", { size: 13, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-nhagai", 200, 832, 170, 60, "Ông: Lê Văn C\nBà: Phạm Thị D", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    wgt("plugin-countdown", "countdown", 20, 910, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: gold }),
+    wgt("plugin-calendar", "calendar", 20, 1040, 350, 240, { selectedDate: "2026-05-28", accentColor: gold }),
+    wgt("plugin-map", "map", 20, 1300, 350, 200, { address: "The Reverie Saigon, 22-36 Nguyễn Huệ, Q.1, TP.HCM", label: "Khách sạn The Reverie Saigon" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1520, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: gold }),
+    wgt("plugin-qrbox", "qrbox", 20, 1820, 350, 280, { groomName: "TUAN MINH", groomBank: "VIETCOMBANK", groomAccount: "9988776655", brideName: "MAI LAN", brideBank: "TECHCOMBANK", brideAccount: "1122334455" }),
+    txt("txt-footer", 20, 2120, 350, 40, "Sự hiện diện của quý khách là niềm vinh dự của gia đình chúng tôi", { size: 14, font: "'Playfair Display', serif", italic: true, color: gold }),
+  ];
+}
+
+/** 6. Thiệp Cưới 44 — Midnight Gold Luxury Dark (Top 6 • 16.3k views • Premium) */
+function makeThiepCuoi44(): TemplateElement[] {
+  const gold = "#f59e0b";
+  const lightGold = "#fef3c7";
+  return [
+    txt("txt-header", 20, 30, 350, 25, "THE WEDDING OF", { size: 13, font: "'Cinzel', serif", color: gold, weight: "bold", opacity: 0.9 }),
+    txt("txt-names", 10, 65, 370, 110, "Tuấn Minh\n&\nMai Lan", { size: 44, font: "'Dancing Script', cursive", weight: "bold", color: lightGold, lineHeight: 1.15 }),
+    img("img-main", 25, 185, 340, 420, { radius: 12, borderWidth: 2, borderColor: gold, src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&fit=crop" }),
+    txt("txt-date", 20, 625, 350, 35, "28 · MAY · 2026", { size: 22, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-time", 20, 665, 350, 25, "SATURDAY AT 5:00 PM", { size: 13, font: "'Inter', sans-serif", color: lightGold, opacity: 0.8 }),
+    txt("txt-invite", 20, 705, 350, 50, "Trân trọng kính mời quý khách tham dự đêm tiệc tình yêu", { size: 14, font: "'Cormorant Garamond', serif", italic: true, color: lightGold, lineHeight: 1.6 }),
+    img("img-gallery1", 20, 770, 165, 160, { radius: 8, borderColor: gold }),
+    img("img-gallery2", 205, 770, 165, 160, { radius: 8, borderColor: gold }),
+    wgt("plugin-countdown", "countdown", 20, 950, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN TO CELEBRATION", accentColor: gold }),
+    wgt("plugin-calendar", "calendar", 20, 1080, 350, 240, { selectedDate: "2026-05-28", accentColor: gold }),
+    wgt("plugin-map", "map", 20, 1340, 350, 200, { address: "Park Hyatt Saigon, 2 Lam Sơn, Q.1, TP.HCM", label: "Khách Sạn Park Hyatt Saigon" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1560, 350, 280, { title: "RSVP", submitLabel: "Xác Nhận Tham Dự", accentColor: gold }),
+    wgt("plugin-qrbox", "qrbox", 20, 1860, 350, 280, { groomName: "TUAN MINH", groomBank: "MBBANK", groomAccount: "09090909", brideName: "MAI LAN", brideBank: "VCB", brideAccount: "08080808" }),
+    txt("txt-footer", 20, 2160, 350, 40, "Thank you for sharing this magical night with us 🌙", { size: 18, font: "'Dancing Script', cursive", color: gold }),
+  ];
+}
+
+/** 7. Thiệp Cưới 40 — Minimalist Monogram Chic (Top 7 • 16.1k views) */
+function makeThiepCuoi40(): TemplateElement[] {
+  const dark = "#1f2937";
+  const gray = "#4b5563";
+  return [
+    txt("txt-monogram", 145, 30, 100, 35, "T · M", { size: 20, font: "'Cinzel', serif", weight: "bold", color: dark }),
+    txt("txt-header", 20, 70, 350, 25, "WEDDING INVITATION", { size: 12, font: "'Inter', sans-serif", color: gray, opacity: 0.8 }),
+    img("img-main", 20, 105, 350, 280, { radius: 8, borderWidth: 1, borderColor: "#e5e7eb", src: "https://images.unsplash.com/photo-1529634597503-139d3726fed5?w=800&fit=crop" }),
+    txt("txt-names", 10, 400, 370, 80, "Tuấn Minh & Mai Lan", { size: 32, font: "'Playfair Display', serif", weight: "bold", color: dark }),
+    txt("txt-date", 20, 485, 350, 30, "28 Tháng 05 Năm 2026", { size: 16, font: "'Inter', sans-serif", weight: "600", color: dark }),
+    txt("txt-invite", 20, 525, 350, 50, "Kính mời quý vị cùng tới chung vui trong ngày hạnh phúc của chúng tôi", { size: 13, font: "'Inter', sans-serif", color: gray, lineHeight: 1.6 }),
+    img("img-gallery1", 20, 590, 350, 220, { radius: 6, borderColor: "#e5e7eb" }),
+    wgt("plugin-countdown", "countdown", 20, 830, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: dark }),
+    wgt("plugin-calendar", "calendar", 20, 960, 350, 240, { selectedDate: "2026-05-28", accentColor: dark }),
+    wgt("plugin-map", "map", 20, 1220, 350, 200, { address: "GEM Center, 8 Nguyễn Bỉnh Khiêm, Đa Kao, Q.1, TP.HCM", label: "GEM Center" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1440, 350, 280, { title: "Xác Nhận", submitLabel: "Xác Nhận Tham Dự", accentColor: dark }),
+    wgt("plugin-qrbox", "qrbox", 20, 1740, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "12345", brideName: "MAI LAN", brideBank: "TCB", brideAccount: "67890" }),
+    txt("txt-footer", 20, 2040, 350, 30, "With love & gratitude", { size: 14, font: "'Lora', serif", italic: true, color: gray }),
+  ];
+}
+
+/** 8. Thiệp Cưới 16 — Botanical Garden Greenery (Top 8 • 14.8k views) */
+function makeThiepCuoi16(): TemplateElement[] {
+  const emerald = "#065f46";
+  const sage = "#059669";
+  const dark = "#064e3b";
+  return [
+    txt("txt-deco-top", 20, 25, 350, 30, "🌿 TOGETHER WITH NATURE 🌿", { size: 12, font: "'Cormorant Garamond', serif", color: sage, weight: "bold" }),
+    txt("txt-names", 10, 65, 370, 100, "Tuấn Minh\n&\nMai Lan", { size: 42, font: "'Cormorant Garamond', serif", weight: "bold", italic: true, color: dark, lineHeight: 1.15 }),
+    img("img-main", 25, 175, 340, 420, { radius: 20, borderWidth: 2, borderColor: sage, src: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=800&fit=crop" }),
+    txt("txt-ceremony", 20, 610, 350, 32, "LỄ THÀNH HÔN NGOÀI TRỜI", { size: 18, font: "'Cinzel', serif", weight: "600", color: emerald }),
+    txt("txt-date", 20, 650, 350, 30, "Thứ Bảy, 28 . 05 . 2026", { size: 16, font: "'Lora', serif", color: dark }),
+    txt("txt-invite", 20, 690, 350, 50, "Trân trọng kính mời quý khách tham dự bữa tiệc vườn lãng mạn", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 760, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC", accentColor: emerald }),
+    wgt("plugin-calendar", "calendar", 20, 890, 350, 240, { selectedDate: "2026-05-28", accentColor: emerald }),
+    img("img-gallery1", 20, 1150, 165, 170, { radius: 12, borderColor: sage }),
+    img("img-gallery2", 205, 1150, 165, 170, { radius: 12, borderColor: sage }),
+    wgt("plugin-map", "map", 20, 1340, 350, 200, { address: "Villa Song Saigon, 197/2 Nguyễn Văn Hưởng, Thảo Điền, TP. Thủ Đức", label: "Villa Song Saigon" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1560, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: emerald }),
+    wgt("plugin-qrbox", "qrbox", 20, 1860, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "11112222", brideName: "MAI LAN", brideBank: "MBBANK", brideAccount: "33334444" }),
+    txt("txt-footer", 20, 2160, 350, 40, "Thank you for joining our garden love story 🌿", { size: 16, font: "'Cormorant Garamond', serif", italic: true, color: emerald }),
+  ];
+}
+
+/** 9. Thiệp Cưới 47 — Velvet Crimson & Gold Luxury (Top 9 • 14.7k views • Premium) */
+function makeThiepCuoi47(): TemplateElement[] {
+  const crimson = "#881337";
+  const gold = "#fbbf24";
+  const dark = "#4c0519";
+  return [
+    txt("txt-header", 20, 25, 350, 30, "L Ễ   T H À N H   H Ô N", { size: 14, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-names", 10, 65, 370, 110, "Tuấn Minh\n&\nMai Lan", { size: 44, font: "'Playfair Display', serif", weight: "bold", italic: true, color: crimson, lineHeight: 1.15 }),
+    img("img-main", 30, 185, 330, 420, { radius: 100, borderWidth: 3, borderColor: gold, src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&fit=crop" }),
+    txt("txt-date", 20, 620, 350, 35, "28 Tháng 05 Năm 2026", { size: 20, font: "'Playfair Display', serif", weight: "bold", color: crimson }),
+    txt("txt-lunar", 20, 660, 350, 25, "(Tức ngày 13 tháng 04 năm Bính Ngọ)", { size: 13, font: "'Lora', serif", italic: true, color: dark }),
+    txt("txt-invite", 20, 695, 350, 50, "Kính mời quý quan khách tới dự bữa tiệc rượu mừng hạnh phúc", { size: 14, font: "'Lora', serif", color: dark, lineHeight: 1.6 }),
+    txt("txt-nhatrai-label", 20, 760, 170, 24, "NHÀ TRAI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: gold }),
+    txt("txt-nhatrai", 20, 788, 170, 60, "Nguyễn Văn A\nTrần Thị B", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    txt("txt-nhagai-label", 200, 760, 170, 24, "NHÀ GÁI", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: gold }),
+    txt("txt-nhagai", 200, 788, 170, 60, "Lê Văn C\nPhạm Thị D", { size: 13, font: "'Lora', serif", color: dark, lineHeight: 1.7, align: "left" }),
+    wgt("plugin-countdown", "countdown", 20, 865, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC NGÀY CƯỚI", accentColor: crimson }),
+    wgt("plugin-calendar", "calendar", 20, 995, 350, 240, { selectedDate: "2026-05-28", accentColor: crimson }),
+    wgt("plugin-map", "map", 20, 1255, 350, 200, { address: "Adora Center, 431 Hoàng Văn Thụ, Tân Bình, TP.HCM", label: "Trung Tâm Hội Nghị The Adora Center" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1475, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Gửi Phản Hồi", accentColor: crimson }),
+    wgt("plugin-qrbox", "qrbox", 20, 1775, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "1234567890", brideName: "MAI LAN", brideBank: "TCB", brideAccount: "0987654321" }),
+    txt("txt-footer", 20, 2075, 350, 40, "Rất hân hạnh được đón tiếp quý khách! 🌹", { size: 18, font: "'Playfair Display', serif", italic: true, color: crimson }),
+  ];
+}
+
+/** 10. Thiệp Cưới 48 — Editorial High-Fashion Magazine (Top 10 • 13.4k views) */
+function makeThiepCuoi48(): TemplateElement[] {
+  const dark = "#18181b";
+  const gray = "#71717a";
+  return [
+    txt("txt-mag-header", 20, 20, 350, 25, "VOGUE WEDDING EDITION · ISSUE 2026", { size: 11, font: "'Inter', sans-serif", weight: "bold", color: gray }),
+    txt("txt-mag-title", 10, 48, 370, 65, "THE WEDDING", { size: 48, font: "'Playfair Display', serif", weight: "900", color: dark }),
+    img("img-main", 0, 120, 390, 460, { radius: 0, src: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&fit=crop" }),
+    txt("txt-cover-names", 20, 595, 350, 40, "TUAN MINH  &  MAI LAN", { size: 22, font: "'Cinzel', serif", weight: "bold", color: dark }),
+    txt("txt-cover-date", 20, 640, 350, 25, "MAY 28, 2026 · HO CHI MINH CITY", { size: 13, font: "'Inter', sans-serif", color: gray }),
+    txt("txt-story", 25, 680, 340, 75, '"Một câu chuyện tình yêu hiện đại, tinh tế và đầy đam mê được ghi dấu bằng một đám cưới mang phong cách thời trang độc bản."', { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.7 }),
+    img("img-gallery1", 20, 770, 170, 210, { radius: 4 }),
+    img("img-gallery2", 200, 770, 170, 210, { radius: 4 }),
+    wgt("plugin-countdown", "countdown", 20, 1000, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: dark }),
+    wgt("plugin-calendar", "calendar", 20, 1130, 350, 240, { selectedDate: "2026-05-28", accentColor: dark }),
+    wgt("plugin-map", "map", 20, 1390, 350, 200, { address: "Mia Resort Saigon, 2-4 Đường 10, An Phú, TP. Thủ Đức", label: "Mia Resort Saigon" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1610, 350, 280, { title: "RSVP", submitLabel: "CONFIRM ATTENDANCE", accentColor: dark }),
+    wgt("plugin-qrbox", "qrbox", 20, 1910, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "88889999", brideName: "MAI LAN", brideBank: "MBBANK", brideAccount: "11110000" }),
+    txt("txt-footer", 20, 2210, 350, 30, "SPECIAL THANKS TO ALL OUR LOVED ONES", { size: 11, font: "'Inter', sans-serif", weight: "bold", color: gray }),
+  ];
+}
+
+/** 11. Thiệp Cưới 19 — Serene Dusty Blue & Pearl (Top 11 • 12.2k views) */
+function makeThiepCuoi19(): TemplateElement[] {
+  const blue = "#1e40af";
+  const dark = "#1e3a8a";
+  const soft = "#bfdbfe";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "WEDDING INVITATION", { size: 12, font: "'Cinzel', serif", color: blue, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 42, font: "'Playfair Display', serif", weight: "bold", color: dark, lineHeight: 1.15 }),
+    img("img-main", 25, 175, 340, 420, { radius: 16, borderWidth: 2, borderColor: soft, src: "https://images.unsplash.com/photo-1620023419992-12f5aee300ed?w=800&fit=crop" }),
+    txt("txt-date", 20, 615, 350, 35, "28 Tháng 05 Năm 2026", { size: 20, font: "'Cormorant Garamond', serif", weight: "bold", color: blue }),
+    txt("txt-invite", 20, 655, 350, 50, "Kính mời quý khách tới tham dự tiệc cưới ngập tràn sắc xanh bình yên", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 720, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: blue }),
+    wgt("plugin-calendar", "calendar", 20, 850, 350, 240, { selectedDate: "2026-05-28", accentColor: blue }),
+    wgt("plugin-map", "map", 20, 1110, 350, 200, { address: "Riverside Palace, 360D Bến Vân Đồn, Q.4, TP.HCM", label: "Riverside Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1330, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: blue }),
+    wgt("plugin-qrbox", "qrbox", 20, 1630, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "112233", brideName: "MAI LAN", brideBank: "ACB", brideAccount: "445566" }),
+    txt("txt-footer", 20, 1930, 350, 35, "Thank you for your love and blessing 💙", { size: 16, font: "'Dancing Script', cursive", color: blue }),
+  ];
+}
+
+/** 12. Thiệp Cưới Tone Xanh — Fresh Mint Sage & Eucalyptus (Top 12 • 10.2k views) */
+function makeThiepCuoiToneXanh(): TemplateElement[] {
+  const mint = "#047857";
+  const dark = "#064e3b";
+  const soft = "#a7f3d0";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "L Ễ   T H À N H   H Ô N", { size: 13, font: "'Cinzel', serif", color: mint, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 40, font: "'Dancing Script', cursive", weight: "bold", color: dark, lineHeight: 1.15 }),
+    img("img-main", 30, 175, 330, 420, { radius: 100, borderWidth: 2, borderColor: soft, src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&fit=crop" }),
+    txt("txt-date", 20, 615, 350, 30, "28 · 05 · 2026", { size: 22, font: "'Playfair Display', serif", weight: "bold", color: mint }),
+    txt("txt-invite", 20, 655, 350, 50, "Trân trọng kính mời quý khách tham dự tiệc cưới thân mật tone xanh thanh mát", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 720, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: mint }),
+    wgt("plugin-calendar", "calendar", 20, 850, 350, 240, { selectedDate: "2026-05-28", accentColor: mint }),
+    wgt("plugin-map", "map", 20, 1110, 350, 200, { address: "Thảo Điền Village, 189-197/1 Nguyễn Văn Hưởng, TP. Thủ Đức", label: "Thảo Điền Village" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1330, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Gửi Xác Nhận", accentColor: mint }),
+    wgt("plugin-qrbox", "qrbox", 20, 1630, 350, 280, { groomName: "TUAN MINH", groomBank: "MBBANK", groomAccount: "123123", brideName: "MAI LAN", brideBank: "VCB", brideAccount: "456456" }),
+    txt("txt-footer", 20, 1930, 350, 35, "Hân hạnh được đón tiếp quý khách 🌿", { size: 16, font: "'Dancing Script', cursive", color: mint }),
+  ];
+}
+
+/** 13. Thiệp Cưới 2 — Golden Sparkle & Glamour (Top 13 • 9.6k views • Premium) */
+function makeThiepCuoi2(): TemplateElement[] {
+  const gold = "#d97706";
+  const dark = "#78350f";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "✨ CELEBRATION OF LOVE ✨", { size: 13, font: "'Cinzel', serif", color: gold, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 44, font: "'Great Vibes', cursive", color: dark, lineHeight: 1.15 }),
+    img("img-main", 25, 175, 340, 420, { radius: 12, borderWidth: 3, borderColor: gold, src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&fit=crop" }),
+    txt("txt-date", 20, 615, 350, 35, "28 . 05 . 2026", { size: 22, font: "'Playfair Display', serif", weight: "bold", color: gold }),
+    txt("txt-invite", 20, 655, 350, 50, "Kính mời quý quan khách tới dự đêm tiệc ánh kim rực rỡ", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 720, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: gold }),
+    wgt("plugin-calendar", "calendar", 20, 850, 350, 240, { selectedDate: "2026-05-28", accentColor: gold }),
+    wgt("plugin-map", "map", 20, 1110, 350, 200, { address: "Sheraton Saigon Hotel, 88 Đồng Khởi, Q.1, TP.HCM", label: "Khách Sạn Sheraton Saigon" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1330, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: gold }),
+    wgt("plugin-qrbox", "qrbox", 20, 1630, 350, 280, { groomName: "TUAN MINH", groomBank: "TCB", groomAccount: "9999", brideName: "MAI LAN", brideBank: "VCB", brideAccount: "8888" }),
+    txt("txt-footer", 20, 1930, 350, 35, "Thank you for celebrating with us ✨", { size: 16, font: "'Great Vibes', cursive", color: gold }),
+  ];
+}
+
+/** 14. Thiệp Cưới 5 — Romantic Parisian Garden (Top 14 • 9.2k views) */
+function makeThiepCuoi5(): TemplateElement[] {
+  const blush = "#db2777";
+  const dark = "#831843";
+  const soft = "#fbcfe8";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "L'AMOUR TOUJOURS", { size: 13, font: "'Cinzel', serif", color: blush, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 40, font: "'Playfair Display', serif", italic: true, color: dark, lineHeight: 1.15 }),
+    img("img-main", 30, 175, 330, 400, { radius: 16, borderWidth: 2, borderColor: soft, src: "https://images.unsplash.com/photo-1529634597503-139d3726fed5?w=800&fit=crop" }),
+    txt("txt-date", 20, 595, 350, 30, "28 · 05 · 2026", { size: 20, font: "'Cormorant Garamond', serif", weight: "bold", color: blush }),
+    txt("txt-invite", 20, 635, 350, 50, "Trân trọng kính mời quý khách tham dự tiệc cưới phong cách Pháp ngọt ngào", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 700, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: blush }),
+    wgt("plugin-calendar", "calendar", 20, 830, 350, 240, { selectedDate: "2026-05-28", accentColor: blush }),
+    wgt("plugin-map", "map", 20, 1090, 350, 200, { address: "Le Jardin, 31 Thái Văn Lung, Bến Nghé, Q.1, TP.HCM", label: "Trung tâm Tiệc cưới Le Jardin" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1310, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: blush }),
+    wgt("plugin-qrbox", "qrbox", 20, 1610, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "5555", brideName: "MAI LAN", brideBank: "MBBANK", brideAccount: "6666" }),
+    txt("txt-footer", 20, 1910, 350, 35, "Merci beaucoup pour votre présence 💕", { size: 16, font: "'Playfair Display', serif", italic: true, color: blush }),
+  ];
+}
+
+/** 15. Thiệp Cưới 23 — Pure White Scandinavian Minimal (Top 15 • 8.7k views • Free) */
+function makeThiepCuoi23(): TemplateElement[] {
+  const dark = "#111827";
+  const gray = "#6b7280";
+  return [
+    txt("txt-header", 20, 35, 350, 25, "WEDDING INVITATION", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: gray }),
+    txt("txt-names", 10, 70, 370, 80, "Tuấn Minh & Mai Lan", { size: 34, font: "'Playfair Display', serif", weight: "bold", color: dark }),
+    img("img-main", 20, 165, 350, 300, { radius: 4, borderWidth: 1, borderColor: "#e5e7eb", src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&fit=crop" }),
+    txt("txt-date", 20, 485, 350, 30, "Saturday, 28 May 2026", { size: 16, font: "'Inter', sans-serif", weight: "600", color: dark }),
+    txt("txt-invite", 20, 525, 350, 50, "We invite you to celebrate our wedding day with us", { size: 13, font: "'Inter', sans-serif", color: gray, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 595, 350, 110, { targetDate: "2026-05-28", label: "DAYS UNTIL WEDDING", accentColor: dark }),
+    wgt("plugin-calendar", "calendar", 20, 725, 350, 240, { selectedDate: "2026-05-28", accentColor: dark }),
+    wgt("plugin-map", "map", 20, 985, 350, 200, { address: "Capella Gallery Hall, 24 Đường 3/2, Q.10, TP.HCM", label: "Capella Gallery Hall" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1205, 350, 280, { title: "RSVP", submitLabel: "SUBMIT", accentColor: dark }),
+    wgt("plugin-qrbox", "qrbox", 20, 1505, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "101010", brideName: "MAI LAN", brideBank: "TCB", brideAccount: "202020" }),
+    txt("txt-footer", 20, 1805, 350, 30, "See you at our wedding", { size: 13, font: "'Inter', sans-serif", color: gray }),
+  ];
+}
+
+/** 16. Thiệp Cưới 8 — Warm Terracotta Boho Sunset (Top 16 • 8.0k views • Free) */
+function makeThiepCuoi8(): TemplateElement[] {
+  const terra = "#c2410c";
+  const dark = "#7c2d12";
+  const sand = "#ffedd5";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "B O H O   W E D D I N G", { size: 12, font: "'Cinzel', serif", color: terra, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 42, font: "'Dancing Script', cursive", weight: "bold", color: dark, lineHeight: 1.15 }),
+    img("img-main", 30, 175, 330, 420, { radius: 100, borderWidth: 3, borderColor: sand, src: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&fit=crop" }),
+    txt("txt-date", 20, 615, 350, 35, "28 Tháng 05 Năm 2026", { size: 20, font: "'Lora', serif", weight: "bold", color: terra }),
+    txt("txt-invite", 20, 655, 350, 50, "Thân mời bạn cùng hoà mình vào tiệc cưới hoàng hôn ấm cúng", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 720, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC", accentColor: terra }),
+    wgt("plugin-calendar", "calendar", 20, 850, 350, 240, { selectedDate: "2026-05-28", accentColor: terra }),
+    wgt("plugin-map", "map", 20, 1110, 350, 200, { address: "An Lâm Retreats Saigon River, 21/4 Trung, Thuận An, Bình Dương", label: "An Lâm Retreats" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1330, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: terra }),
+    wgt("plugin-qrbox", "qrbox", 20, 1630, 350, 280, { groomName: "TUAN MINH", groomBank: "MBBANK", groomAccount: "778899", brideName: "MAI LAN", brideBank: "VCB", brideAccount: "445566" }),
+    txt("txt-footer", 20, 1930, 350, 35, "With warm love & light ☀️", { size: 16, font: "'Dancing Script', cursive", color: terra }),
+  ];
+}
+
+/** 17. Thiệp Cưới 53 — Midnight Starry Celestial (Top 17 • 7.7k views • Premium) */
+function makeThiepCuoi53(): TemplateElement[] {
+  return makeCineLove53();
+}
+
+/** 18. Thiệp Cưới 28 — Vintage Monogram & Arch Window (Top 18 • 7.2k views) */
+function makeThiepCuoi28(): TemplateElement[] {
+  const brown = "#78350f";
+  const gold = "#b45309";
+  const dark = "#451a03";
+  return [
+    txt("txt-monogram", 145, 25, 100, 35, "T ❦ M", { size: 22, font: "'Cinzel', serif", weight: "bold", color: gold }),
+    txt("txt-header", 20, 65, 350, 25, "LỄ THÀNH HÔN TRUYỀN THỐNG", { size: 13, font: "'Cinzel', serif", color: brown, weight: "bold" }),
+    txt("txt-names", 10, 100, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 40, font: "'Playfair Display', serif", weight: "bold", color: dark, lineHeight: 1.15 }),
+    img("img-main", 30, 215, 330, 420, { radius: 90, borderWidth: 2, borderColor: gold, src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&fit=crop" }),
+    txt("txt-date", 20, 655, 350, 35, "Ngày 28 Tháng 05 Năm 2026", { size: 18, font: "'Cormorant Garamond', serif", weight: "bold", color: brown }),
+    txt("txt-invite", 20, 695, 350, 50, "Kính mời quý vị cùng nâng ly chúc phúc cho đôi trẻ", { size: 14, font: "'Lora', serif", italic: true, color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 760, 350, 110, { targetDate: "2026-05-28", label: "ĐẾM NGƯỢC", accentColor: brown }),
+    wgt("plugin-calendar", "calendar", 20, 890, 350, 240, { selectedDate: "2026-05-28", accentColor: brown }),
+    wgt("plugin-map", "map", 20, 1150, 350, 200, { address: "Nhà Hàng Đồng Xanh, 132/5 Hoàng Hoa Thám, Bình Thạnh, TP.HCM", label: "Nhà Hàng Tiệc Cưới Đồng Xanh" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1370, 350, 280, { title: "Xác Nhận", submitLabel: "Xác Nhận Tham Dự", accentColor: brown }),
+    wgt("plugin-qrbox", "qrbox", 20, 1670, 350, 280, { groomName: "TUAN MINH", groomBank: "AGRIBANK", groomAccount: "100200300", brideName: "MAI LAN", brideBank: "BIDV", brideAccount: "400500600" }),
+    txt("txt-footer", 20, 1970, 350, 35, "Kính chúc quý khách an khang thịnh vượng 💐", { size: 15, font: "'Lora', serif", italic: true, color: brown }),
+  ];
+}
+
+/** 19. Thiệp Cưới 11 — Lavender Watercolor Whisper (Top 19 • 6.5k views) */
+function makeThiepCuoi11(): TemplateElement[] {
+  const lavender = "#7c3aed";
+  const dark = "#5b21b6";
+  const soft = "#ddd6fe";
+  return [
+    txt("txt-header", 20, 25, 350, 25, "LAVENDER DREAMS", { size: 12, font: "'Cinzel', serif", color: lavender, weight: "bold" }),
+    txt("txt-names", 10, 60, 370, 100, "Tuấn Minh\n& Mai Lan", { size: 42, font: "'Dancing Script', cursive", weight: "bold", color: dark, lineHeight: 1.15 }),
+    img("img-main", 25, 175, 340, 420, { radius: 18, borderWidth: 2, borderColor: soft, src: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=800&fit=crop" }),
+    txt("txt-date", 20, 615, 350, 30, "28 · 05 · 2026", { size: 20, font: "'Playfair Display', serif", weight: "bold", color: lavender }),
+    txt("txt-invite", 20, 655, 350, 50, "Trân trọng kính mời quý khách đến chung vui ngày vu quy ngát hương hoa", { size: 13, font: "'Inter', sans-serif", color: dark, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 720, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: lavender }),
+    wgt("plugin-calendar", "calendar", 20, 850, 350, 240, { selectedDate: "2026-05-28", accentColor: lavender }),
+    wgt("plugin-map", "map", 20, 1110, 350, 200, { address: "MerPerle Crystal Palace, C17-1-2 Nguyễn Lương Bằng, Q.7, TP.HCM", label: "MerPerle Crystal Palace" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1330, 350, 280, { title: "Xác Nhận Tham Dự", submitLabel: "Xác Nhận", accentColor: lavender }),
+    wgt("plugin-qrbox", "qrbox", 20, 1630, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "777888", brideName: "MAI LAN", brideBank: "MBBANK", brideAccount: "999000" }),
+    txt("txt-footer", 20, 1930, 350, 35, "Thank you for being our guest 💜", { size: 16, font: "'Dancing Script', cursive", color: lavender }),
+  ];
+}
+
+/** 20. Thiệp Cưới 49 — Contemporary Nordic Studio (Top 20 • 6.1k views) */
+function makeThiepCuoi49(): TemplateElement[] {
+  const slate = "#334155";
+  const dark = "#0f172a";
+  const soft = "#e2e8f0";
+  return [
+    txt("txt-header", 20, 30, 350, 25, "THE MARRIAGE OF", { size: 12, font: "'Inter', sans-serif", weight: "bold", color: slate }),
+    txt("txt-names", 10, 65, 370, 90, "Tuấn Minh\n& Mai Lan", { size: 36, font: "'Playfair Display', serif", weight: "bold", color: dark, lineHeight: 1.2 }),
+    img("img-main", 20, 170, 350, 320, { radius: 10, borderWidth: 1, borderColor: soft, src: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&fit=crop" }),
+    txt("txt-date", 20, 510, 350, 30, "Saturday, May 28, 2026", { size: 16, font: "'Inter', sans-serif", weight: "bold", color: dark }),
+    txt("txt-invite", 20, 550, 350, 50, "We warmly invite you to share our happiness and celebrate our wedding day", { size: 13, font: "'Inter', sans-serif", color: slate, lineHeight: 1.6 }),
+    wgt("plugin-countdown", "countdown", 20, 620, 350, 110, { targetDate: "2026-05-28", label: "COUNTDOWN", accentColor: dark }),
+    wgt("plugin-calendar", "calendar", 20, 750, 350, 240, { selectedDate: "2026-05-28", accentColor: dark }),
+    wgt("plugin-map", "map", 20, 1010, 350, 200, { address: "Pullman Saigon Centre, 148 Trần Hưng Đạo, Q.1, TP.HCM", label: "Pullman Saigon Centre" }),
+    wgt("plugin-rsvp", "rsvp", 20, 1230, 350, 280, { title: "RSVP", submitLabel: "SUBMIT", accentColor: dark }),
+    wgt("plugin-qrbox", "qrbox", 20, 1530, 350, 280, { groomName: "TUAN MINH", groomBank: "VCB", groomAccount: "123123123", brideName: "MAI LAN", brideBank: "TCB", brideAccount: "321321321" }),
+    txt("txt-footer", 20, 1830, 350, 30, "Looking forward to seeing you", { size: 13, font: "'Inter', sans-serif", color: slate }),
+  ];
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // ALL 75 TEMPLATE UNIQUE PRESETS — Each uses a distinct layout family + unique colors
 // ═══════════════════════════════════════════════════════════════════
 
 export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
-  // ── WEDDING Romantic Pink (21) ──
-  "thiep-cuoi-42": makeRomanticPreset(
-    "#fda4af",
-    "#831843",
-    "#f472b6",
-    "'Great Vibes', cursive",
-    "✿ ─── ✿ ─── ✿",
-  ),
-  "thiep-cuoi-39": makeRomanticPreset(
-    "#e8a4b8",
-    "#6b2058",
-    "#c87fa4",
-    "'Playfair Display', serif",
-    "~ ♥ ~",
-  ),
-  "thiep-cuoi-46": makeRomanticPreset(
-    "#c4b5fd",
-    "#5b21b6",
-    "#a78bfa",
-    "'Cormorant Garamond', serif",
-    "✦ ─── ✦",
-  ),
-  "thiep-cuoi-38": makeRomanticPreset(
-    "#fca5a5",
-    "#9f1239",
-    "#f87171",
-    "'Dancing Script', cursive",
-    "❀ ──── ❀",
-  ),
-  "thiep-cuoi-44": makeRomanticPreset(
-    "#fde68a",
-    "#92400e",
-    "#fbbf24",
-    "'Cormorant Garamond', serif",
-    "✿ ═══ ✿",
-  ),
-  "thiep-cuoi-40": makeRomanticPreset(
-    "#fca5a5",
-    "#831843",
-    "#f9a8d4",
-    "'Playfair Display', serif",
-    "♥ ─── ♥",
-  ),
-  "thiep-cuoi-16": makeRomanticPreset(
-    "#f9a8d4",
-    "#831843",
-    "#f472b6",
-    "'Great Vibes', cursive",
-    "❀ ──── ❀",
-  ),
-  "thiep-cuoi-47": makeRomanticPreset(
-    "#fda4af",
-    "#9f1239",
-    "#fb7185",
-    "'Cormorant Garamond', serif",
-    "── ✿ ──── ✿ ──",
-  ),
-  "thiep-cuoi-48": makeRomanticPreset(
-    "#fecdd3",
-    "#be185d",
-    "#fda4af",
-    "'Lora', serif",
-    "✦ ─────── ✦",
-  ),
-  "thiep-cuoi-19": makeRomanticPreset(
-    "#f9a8d4",
-    "#7c3369",
-    "#f472b6",
-    "'Playfair Display', serif",
-    "✿ ════════ ✿",
-  ),
-  "thiep-cuoi-2": makeRomanticPreset(
-    "#fda4af",
-    "#831843",
-    "#fb7185",
-    "'Dancing Script', cursive",
-    "❀ ──── ❀",
-  ),
+  // ── TOP 20 BESPOKE UNIQUE LAYOUTS (Sprint 52 • CineLove Parity 90%+) ──
+  "thiep-cuoi-42": makeThiepCuoi42(),
+  "thiep-cuoi-39": makeThiepCuoi39(),
+  "thiep-cuoi-46": makeThiepCuoi46(),
+  "thiep-cuoi-38": makeThiepCuoi38(),
+  "thiep-cuoi-36": makeThiepCuoi36(),
+  "thiep-cuoi-44": makeThiepCuoi44(),
+  "thiep-cuoi-40": makeThiepCuoi40(),
+  "thiep-cuoi-16": makeThiepCuoi16(),
+  "thiep-cuoi-47": makeThiepCuoi47(),
+  "thiep-cuoi-48": makeThiepCuoi48(),
+  "thiep-cuoi-19": makeThiepCuoi19(),
+  "thiep-cuoi-tone-xanh": makeThiepCuoiToneXanh(),
+  "thiep-cuoi-2": makeThiepCuoi2(),
+  "thiep-cuoi-5": makeThiepCuoi5(),
+  "thiep-cuoi-23": makeThiepCuoi23(),
+  "thiep-cuoi-8": makeThiepCuoi8(),
+  "thiep-cuoi-53": makeThiepCuoi53(),
+  "thiep-cuoi-28": makeThiepCuoi28(),
+  "thiep-cuoi-11": makeThiepCuoi11(),
+  "thiep-cuoi-49": makeThiepCuoi49(),
+
+  // ── OTHER WEDDING TEMPLATES (Family Presets) ──
+  "thiep-cuoi-1": makeClassicPreset("#111827", "#6b7280", "#e5e7eb"),
+  "thiep-cuoi-17": makeClassicPreset("#1f2937", "#4b5563", "#d1d5db"),
+  "thiep-cuoi-56": makeLuxuryPreset("#c9a84c", "#fef9e7", "✦ ═══════ ✦"),
+  "thiep-cuoi-52": makeLuxuryPreset("#d4af37", "#fff8e1", "─── ✦ ───"),
+  "thiep-cuoi-12": makeClassicPreset("#1c1917", "#57534e", "#e7e5e4"),
+  "thiep-bw-1": makeModernPreset("#18181b", "#52525b", "#71717a"),
   "thiep-cuoi-43": makeRomanticPreset(
     "#fecdd3",
     "#9f1239",
@@ -2195,6 +2626,10 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Great Vibes', cursive",
     "✦ ══════ ✦",
   ),
+  "thiep-cuoi-7": makeClassicPreset("#111827", "#374151", "#d1d5db"),
+  "thiep-cuoi-31": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
+  "thiep-cuoi-30": makeTraditionalPreset("#dc2626", "#881337", "#fbbf24"),
+  "thiep-cuoi-4": makeClassicPreset("#18181b", "#52525b", "#d4d4d8"),
   "thiep-cuoi-14": makeRomanticPreset(
     "#fecdd3",
     "#831843",
@@ -2209,6 +2644,15 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Lora', serif",
     "✿ ─── ✿",
   ),
+  "thiep-cuoi-3": makeClassicPreset("#161616", "#404040", "#d4d4d4"),
+  "thiep-cuoi-55": makeRomanticPreset(
+    "#fecdd3",
+    "#9f1239",
+    "#fda4af",
+    "'Cormorant Garamond', serif",
+    "❀ ─── ❀",
+  ),
+  "thiep-cuoi-10": makeTraditionalPreset("#dc2626", "#7f1d1d", "#d97706"),
   "thiep-cuoi-50": makeRomanticPreset(
     "#fda4af",
     "#831843",
@@ -2223,6 +2667,7 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Dancing Script', cursive",
     "✿ ═══ ✿",
   ),
+  "thiep-cuoi-18": makeClassicPreset("#1e1e1e", "#4a4a4a", "#c4c4c4"),
   "thiep-cuoi-41": makeRomanticPreset(
     "#fecdd3",
     "#be185d",
@@ -2230,6 +2675,7 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Great Vibes', cursive",
     "✿ ─── ✿ ─── ✿",
   ),
+  "thiep-cuoi-57": makeLuxuryPreset("#d4a574", "#faf3e0", "✦ ─────── ✦"),
   "thiep-cuoi-37": makeRomanticPreset(
     "#fda4af",
     "#9f1239",
@@ -2237,6 +2683,10 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Playfair Display', serif",
     "✦ ── ✦ ── ✦",
   ),
+  "thiep-cuoi-6": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
+  "thiep-cuoi-32": makeTraditionalPreset("#dc2626", "#78181d", "#fbbf24"),
+  "thiep-cuoi-34": makeLuxuryPreset("#d4a574", "#fef3c7", "─ ✦ ─ ✦ ─"),
+  "thiep-cuoi-20": makeTraditionalPreset("#ef4444", "#7f1d1d", "#f59e0b"),
   "thiep-cuoi-35": makeRomanticPreset(
     "#fde8f3",
     "#831843",
@@ -2244,60 +2694,16 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     "'Lora', serif",
     "✿ ═══ ✿",
   ),
-  "thiep-cuoi-55": makeRomanticPreset(
-    "#fecdd3",
-    "#9f1239",
-    "#fda4af",
-    "'Cormorant Garamond', serif",
-    "❀ ─── ❀",
-  ),
-
-  // ── WEDDING Luxury Dark (10) ──
-  "thiep-cuoi-36": makeLuxuryPreset("#c9a84c", "#fef3c7", "─── ✦ ───"),
-  "thiep-cuoi-53": makeCineLove53(),
-  "thiep-cuoi-56": makeLuxuryPreset("#c9a84c", "#fef9e7", "✦ ═══════ ✦"),
-  "thiep-cuoi-52": makeLuxuryPreset("#d4af37", "#fff8e1", "─── ✦ ───"),
-  "thiep-cuoi-49": makeLuxuryPreset("#b8860b", "#fef3c7", "✦ ─────── ✦"),
-  "thiep-cuoi-57": makeLuxuryPreset("#d4a574", "#faf3e0", "✦ ─────── ✦"),
+  "thiep-cuoi-9": makeTraditionalPreset("#b91c1c", "#6b1414", "#d97706"),
+  "thiep-cuoi-33": makeLuxuryPreset("#c9a84c", "#fff8e1", "✦ ─────── ✦"),
+  "thiep-cuoi-22": makeClassicPreset("#111827", "#6b7280", "#e5e7eb"),
+  "thiep-cuoi-25": makeNaturePreset("#bbf7d0", "#14532d", "#86efac"),
   "thiep-cuoi-54": makeLuxuryPreset("#c9a84c", "#fef3c7", "─── ✦ ───"),
   "thiep-cuoi-60": makeLuxuryPreset("#e5c678", "#fffbeb", "✦ ────── ✦"),
-  "thiep-cuoi-34": makeLuxuryPreset("#d4a574", "#fef3c7", "─ ✦ ─ ✦ ─"),
-  "thiep-cuoi-33": makeLuxuryPreset("#c9a84c", "#fff8e1", "✦ ─────── ✦"),
-
-  // ── WEDDING Classic White/Silver (12) ──
-  "thiep-cuoi-5": makeClassicPreset("#111827", "#4b5563", "#d1d5db"),
-  "thiep-cuoi-23": makeClassicPreset("#1c1917", "#44403c", "#d6cfc7"),
-  "thiep-cuoi-8": makeClassicPreset("#1e293b", "#475569", "#cbd5e1"),
-  "thiep-cuoi-11": makeClassicPreset("#292524", "#57534e", "#d6d3d1"),
-  "thiep-cuoi-1": makeClassicPreset("#111827", "#6b7280", "#e5e7eb"),
-  "thiep-cuoi-17": makeClassicPreset("#1f2937", "#4b5563", "#d1d5db"),
-  "thiep-cuoi-12": makeClassicPreset("#1c1917", "#57534e", "#e7e5e4"),
-  "thiep-cuoi-7": makeClassicPreset("#111827", "#374151", "#d1d5db"),
-  "thiep-cuoi-4": makeClassicPreset("#18181b", "#52525b", "#d4d4d8"),
-  "thiep-cuoi-3": makeClassicPreset("#161616", "#404040", "#d4d4d4"),
-  "thiep-cuoi-18": makeClassicPreset("#1e1e1e", "#4a4a4a", "#c4c4c4"),
-  "thiep-cuoi-22": makeClassicPreset("#111827", "#6b7280", "#e5e7eb"),
-
-  // ── WEDDING Traditional Red/Gold (12) ──
-  "thiep-cuoi-28": makeTraditionalPreset("#dc2626", "#7f1d1d", "#fbbf24"),
-  "thiep-cuoi-31": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
-  "thiep-cuoi-30": makeTraditionalPreset("#dc2626", "#881337", "#fbbf24"),
-  "thiep-cuoi-10": makeTraditionalPreset("#dc2626", "#7f1d1d", "#d97706"),
-  "thiep-cuoi-6": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
-  "thiep-cuoi-32": makeTraditionalPreset("#dc2626", "#78181d", "#fbbf24"),
-  "thiep-cuoi-20": makeTraditionalPreset("#ef4444", "#7f1d1d", "#f59e0b"),
-  "thiep-cuoi-9": makeTraditionalPreset("#b91c1c", "#6b1414", "#d97706"),
   "thiep-cuoi-13": makeTraditionalPreset("#dc2626", "#7f1d1d", "#fbbf24"),
-  "thiep-cuoi-29": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
   "thiep-cuoi-26": makeTraditionalPreset("#dc2626", "#881337", "#fbbf24"),
+  "thiep-cuoi-29": makeTraditionalPreset("#b91c1c", "#7f1d1d", "#f59e0b"),
   "thiep-cuoi-27": makeTraditionalPreset("#be123c", "#7f1d1d", "#d97706"),
-
-  // ── Nature Green (2) ──
-  "thiep-cuoi-tone-xanh": makeNaturePreset("#86efac", "#14532d", "#22c55e"),
-  "thiep-cuoi-25": makeNaturePreset("#bbf7d0", "#14532d", "#86efac"),
-
-  // ── Modern B&W (1) ──
-  "thiep-bw-1": makeModernPreset("#18181b", "#52525b", "#71717a"),
 
   // ── BIRTHDAY (6) — uses Nature layout (bright, organic) ──
   "thiep-sinh-nhat-01": makeNaturePreset("#fda4af", "#be185d", "#f472b6"),
