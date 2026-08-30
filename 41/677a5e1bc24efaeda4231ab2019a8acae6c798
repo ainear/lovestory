@@ -1,0 +1,18 @@
+apps/web/src/lib/supabase/client.ts
+  h_709d285d7429c5 4-5,7-8
+apps/web/src/lib/supabase/server.ts
+  h_709d285d7429c5 4-6,11-12
+turbo.json
+  h_709d285d7429c5 4-23,27-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "41677a5e1bc24efaeda4231ab2019a8acae6c798",
+  "prompts": {},
+  "humans": {
+    "h_709d285d7429c5": {
+      "author": "jokerlin135 <jokerlin135@gmail.com>"
+    }
+  }
+}
