@@ -196,10 +196,10 @@ function TemplateCard({
                     fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
                     textTransform: "uppercase",
                     background: template.tier === "premium"
-                        ? "linear-gradient(135deg, #7c3aed, #5b21b6)"
+                        ? "linear-gradient(135deg, #D4AF37, #B76E79)"
                         : template.tier === "free"
                         ? "linear-gradient(135deg, #059669, #047857)"
-                        : "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                        : "linear-gradient(135deg, #831843, #9d174d)",
                     color: "#fff",
                     boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
                     backdropFilter: "blur(4px)",
@@ -207,7 +207,7 @@ function TemplateCard({
                     opacity: hovered ? 0 : 1,
                     transform: hovered ? "translateY(-20px)" : "none",
                 }}>
-                    {template.tier === "premium" ? "PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
+                    {template.tier === "premium" ? "👑 PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
                 </span>
 
                 {/* HOT badge — right, only for popular */}
@@ -372,51 +372,53 @@ function PreviewModal({
                     {/* Badge */}
                     <span style={{
                         position: "absolute", top: 12, left: 12,
-                        padding: "4px 10px", borderRadius: 6,
-                        fontSize: 11, fontWeight: 700,
-                        background: template.tier === "premium" ? "#9333EA" : template.tier === "free" ? "#10B981" : "#3B82F6",
+                        padding: "4px 12px", borderRadius: 99,
+                        fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                        background: template.tier === "premium" ? "linear-gradient(135deg, #D4AF37, #B76E79)" : template.tier === "free" ? "#059669" : "#831843",
                         color: "#fff",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                     }}>
-                        {template.tier === "premium" ? "PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
+                        {template.tier === "premium" ? "👑 PREMIUM" : template.tier === "free" ? "FREE" : "BASIC"}
                     </span>
                 </div>
 
                 {/* Info + Actions */}
-                <div style={{ padding: "16px 20px 20px" }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1f2937", margin: "0 0 4px" }}>
+                <div style={{ padding: "18px 22px 22px" }}>
+                    <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#2D1B22", margin: "0 0 4px" }}>
                         {template.name}
                     </h2>
-                    <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 8px", lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 13, color: "#6b585a", margin: "0 0 8px", lineHeight: 1.5 }}>
                         {template.desc}
                     </p>
-                    <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 16px" }}>
-                        👁 {template.usageCount.toLocaleString()} lượt sử dụng
+                    <p style={{ fontSize: 12, color: "#935B3B", fontWeight: 600, margin: "0 0 18px" }}>
+                        ❤️ {template.usageCount.toLocaleString()} cặp đôi đã sử dụng
                     </p>
 
                     <div style={{ display: "flex", gap: 10 }}>
                         <Link
                             href={`/editor/new?template=${template.slug}`}
                             style={{
-                                flex: 1, padding: "12px 0", borderRadius: 10,
-                                background: "#EF7E90",
-                                color: "#fff", fontSize: 14, fontWeight: 700,
+                                flex: 1, padding: "12px 0", borderRadius: 99,
+                                background: "linear-gradient(135deg, #D4AF37 0%, #B76E79 100%)",
+                                color: "#fff", fontSize: 13, fontWeight: 700,
                                 textAlign: "center", textDecoration: "none",
                                 display: "block",
+                                boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
                             }}
                         >
-                            Dùng thử
+                            ✨ Tạo Thiệp Ngay
                         </Link>
                         <Link
-                            href={`/i/preview/${template.slug}`}
+                            href={`/i/${template.slug}`}
                             style={{
-                                flex: 1, padding: "12px 0", borderRadius: 10,
-                                border: "1px solid #e5e7eb", background: "#fff",
-                                color: "#374151", fontSize: 14, fontWeight: 600,
+                                flex: 1, padding: "12px 0", borderRadius: 99,
+                                border: "1px solid rgba(212, 175, 55, 0.35)", background: "#FAF7F2",
+                                color: "#4A1525", fontSize: 13, fontWeight: 600,
                                 textAlign: "center", textDecoration: "none",
                                 display: "block",
                             }}
                         >
-                            Xem trực tiếp
+                            👁️ Xem Trực Tiếp
                         </Link>
                     </div>
                 </div>
@@ -440,52 +442,48 @@ export default function TemplatesPage() {
     });
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f8f9fb", fontFamily: "'Inter', -apple-system, sans-serif" }}>
-            {/* S17-C: ItemList JSON-LD for Google Rich Results */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "ItemList",
-                        name: "Mẫu thiệp cưới online đẹp nhất 2025",
-                        description: `${TEMPLATES.length}+ mẫu thiệp điện tử: cưới, sinh nhật, sự kiện. Tùy chỉnh dễ dàng, RSVP thông minh.`,
-                        url: "https://7app.online/templates",
-                        numberOfItems: TEMPLATES.length,
-                        itemListElement: TEMPLATES.slice(0, 10).map((t, i) => ({
-                            "@type": "ListItem",
-                            position: i + 1,
-                            name: t.name,
-                            description: t.desc,
-                        })),
-                    }),
-                }}
-            />
+        <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: "'Plus Jakarta Sans', var(--font-inter), sans-serif", color: "#1f2937" }}>
             {/* ── Navbar ── */}
             <nav style={{
-                background: "#fff",
-                borderBottom: "1px solid #eee",
-                padding: "12px 24px",
+                background: "rgba(250, 247, 242, 0.92)",
+                backdropFilter: "blur(16px)",
+                borderBottom: "1px solid rgba(212, 175, 55, 0.18)",
+                padding: "14px 28px",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 position: "sticky", top: 0, zIndex: 40,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.02)",
             }}>
                 <Link href="/" style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    textDecoration: "none", color: "#EF7E90",
-                    fontSize: 20, fontWeight: 700,
+                    display: "flex", alignItems: "center", gap: 10,
+                    textDecoration: "none",
                 }}>
-                    <span style={{ fontSize: 24 }}>💌</span> 7app
+                    <div style={{
+                        width: 34, height: 34, borderRadius: 10,
+                        background: "linear-gradient(135deg, #D4AF37 0%, #B76E79 50%, #831843 100%)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                        <span style={{ fontSize: 16 }}>❤️</span>
+                    </div>
+                    <span style={{
+                        fontFamily: "var(--font-playfair), 'Playfair Display', serif",
+                        fontSize: 20, fontWeight: 800,
+                        background: "linear-gradient(135deg, #4A1525 0%, #D4AF37 100%)",
+                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                    }}>
+                        LoveStory
+                    </span>
                 </Link>
                 <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-                    <Link href="/" style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Trang chủ</Link>
-                    <Link href="/templates" style={{ fontSize: 13, color: "#EF7E90", fontWeight: 600, textDecoration: "none" }}>Mẫu thiệp</Link>
-                    <Link href="/blog" style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Blog</Link>
-                    <Link href="/dashboard" style={{
-                        padding: "8px 18px", borderRadius: 8,
-                        background: "#EF7E90", color: "#fff",
-                        fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    <Link href="/" style={{ fontSize: 13, fontWeight: 500, color: "#5C4A4D", textDecoration: "none" }}>Trang chủ</Link>
+                    <Link href="/templates" style={{ fontSize: 13, fontWeight: 700, color: "#831843", textDecoration: "none" }}>Mẫu thiệp</Link>
+                    <Link href="/pricing" style={{ fontSize: 13, fontWeight: 500, color: "#5C4A4D", textDecoration: "none" }}>Bảng giá</Link>
+                    <Link href="/templates" style={{
+                        padding: "8px 20px", borderRadius: 99,
+                        background: "linear-gradient(135deg, #D4AF37 0%, #B76E79 100%)", color: "#fff",
+                        fontSize: 13, fontWeight: 700, textDecoration: "none",
+                        boxShadow: "0 4px 12px rgba(212, 175, 55, 0.3)",
                     }}>
-                        Tạo thiệp
+                        ✨ Tạo thiệp
                     </Link>
                 </div>
             </nav>
@@ -493,21 +491,25 @@ export default function TemplatesPage() {
             {/* ── Page Header ── */}
             <div style={{
                 textAlign: "center",
-                padding: "48px 24px 32px",
-                background: "#fff",
-                borderBottom: "1px solid #f0f0f0",
+                padding: "54px 24px 36px",
+                background: "radial-gradient(ellipse at 50% 0%, rgba(254, 243, 199, 0.5) 0%, rgba(250, 247, 242, 1) 100%)",
+                borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
             }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "#D4AF37" }}>
+                    BỘ SƯU TẬP CAO CẤP 2026
+                </span>
                 <h1 style={{
-                    fontSize: 32, fontWeight: 700, color: "#1f2937",
-                    margin: "0 0 8px",
+                    fontFamily: "var(--font-playfair), 'Playfair Display', serif",
+                    fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, color: "#2D1B22",
+                    margin: "8px 0 12px",
                 }}>
-                    Mẫu thiệp online đẹp
+                    80+ Mẫu Thiệp Tương Tác Đẳng Cấp Hoàng Gia
                 </h1>
                 <p style={{
-                    fontSize: 15, color: "#6b7280",
-                    margin: "0 0 24px", maxWidth: 500, marginInline: "auto",
+                    fontSize: 15, color: "#6b585a",
+                    margin: "0 0 28px", maxWidth: 560, marginInline: "auto",
                 }}>
-                    Khám phá {TEMPLATES.length}+ mẫu thiệp điện tử: cưới, sinh nhật, sự kiện, kỷ niệm — chỉnh sửa tự do tại 7app
+                    Khám phá 20 mẫu Bespoke CineLove Parity và 60+ thiết kế đa phong cách: Cưới, Sinh nhật, Kỷ yếu & Sự kiện với âm nhạc tone-matched riêng biệt.
                 </p>
 
                 {/* Category Pills + Tier Filter */}
@@ -517,13 +519,14 @@ export default function TemplatesPage() {
                 }}>
                     {CATEGORIES.map((cat) => (
                         <button key={cat.key} onClick={() => setActiveCategory(cat.key)} style={{
-                            padding: "8px 18px", borderRadius: 20,
-                            border: "1px solid " + (activeCategory === cat.key ? "#EF7E90" : "#e5e7eb"),
-                            fontSize: 13, fontWeight: activeCategory === cat.key ? 600 : 400,
+                            padding: "8px 20px", borderRadius: 99,
+                            border: activeCategory === cat.key ? "1px solid #D4AF37" : "1px solid rgba(212, 175, 55, 0.25)",
+                            fontSize: 13, fontWeight: activeCategory === cat.key ? 700 : 500,
                             cursor: "pointer",
-                            background: activeCategory === cat.key ? "#EF7E90" : "#fff",
-                            color: activeCategory === cat.key ? "#fff" : "#4b5563",
-                            transition: "all 0.2s",
+                            background: activeCategory === cat.key ? "linear-gradient(135deg, #D4AF37 0%, #B76E79 100%)" : "#fff",
+                            color: activeCategory === cat.key ? "#fff" : "#4A1525",
+                            boxShadow: activeCategory === cat.key ? "0 4px 12px rgba(212, 175, 55, 0.3)" : "none",
+                            transition: "all 0.2s ease",
                         }}>
                             {cat.label}
                         </button>
@@ -532,26 +535,28 @@ export default function TemplatesPage() {
 
                 {/* Breadcrumb + Tier filter row */}
                 <div style={{
-                    maxWidth: 1200, margin: "0 auto", padding: "0 24px",
+                    maxWidth: 1200, margin: "0 auto", padding: "8px 24px 0",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
-                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
-                        ☆ Trang chủ / Mẫu thiệp · {filtered.length} mẫu
+                    <p style={{ fontSize: 13, color: "#6b585a", margin: 0, fontWeight: 500 }}>
+                        👑 Trang chủ / Mẫu thiệp · <span style={{ color: "#D4AF37", fontWeight: 700 }}>{filtered.length} mẫu có sẵn</span>
                     </p>
                     <select
                         value={activeTier}
                         onChange={(e) => setActiveTier(e.target.value as "all" | "free" | "basic" | "premium")}
                         style={{
-                            padding: "6px 12px", borderRadius: 8,
-                            border: "1px solid #e5e7eb", fontSize: 12,
-                            color: "#6b7280", background: "#fff",
+                            padding: "8px 16px", borderRadius: 99,
+                            border: "1px solid rgba(212, 175, 55, 0.35)", fontSize: 12,
+                            fontWeight: 600,
+                            color: "#4A1525", background: "#fff",
                             cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
                         }}
                     >
-                        <option value="all">Tất cả gói</option>
-                        <option value="free">FREE</option>
-                        <option value="basic">BASIC</option>
-                        <option value="premium">PREMIUM</option>
+                        <option value="all">⭐ Tất cả phân hạng</option>
+                        <option value="free">🌿 Miễn phí (Free)</option>
+                        <option value="basic">💌 Cơ bản (Basic)</option>
+                        <option value="premium">👑 Hoàng Gia (Premium)</option>
                     </select>
                 </div>
             </div>
