@@ -1,0 +1,407 @@
+{
+  "syncedAt": "2026-08-29T08:31:45.190Z",
+  "totalTracks": 40,
+  "bucket": "akala",
+  "publicUrl": "https://assets.7app.online",
+  "mode": "r2_remote",
+  "tracks": [
+    {
+      "id": "m1",
+      "label": "Tình Yêu Mãi Mãi (Wedding)",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m1.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m1.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/02/15/audio_6d5b4da67b.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m2",
+      "label": "Ngày Hạnh Phúc",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m2.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m2.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/01/10/audio_7b59f9e3e8.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m3",
+      "label": "Lời Tỏ Tình Ngọt Ngào",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m3.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m3.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/11/22/audio_ad8b38c5d8.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m4",
+      "label": "Mãi Bên Em",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m4.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m4.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/09/14/audio_39af5f1c22.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m5",
+      "label": "Yêu Em Từ Cái Nhìn Đầu",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m5.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m5.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/03/20/audio_64e1e6f8bb.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m6",
+      "label": "Hạnh Phúc Trọn Vẹn",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m6.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m6.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/07/21/audio_f26e86da6e.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m7",
+      "label": "Cô Dâu Xinh Đẹp",
+      "category": "vpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m7.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m7.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/12/15/audio_f36b3dff11.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m8",
+      "label": "A Thousand Years",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m8.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m8.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/10/25/audio_946b3b2439.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m9",
+      "label": "Perfect — Ed Sheeran Style",
+      "category": "intl",
+      "status": "skipped_already_exists",
+      "r2Key": "audio/wedding-tracks/m9.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m9.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3"
+    },
+    {
+      "id": "m10",
+      "label": "A Little Love",
+      "category": "intl",
+      "status": "skipped_already_exists",
+      "r2Key": "audio/wedding-tracks/m10.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m10.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"
+    },
+    {
+      "id": "m11",
+      "label": "Marry Me — Ballad",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m11.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m11.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/09/10/audio_3d1e42b71b.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m12",
+      "label": "Can't Help Falling",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m12.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m12.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/03/18/audio_4f0fbf77d6.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m13",
+      "label": "Beautiful In White",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m13.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m13.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/08/20/audio_a619d8d91b.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m14",
+      "label": "From This Moment",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m14.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m14.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/06/10/audio_5e8c1e3fef.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m15",
+      "label": "All of Me — Piano",
+      "category": "intl",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m15.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m15.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/04/05/audio_a58ea56741.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m16",
+      "label": "Acoustic Wedding Walk",
+      "category": "acoustic",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m16.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m16.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/01/25/audio_3c21c74c85.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m17",
+      "label": "Romantic Guitar Serenade",
+      "category": "acoustic",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m17.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m17.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/12/08/audio_94528eedab.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m18",
+      "label": "Gentle Fingerstyle",
+      "category": "acoustic",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m18.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m18.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/10/14/audio_8c4e1b2f67.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m19",
+      "label": "Sweet Guitar Morning",
+      "category": "acoustic",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m19.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m19.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/05/16/audio_c8f9f94ce6.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m20",
+      "label": "Soft Acoustic Love",
+      "category": "acoustic",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m20.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m20.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/03/10/audio_3f90d3f98e.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m21",
+      "label": "Romantic Piano Waltz",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m21.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m21.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/01/18/audio_d0c6ff1bac.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m22",
+      "label": "Soft Piano Love",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m22.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m22.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/02/14/audio_0e07fcde2e.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m23",
+      "label": "Dreamy Piano",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m23.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m23.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/09/12/audio_5b35a3e7cd.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m24",
+      "label": "Elegant Piano Melody",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m24.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m24.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/01/05/audio_bb9f9cff0c.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m25",
+      "label": "Wedding Piano Suite",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m25.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m25.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/07/20/audio_1ec5027dc3.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m26",
+      "label": "Tender Piano Notes",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m26.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m26.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/03/22/audio_d4e3f9a012.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m27",
+      "label": "Moonlit Piano",
+      "category": "piano",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m27.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m27.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/06/08/audio_c47b2d8e5a.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m28",
+      "label": "Korean Wedding Ballad",
+      "category": "kpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m28.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m28.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/05/18/audio_7f4a2b1c9d.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m29",
+      "label": "Seoul Love Song",
+      "category": "kpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m29.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m29.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/11/03/audio_8e6c3d2b7f.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m30",
+      "label": "K-Drama OST Style",
+      "category": "kpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m30.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m30.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/08/09/audio_1a3f5c6e2d.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m31",
+      "label": "Cherry Blossom Romance",
+      "category": "kpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m31.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m31.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/02/28/audio_9c4b7e3f1a.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m32",
+      "label": "Spring in Seoul",
+      "category": "kpop",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m32.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m32.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/09/30/audio_4d2e8a7b5c.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m33",
+      "label": "Canon in D — Pachelbel",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m33.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m33.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1c963.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m34",
+      "label": "Clair de Lune — Debussy",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m34.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m34.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/07/05/audio_b3c9e2f8a1.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m35",
+      "label": "Ave Maria — Schubert",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m35.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m35.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/04/15/audio_6d9b2c1e4f.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m36",
+      "label": "Liebestraum — Liszt",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m36.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m36.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/10/22/audio_5f1c3a8d7e.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m37",
+      "label": "Wedding March — Mendelssohn",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m37.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m37.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/08/30/audio_2b9d7f4e6c.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m38",
+      "label": "Gymnopédie No.1 — Satie",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m38.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m38.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2024/04/11/audio_8e3a1c5b9f.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m39",
+      "label": "Air on G String — Bach",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m39.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m39.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2023/11/14/audio_3c7d2f9a1e.mp3",
+      "fallback": "pixabay_direct"
+    },
+    {
+      "id": "m40",
+      "label": "Salut d'Amour — Elgar",
+      "category": "classical",
+      "status": "catalog_synced",
+      "r2Key": "audio/wedding-tracks/m40.mp3",
+      "cdnUrl": "https://assets.7app.online/audio/wedding-tracks/m40.mp3",
+      "sourceUrl": "https://cdn.pixabay.com/audio/2022/10/07/audio_9f4b3e2c8d.mp3",
+      "fallback": "pixabay_direct"
+    }
+  ]
+}

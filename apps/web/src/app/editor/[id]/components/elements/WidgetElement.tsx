@@ -259,21 +259,31 @@ function VinylMusicWidget({ props, scale }: { props: CanvasElement["props"]; sca
             {/* CSS spin animation */}
             <style>{`@keyframes ${uid}-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
-            {/* Vinyl disc */}
-            <div style={{ position: "relative", width: 72 * scale, height: 72 * scale, animation: isPlaying ? `${uid}-spin 4s linear infinite` : "none" }}>
-                {/* Outer disc */}
-                <svg width={72 * scale} height={72 * scale} viewBox="0 0 72 72" style={{ position: "absolute", top: 0, left: 0 }}>
-                    <circle cx="36" cy="36" r="35" fill="#111" stroke="#333" strokeWidth="1"/>
-                    {/* Grooves */}
-                    {[30, 26, 22, 18, 14].map(r => (
-                        <circle key={r} cx="36" cy="36" r={r} fill="none" stroke="#2a2a2a" strokeWidth="1"/>
-                    ))}
-                    {/* Color label */}
-                    <circle cx="36" cy="36" r="12" fill={colors.inner}/>
-                    <circle cx="36" cy="36" r="3" fill={colors.outer}/>
-                    {/* Highlight gleam */}
-                    <ellipse cx="28" cy="22" rx="6" ry="3" fill="rgba(255,255,255,0.06)" transform="rotate(-30 28 22)"/>
-                </svg>
+            {/* Vinyl disc with tone arm needle */}
+            <div style={{ position: "relative", width: 72 * scale, height: 72 * scale }}>
+                {/* Rotating record */}
+                <div style={{ width: "100%", height: "100%", animation: isPlaying ? `${uid}-spin 4s linear infinite` : "none" }}>
+                    <svg width={72 * scale} height={72 * scale} viewBox="0 0 72 72" style={{ position: "absolute", top: 0, left: 0 }}>
+                        <circle cx="36" cy="36" r="35" fill="#111" stroke="#333" strokeWidth="1"/>
+                        {/* Grooves */}
+                        {[30, 26, 22, 18, 14].map(r => (
+                            <circle key={r} cx="36" cy="36" r={r} fill="none" stroke="#2a2a2a" strokeWidth="1"/>
+                        ))}
+                        {/* Color label */}
+                        <circle cx="36" cy="36" r="12" fill={colors.inner}/>
+                        <circle cx="36" cy="36" r="3" fill={colors.outer}/>
+                        {/* Highlight gleam */}
+                        <ellipse cx="28" cy="22" rx="6" ry="3" fill="rgba(255,255,255,0.06)" transform="rotate(-30 28 22)"/>
+                    </svg>
+                </div>
+                {/* Tone arm needle */}
+                <div style={{ position: "absolute", top: -4 * scale, right: -2 * scale, width: 20 * scale, height: 24 * scale, transformOrigin: "top right", transform: isPlaying ? "rotate(15deg)" : "rotate(-15deg)", transition: "transform 0.3s ease" }}>
+                    <svg width={20 * scale} height={24 * scale} viewBox="0 0 20 24" fill="none">
+                        <circle cx="16" cy="4" r="3" fill="#e2e8f0" stroke="#64748b" strokeWidth="1"/>
+                        <path d="M16 4 L7 16 L3 20" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round"/>
+                        <rect x="2" y="18" width="4" height="3" rx="1" fill="#f43f5e"/>
+                    </svg>
+                </div>
             </div>
 
             {/* Music info */}

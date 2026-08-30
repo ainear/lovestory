@@ -3151,6 +3151,36 @@ export function InvitationPageInner({
     loadProject();
   }, []);
 
+  function fadeAudioIn(
+    audio: HTMLAudioElement,
+    durationMs = 2500,
+    targetVolume = 0.85,
+  ) {
+    audio.volume = 0;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          const stepTime = 50;
+          const totalSteps = durationMs / stepTime;
+          const stepInc = targetVolume / totalSteps;
+          const interval = setInterval(() => {
+            if (audio.paused) {
+              clearInterval(interval);
+              return;
+            }
+            if (audio.volume + stepInc < targetVolume) {
+              audio.volume = Math.min(targetVolume, audio.volume + stepInc);
+            } else {
+              audio.volume = targetVolume;
+              clearInterval(interval);
+            }
+          }, stepTime);
+        })
+        .catch(() => {});
+    }
+  }
+
   // Sprint 42: Auto-open for non-envelope intro effects (curtain/fade/slide)
   // MUST be before any conditional returns (React Rules of Hooks)
   useEffect(() => {
@@ -3163,10 +3193,8 @@ export function InvitationPageInner({
     setIsOpen(true);
     setShowConfetti(true);
     if (audioRef.current) {
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {});
+      fadeAudioIn(audioRef.current, 2500, 0.85);
+      setIsPlaying(true);
     } else {
       setIsPlaying(true);
     }
@@ -3176,11 +3204,14 @@ export function InvitationPageInner({
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play().catch(() => {});
+        fadeAudioIn(audioRef.current, 1500, 0.85);
+        setIsPlaying(true);
       }
+    } else {
+      setIsPlaying(!isPlaying);
     }
-    setIsPlaying(!isPlaying);
   }, [isPlaying]);
 
   if (loading) {
@@ -3198,9 +3229,9 @@ export function InvitationPageInner({
         <div style={{ textAlign: "center" }}>
           <p
             style={{
-              fontSize: 48,
-              margin: "0 0 16px",
-              animation: "spin 2s linear infinite",
+              fontSize: 16,
+              fontWeight: 600,
+              color: "#be185d",
             }}
           >
             💌
@@ -3221,6 +3252,7 @@ export function InvitationPageInner({
         canvasJson={canvasJson}
         guestName={guestName || undefined}
         projectId={projectId || undefined}
+        slug={pageSlug || undefined}
         showWatermark={!isPremium}
       />
     );
@@ -3869,36 +3901,40 @@ export function InvitationPageInner({
         </section>
       </ScrollReveal>
 
-      {/* Footer — LoveStory watermark (always visible) */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          borderTop: "1px solid rgba(0,0,0,0.06)",
-        }}
-      >
-        <a
-          href="https://7app.online"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Footer — LoveStory watermark (hidden on premium) */}
+      {!isPremium && (
+        <footer
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 14px",
-            borderRadius: 20,
-            background:
-              "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
-            border: "1px solid rgba(255,107,157,0.15)",
-            textDecoration: "none",
-            fontSize: 12,
-            color: "#9ca3af",
+            textAlign: "center",
+            padding: "24px",
+            borderTop: "1px solid rgba(0,0,0,0.06)",
           }}
         >
-          ❤️ Tạo thiệp cưới miễn phí tại{" "}
-          <strong style={{ color: "#ff6b9d", marginLeft: 4 }}>LoveStory</strong>
-        </a>
-      </footer>
+          <a
+            href={`/?ref=watermark&source=${encodeURIComponent(
+              pageSlug || "invitation",
+            )}&k_factor=1&utm_medium=viral_badge`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 14px",
+              borderRadius: 20,
+              background:
+                "linear-gradient(135deg, rgba(255,107,157,0.08), rgba(192,132,252,0.08))",
+              border: "1px solid rgba(255,107,157,0.15)",
+              textDecoration: "none",
+              fontSize: 12,
+              color: "#9ca3af",
+            }}
+          >
+            ❤️ Tạo thiệp cưới miễn phí tại{" "}
+            <strong style={{ color: "#ff6b9d", marginLeft: 4 }}>LoveStory</strong>
+          </a>
+        </footer>
+      )}
 
       {/* Floating Click-to-Call button (bottom-left) */}
       {data.groomPhone && (

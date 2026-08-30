@@ -2712,6 +2712,7 @@ interface CanvasInvitationProps {
   canvasJson: string;
   guestName?: string;
   projectId?: string;
+  slug?: string;
   showWatermark?: boolean;
 }
 
@@ -2839,10 +2840,41 @@ function useResponsiveScale(designWidth: number = CANVAS_DESIGN_WIDTH) {
   return { containerRef, scale };
 }
 
+function fadeAudioIn(
+  audio: HTMLAudioElement,
+  durationMs = 2500,
+  targetVolume = 0.85,
+) {
+  audio.volume = 0;
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => {
+        const stepTime = 50;
+        const totalSteps = durationMs / stepTime;
+        const stepInc = targetVolume / totalSteps;
+        const interval = setInterval(() => {
+          if (audio.paused) {
+            clearInterval(interval);
+            return;
+          }
+          if (audio.volume + stepInc < targetVolume) {
+            audio.volume = Math.min(targetVolume, audio.volume + stepInc);
+          } else {
+            audio.volume = targetVolume;
+            clearInterval(interval);
+          }
+        }, stepTime);
+      })
+      .catch(() => {});
+  }
+}
+
 export function CanvasInvitation({
   canvasJson,
   guestName,
   projectId,
+  slug,
   showWatermark = true,
 }: CanvasInvitationProps) {
   const data = useMemo(() => parseCanvasJson(canvasJson), [canvasJson]);
@@ -2856,6 +2888,8 @@ export function CanvasInvitation({
   const [rsvpNote, setRsvpNote] = useState("");
   const [rsvpSent, setRsvpSent] = useState(false);
   const [rsvpSending, setRsvpSending] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showMusicTooltip, setShowMusicTooltip] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Detect v2 craft.js format
@@ -2881,24 +2915,24 @@ export function CanvasInvitation({
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current.play().catch(() => {});
+        fadeAudioIn(audioRef.current, 1500, 0.85);
         setIsPlaying(true);
       }
     } else {
       audioRef.current = new Audio(musicUrl);
       audioRef.current.loop = true;
-      audioRef.current.play().catch(() => {});
+      fadeAudioIn(audioRef.current, 2500, 0.85);
       setIsPlaying(true);
     }
   }, [musicUrl, isPlaying]);
 
-  // Auto-play music on first interaction
+  // Auto-play music on first interaction with smooth Audio Fade-In
   useEffect(() => {
     const handleFirst = () => {
       if (musicUrl && !audioRef.current) {
         audioRef.current = new Audio(musicUrl);
         audioRef.current.loop = true;
-        audioRef.current.play().catch(() => {});
+        fadeAudioIn(audioRef.current, 2500, 0.85);
         setIsPlaying(true);
       }
       document.removeEventListener("click", handleFirst);
@@ -3041,6 +3075,13 @@ export function CanvasInvitation({
                 @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3) } 50% { transform: scale(1.05) } 70% { transform: scale(0.95) } 100% { opacity: 1; transform: scale(1) } }
                 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .6 } }
                 @keyframes spinVinyl { to { transform: rotate(360deg) } }
+                @keyframes spinVinylDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes floatMusicNote {
+                    0% { transform: translateY(0) scale(0.8); opacity: 0; }
+                    30% { opacity: 0.9; }
+                    80% { opacity: 0.7; }
+                    100% { transform: translateY(-32px) translateX(10px) scale(1.1); opacity: 0; }
+                }
                 @keyframes slideInUp { from { opacity: 0; transform: translateY(100%) } to { opacity: 1; transform: translateY(0) } }
                 html { scroll-behavior: smooth; }
                 body { overscroll-behavior-y: none; }
@@ -3464,53 +3505,424 @@ export function CanvasInvitation({
         </div>
       </ScrollSection>
 
-      {/* ═══ Watermark ═══ */}
+      {/* ═══ Footer Watermark ═══ */}
       {showWatermark && (
-        <a
-          href="https://7app.online?ref=watermark"
-          target="_blank"
-          rel="noopener noreferrer"
+        <footer
           style={{
-            display: "block",
             textAlign: "center",
-            padding: "16px 0 32px",
-            fontSize: 11,
-            color: "rgba(255,255,255,0.35)",
-            textDecoration: "none",
-            letterSpacing: 0.5,
+            padding: "24px 16px 40px",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          Made with LoveStory ❤️
-        </a>
+          <a
+            href={`/?ref=watermark&source=${encodeURIComponent(
+              slug || "invitation",
+            )}&k_factor=1&utm_medium=footer_link`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 16px",
+              borderRadius: 20,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              textDecoration: "none",
+              fontSize: 11,
+              color: "rgba(255,255,255,0.65)",
+              letterSpacing: 0.3,
+            }}
+          >
+            ❤️ Tạo thiệp cưới online miễn phí tại{" "}
+            <strong style={{ color: "#ff6b9d" }}>LoveStory</strong>
+          </a>
+        </footer>
       )}
 
-      {/* ═══ Sticky Music Player (bottom-right) ═══ */}
-      {musicUrl && (
-        <button
-          onClick={toggleMusic}
-          title={musicName}
+      {/* ═══ Viral Watermark Floating Badge (Bottom-Left) ═══ */}
+      {showWatermark && (
+        <div
           style={{
             position: "fixed",
             bottom: 20,
-            right: 20,
-            zIndex: 999,
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            border: "none",
-            background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
-            color: "#fff",
-            fontSize: 22,
-            cursor: "pointer",
-            boxShadow: "0 4px 20px rgba(255,107,157,.5)",
+            left: 16,
+            zIndex: 994,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            maxWidth: "calc(100vw - 120px)",
+          }}
+        >
+          <a
+            href={`/?ref=watermark&source=${encodeURIComponent(
+              slug || "invitation",
+            )}&k_factor=1&utm_medium=viral_badge`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 14px",
+              borderRadius: 28,
+              background: "rgba(255, 255, 255, 0.92)",
+              backdropFilter: "blur(12px)",
+              boxShadow:
+                "0 6px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 107, 157, 0.35)",
+              textDecoration: "none",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#1f2937",
+              letterSpacing: 0.1,
+              transition: "transform 0.15s ease, box-shadow 0.15s ease",
+            }}
+          >
+            <span style={{ fontSize: 13 }}>✨</span>
+            <span style={{ color: "#374151" }}>
+              Tự tạo thiệp cưới miễn phí{" "}
+              <strong style={{ color: "#ff6b9d", fontWeight: 800 }}>LoveStory</strong>
+            </span>
+            <span style={{ color: "#ff6b9d", fontSize: 11, marginLeft: 2 }}>👉</span>
+          </a>
+
+          {/* Quick Unlock 199K Button */}
+          <button
+            onClick={() => setShowUpgradeModal(true)}
+            title="Bỏ logo LoveStory (199K trọn đời)"
+            style={{
+              padding: "7px 10px",
+              borderRadius: 20,
+              border: "none",
+              background: "linear-gradient(135deg, #1f2937, #111827)",
+              color: "#fef08a",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+            }}
+          >
+            <span>👑</span>
+            <span>199K</span>
+          </button>
+        </div>
+      )}
+
+      {/* ═══ Upgrade Modal (SePay VietQR 199K) ═══ */}
+      {showUpgradeModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            animation: isPlaying ? "spinVinyl 3s linear infinite" : undefined,
+            padding: 20,
+          }}
+          onClick={() => setShowUpgradeModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 24,
+              padding: 28,
+              maxWidth: 400,
+              width: "100%",
+              textAlign: "center",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              fontFamily: "system-ui, -apple-system, sans-serif",
+            }}
+          >
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #fef3c7, #fde68a)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 28,
+                margin: "0 auto 16px",
+              }}
+            >
+              👑
+            </div>
+            <h3
+              style={{
+                fontSize: 20,
+                fontWeight: 800,
+                color: "#111827",
+                margin: "0 0 8px",
+              }}
+            >
+              Nâng Cấp Gói Trọn Đời (199K)
+            </h3>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#4b5563",
+                lineHeight: 1.6,
+                margin: "0 0 20px",
+              }}
+            >
+              Mở khóa tính năng <strong>bỏ hoàn toàn logo LoveStory</strong>, tải ảnh
+              chất lượng gốc, không giới hạn khách mời và kích hoạt tức thì qua
+              SePay VietQR tự động.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <a
+                href="/checkout?plan=basic&ref=watermark_upgrade"
+                style={{
+                  display: "block",
+                  padding: "13px 20px",
+                  borderRadius: 14,
+                  background: "linear-gradient(135deg, #ff6b9d, #c084fc)",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: "none",
+                  boxShadow: "0 6px 20px rgba(255,107,157,0.35)",
+                }}
+              >
+                🚀 Nâng cấp ngay 199.000₫
+              </a>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                style={{
+                  padding: "10px",
+                  background: "transparent",
+                  border: "none",
+                  color: "#6b7280",
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Dynamic Vinyl Disc Player (Bottom-Right) ═══ */}
+      {musicUrl && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 18,
+            zIndex: 995,
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "row-reverse",
+            gap: 10,
           }}
         >
-          {isPlaying ? "🎵" : "▶️"}
-        </button>
+          {/* Vinyl Disc Container */}
+          <div
+            onClick={toggleMusic}
+            onMouseEnter={() => setShowMusicTooltip(true)}
+            onMouseLeave={() => setShowMusicTooltip(false)}
+            style={{
+              position: "relative",
+              width: 56,
+              height: 56,
+              cursor: "pointer",
+              borderRadius: "50%",
+              boxShadow: isPlaying
+                ? "0 6px 24px rgba(255,107,157,0.45), 0 0 0 2px rgba(255,255,255,0.8)"
+                : "0 4px 16px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.5)",
+              transition:
+                "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease",
+              userSelect: "none",
+            }}
+          >
+            {/* Spinning Vinyl Record */}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle at 50% 50%, #1a1a1a 0%, #111111 55%, #222222 75%, #0d0d0d 100%)",
+                animation: isPlaying
+                  ? "spinVinylDisc 4s linear infinite"
+                  : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              {/* Micro Grooves */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 4,
+                  borderRadius: "50%",
+                  border: "1px dashed rgba(255,255,255,0.12)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 8,
+                  borderRadius: "50%",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 12,
+                  borderRadius: "50%",
+                  border: "1px dashed rgba(255,255,255,0.08)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* Center Label */}
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background:
+                    "linear-gradient(135deg, #f472b6, #fb7185, #d946ef)",
+                  boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  color: "#fff",
+                }}
+              >
+                {isPlaying ? "🎵" : "▶"}
+              </div>
+            </div>
+
+            {/* Tone Arm Needle */}
+            <div
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -2,
+                width: 22,
+                height: 26,
+                pointerEvents: "none",
+                transformOrigin: "top right",
+                transform: isPlaying ? "rotate(20deg)" : "rotate(-18deg)",
+                transition: "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                zIndex: 10,
+              }}
+            >
+              <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
+                <circle
+                  cx="18"
+                  cy="4"
+                  r="3.5"
+                  fill="#e2e8f0"
+                  stroke="#64748b"
+                  strokeWidth="1"
+                />
+                <path
+                  d="M18 4 L8 18 L4 22"
+                  stroke="#cbd5e1"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <rect
+                  x="2"
+                  y="20"
+                  width="5"
+                  height="4"
+                  rx="1"
+                  fill="#f43f5e"
+                  transform="rotate(-15 2 20)"
+                />
+              </svg>
+            </div>
+
+            {/* Floating Musical Notes when playing */}
+            {isPlaying && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  overflow: "visible",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -10,
+                    left: "20%",
+                    fontSize: 12,
+                    animation: "floatMusicNote 2.4s ease-in-out infinite",
+                  }}
+                >
+                  🎶
+                </span>
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -14,
+                    right: "15%",
+                    fontSize: 10,
+                    animation: "floatMusicNote 2.4s ease-in-out 1.2s infinite",
+                  }}
+                >
+                  ✨
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Floating Song Title Tooltip */}
+          {(showMusicTooltip || isPlaying) && musicName && (
+            <div
+              style={{
+                background: "rgba(26, 26, 36, 0.88)",
+                backdropFilter: "blur(12px)",
+                color: "#fff",
+                padding: "6px 14px",
+                borderRadius: 20,
+                fontSize: 11,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                animation: "fadeIn 0.3s ease-out",
+              }}
+            >
+              <span style={{ fontSize: 12 }}>{isPlaying ? "📻" : "⏸"}</span>
+              <span
+                style={{
+                  maxWidth: 160,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {musicName}
+              </span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ═══ Sticky bottom RSVP CTA ═══ */}

@@ -2950,3 +2950,128 @@ export const TEMPLATE_UNIQUE_PRESETS: Record<string, TemplateElement[]> = {
     }),
   ],
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// TEMPLATE DEFAULT MUSIC ASSIGNMENTS (Sprint 53 • Tone-Matched Audio)
+// ═══════════════════════════════════════════════════════════════════
+
+export interface TemplateMusicAssignment {
+  musicId: string;
+  musicName: string;
+  musicUrl: string;
+}
+
+export const TEMPLATE_DEFAULT_MUSIC: Record<string, TemplateMusicAssignment> = {
+  // ── TOP 20 BESPOKE UNIQUE LAYOUTS (Sprint 52 • CineLove Parity 90%+) ──
+  "thiep-cuoi-42": {
+    musicId: "m3",
+    musicName: "Lời Tỏ Tình Ngọt Ngào",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m3.mp3",
+  },
+  "thiep-cuoi-39": {
+    musicId: "m33",
+    musicName: "Canon in D — Pachelbel",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m33.mp3",
+  },
+  "thiep-cuoi-46": {
+    musicId: "m31",
+    musicName: "Cherry Blossom Romance",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m31.mp3",
+  },
+  "thiep-cuoi-38": {
+    musicId: "m20",
+    musicName: "Soft Acoustic Love",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m20.mp3",
+  },
+  "thiep-cuoi-36": {
+    musicId: "m36",
+    musicName: "Liebestraum — Liszt",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m36.mp3",
+  },
+  "thiep-cuoi-44": {
+    musicId: "m27",
+    musicName: "Moonlit Piano",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m27.mp3",
+  },
+  "thiep-cuoi-40": {
+    musicId: "m24",
+    musicName: "Elegant Piano Melody",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m24.mp3",
+  },
+  "thiep-cuoi-16": {
+    musicId: "m19",
+    musicName: "Sweet Guitar Morning",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m19.mp3",
+  },
+  "thiep-cuoi-47": {
+    musicId: "m6",
+    musicName: "Hạnh Phúc Trọn Vẹn",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m6.mp3",
+  },
+  "thiep-cuoi-48": {
+    musicId: "m11",
+    musicName: "Marry Me — Ballad",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m11.mp3",
+  },
+  "thiep-cuoi-19": {
+    musicId: "m23",
+    musicName: "Dreamy Piano",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m23.mp3",
+  },
+  "thiep-cuoi-tone-xanh": {
+    musicId: "m18",
+    musicName: "Gentle Fingerstyle",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m18.mp3",
+  },
+  "thiep-cuoi-2": {
+    musicId: "m8",
+    musicName: "A Thousand Years",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m8.mp3",
+  },
+  "thiep-cuoi-5": {
+    musicId: "m34",
+    musicName: "Clair de Lune — Debussy",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m34.mp3",
+  },
+  "thiep-cuoi-23": {
+    musicId: "m26",
+    musicName: "Tender Piano Notes",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m26.mp3",
+  },
+  "thiep-cuoi-8": {
+    musicId: "m17",
+    musicName: "Romantic Guitar Serenade",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m17.mp3",
+  },
+  "thiep-cuoi-53": {
+    musicId: "m13",
+    musicName: "Beautiful In White",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m13.mp3",
+  },
+  "thiep-cuoi-28": {
+    musicId: "m37",
+    musicName: "Wedding March — Mendelssohn",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m37.mp3",
+  },
+  "thiep-cuoi-11": {
+    musicId: "m28",
+    musicName: "Korean Wedding Ballad",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m28.mp3",
+  },
+  "thiep-cuoi-49": {
+    musicId: "m15",
+    musicName: "All of Me — Piano",
+    musicUrl: "https://assets.7app.online/audio/wedding-tracks/m15.mp3",
+  },
+};
+
+export function getDefaultMusicForTemplate(templateSlug: string): TemplateMusicAssignment {
+  return (
+    TEMPLATE_DEFAULT_MUSIC[templateSlug] ?? {
+      musicId: "m1",
+      musicName: "Tình Yêu Mãi Mãi (Wedding)",
+      musicUrl: "https://assets.7app.online/audio/wedding-tracks/m1.mp3",
+    }
+  );
+}
+

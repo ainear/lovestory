@@ -1,5 +1,8 @@
 "use client";
-import { TEMPLATE_UNIQUE_PRESETS } from "@/server/data/template-presets";
+import {
+  TEMPLATE_UNIQUE_PRESETS,
+  getDefaultMusicForTemplate,
+} from "@/server/data/template-presets";
 import { convertTemplateToCanvas } from "../[id]/components/canvas-engine/convertTemplate";
 
 import { useEffect, useRef, useState } from "react";
@@ -2562,13 +2565,17 @@ function buildTemplateCanvasJson(templateSlug: string): string {
 
   // Custom canvas engine (default) — absolute positioned elements
   const canvasElements = convertTemplateToCanvas(elements);
+  const defaultMusic = getDefaultMusicForTemplate(templateSlug);
 
   return JSON.stringify({
     version: 2,
     engine: "custom-canvas",
     canvas: { width: 390, height: 7300, bg: bgCss },
     elements: canvasElements,
-    meta: { musicUrl: "", musicName: "" },
+    meta: {
+      musicUrl: defaultMusic.musicUrl,
+      musicName: defaultMusic.musicName,
+    },
     effects: { particleEffect: "none" },
   });
 }
